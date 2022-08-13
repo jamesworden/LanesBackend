@@ -11,7 +11,7 @@ namespace LanesBackend.Hubs
 
         public async Task CreateGame()
         {
-            string gameCode = Guid.NewGuid().ToString()[..4];
+            string gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
             string connectionId = Context.ConnectionId;
             HostConnectionIdToPendingGameCodes.Add(connectionId, gameCode);
             await Groups.AddToGroupAsync(connectionId, gameCode);
