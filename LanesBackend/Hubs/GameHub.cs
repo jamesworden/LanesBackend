@@ -22,14 +22,17 @@ namespace LanesBackend.Hubs
         {
             var guestConnectionId = Context.ConnectionId;
             HostConnectionIdToPendingGameCodes.TryGetValue(gameCode, out var hostConnectionId);
-            var invalidGameCode = hostConnectionId == null;
-
-            if (invalidGameCode)
+ 
+            if (hostConnectionId is null)
             {
                 await Clients.Client(guestConnectionId).SendAsync("InvalidGameCode");
+                return;
             }
 
-
+            await AddPlayersToRoom(hostConnectionId, guestConnectionId, gameCode);
+            GameCacheModel gameCacheModel = new(hostConnectionId, guestConnectionId, gameCode);
+            Games.Add(gameCacheModel);
+            await Clients.Group(gameCode).SendAsync("GameStarted");
         }
 
         public async Task OnDisconnectedAsync()
@@ -49,6 +52,7 @@ namespace LanesBackend.Hubs
                 if (playerIsHost)
                 {
                     await Clients.Client(game.GuestConnectionId).SendAsync("OpponentDisconnected");
+                    await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
 
@@ -56,9 +60,22 @@ namespace LanesBackend.Hubs
                 if (playerIsGuest)
                 {
                     await Clients.Client(game.HostConnectionId).SendAsync("OpponentDisconnected");
+                    await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
             }
+        }
+
+        private async Task AddPlayersToRoom(string hostConnectionId, string guestConnectionId, string gameCode)
+        {
+            await Groups.AddToGroupAsync(guestConnectionId, gameCode);
+            await Groups.AddToGroupAsync(hostConnectionId, gameCode);
+        }
+
+        private async Task RemovePlayersFromRoom(string hostConnectionId, string guestConnectionId, string gameCode)
+        {
+            await Groups.RemoveFromGroupAsync(hostConnectionId, gameCode);
+            await Groups.RemoveFromGroupAsync(guestConnectionId, gameCode);
         }
     }
 }
