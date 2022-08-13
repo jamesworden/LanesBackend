@@ -1,13 +1,13 @@
 using LanesBackend;
 using LanesBackend.Hubs;
-using LanesBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
-builder.Services.AddMemoryCache();
+// builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
+// builder.Services.AddMemoryCache();
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -23,6 +23,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.UseCors(builder =>
+{
+    builder.WithOrigins("http://localhost:4200")
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials();
+
+    app.UseHttpsRedirection();
+});
 
 app.UseRouting();
 
