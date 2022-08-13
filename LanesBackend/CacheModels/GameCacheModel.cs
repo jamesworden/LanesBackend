@@ -6,14 +6,14 @@
 
         public string HostConnectionId { get; set; }
 
-        public string JoinConnectionId { get; set; }
+        public string GuestConnectionId { get; set; }
 
         public string GameCode { get; set; }
 
-        public GameCacheModel(string hostConnectionId, string joinConnectionId, string gameCode)
+        public GameCacheModel(string hostConnectionId, string guestConnectionId, string gameCode)
         {
             HostConnectionId = hostConnectionId;
-            JoinConnectionId = joinConnectionId;
+            GuestConnectionId = guestConnectionId;
             GameCode = gameCode;
         }
 

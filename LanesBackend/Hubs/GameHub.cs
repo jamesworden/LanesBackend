@@ -9,13 +9,6 @@ namespace LanesBackend.Hubs
         
         private readonly List<GameCacheModel> Games = new();
 
-        //private readonly ICacheService cacheService;
-
-        //public GameHub(ICacheService cacheService)
-        //{
-        //    this.cacheService = cacheService;
-        //}
-
         public async Task CreateGame()
         {
             string gameCode = Guid.NewGuid().ToString()[..4];
@@ -38,13 +31,15 @@ namespace LanesBackend.Hubs
 
             foreach (var game in Games)
             {
-                if (game.HostConnectionId == connectionId)
+                var playerIsHost = game.HostConnectionId == connectionId;
+                if (playerIsHost)
                 {
-                    await Clients.Client(game.JoinConnectionId).SendAsync("OpponentDisconnected");
+                    await Clients.Client(game.GuestConnectionId).SendAsync("OpponentDisconnected");
                     Games.Remove(game);
                 }
 
-                if (game.JoinConnectionId == connectionId)
+                var playerIsGuest = game.GuestConnectionId == connectionId;
+                if (playerIsGuest)
                 {
                     await Clients.Client(game.HostConnectionId).SendAsync("OpponentDisconnected");
                     Games.Remove(game);
