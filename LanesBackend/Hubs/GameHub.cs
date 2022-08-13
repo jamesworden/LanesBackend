@@ -18,6 +18,20 @@ namespace LanesBackend.Hubs
             await Clients.Client(connectionId).SendAsync("CreatedPendingGame", gameCode);
         }
 
+        public async Task JoinGame(string gameCode)
+        {
+            var guestConnectionId = Context.ConnectionId;
+            HostConnectionIdToPendingGameCodes.TryGetValue(gameCode, out var hostConnectionId);
+            var invalidGameCode = hostConnectionId == null;
+
+            if (invalidGameCode)
+            {
+                await Clients.Client(guestConnectionId).SendAsync("InvalidGameCode");
+            }
+
+
+        }
+
         public async Task OnDisconnectedAsync()
         {
             var connectionId = Context.ConnectionId;
