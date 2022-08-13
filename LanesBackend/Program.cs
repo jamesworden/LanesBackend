@@ -1,11 +1,9 @@
-using LanesBackend;
 using LanesBackend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
 // builder.Services.AddMemoryCache();
-builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 builder.Services.AddCors();
 
@@ -37,7 +35,5 @@ app.UseCors(builder =>
 app.UseRouting();
 
 app.UseAuthorization();
-
-app.MapRazorPages();
 
 app.Run();
