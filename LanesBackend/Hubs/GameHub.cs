@@ -32,17 +32,19 @@ namespace LanesBackend.Hubs
             await AddPlayersToRoom(hostConnectionId, guestConnectionId, gameCode);
             GameState gameCacheModel = new(hostConnectionId, guestConnectionId, gameCode);
             Games.Add(gameCacheModel);
+            PendingGameCodeToHostConnectionId.Remove(gameCode);
             await Clients.Group(gameCode).SendAsync("GameStarted");
         }
 
-        public async Task OnDisconnectedAsync()
+        public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
-            var pendingGameExists = PendingGameCodeToHostConnectionId.ContainsKey(connectionId);
-            
-            if (pendingGameExists)
+            var pendingGameCode = PendingGameCodeToHostConnectionId
+                .FirstOrDefault(row => row.Value == connectionId).Key;
+
+            if (pendingGameCode is not null)
             {
-                PendingGameCodeToHostConnectionId.Remove(connectionId);
+                PendingGameCodeToHostConnectionId.Remove(pendingGameCode);
                 return;
             }
 
