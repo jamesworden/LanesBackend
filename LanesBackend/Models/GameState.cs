@@ -1,6 +1,6 @@
 ﻿namespace LanesBackend.CacheModels
 {
-    public class GameCacheModel
+    public class GameState
     {
         public bool isRunning = false;
 
@@ -10,7 +10,7 @@
 
         public string GameCode { get; set; }
 
-        public GameCacheModel(string hostConnectionId, string guestConnectionId, string gameCode)
+        public GameState(string hostConnectionId, string guestConnectionId, string gameCode)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;

@@ -5,15 +5,15 @@ namespace LanesBackend.Hubs
 {
     public class GameHub : Hub
     {
-        private readonly Dictionary<string, string> HostConnectionIdToPendingGameCodes = new();
+        private static readonly Dictionary<string, string> PendingGameCodeToHostConnectionId = new();
         
-        private readonly List<GameCacheModel> Games = new();
+        private static readonly List<GameState> Games = new();
 
         public async Task CreateGame()
         {
             string gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
             string connectionId = Context.ConnectionId;
-            HostConnectionIdToPendingGameCodes.Add(connectionId, gameCode);
+            PendingGameCodeToHostConnectionId.Add(gameCode, connectionId);
             await Groups.AddToGroupAsync(connectionId, gameCode);
             await Clients.Client(connectionId).SendAsync("CreatedPendingGame", gameCode);
         }
@@ -21,7 +21,7 @@ namespace LanesBackend.Hubs
         public async Task JoinGame(string gameCode)
         {
             var guestConnectionId = Context.ConnectionId;
-            HostConnectionIdToPendingGameCodes.TryGetValue(gameCode, out var hostConnectionId);
+            PendingGameCodeToHostConnectionId.TryGetValue(gameCode, out var hostConnectionId);
  
             if (hostConnectionId is null)
             {
@@ -30,7 +30,7 @@ namespace LanesBackend.Hubs
             }
 
             await AddPlayersToRoom(hostConnectionId, guestConnectionId, gameCode);
-            GameCacheModel gameCacheModel = new(hostConnectionId, guestConnectionId, gameCode);
+            GameState gameCacheModel = new(hostConnectionId, guestConnectionId, gameCode);
             Games.Add(gameCacheModel);
             await Clients.Group(gameCode).SendAsync("GameStarted");
         }
@@ -38,11 +38,11 @@ namespace LanesBackend.Hubs
         public async Task OnDisconnectedAsync()
         {
             var connectionId = Context.ConnectionId;
-            var pendingGameExists = HostConnectionIdToPendingGameCodes.ContainsKey(connectionId);
+            var pendingGameExists = PendingGameCodeToHostConnectionId.ContainsKey(connectionId);
             
             if (pendingGameExists)
             {
-                HostConnectionIdToPendingGameCodes.Remove(connectionId);
+                PendingGameCodeToHostConnectionId.Remove(connectionId);
                 return;
             }
 
