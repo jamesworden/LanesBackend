@@ -53,7 +53,7 @@ namespace LanesBackend.Hubs
                 var playerIsHost = game.HostConnectionId == connectionId;
                 if (playerIsHost)
                 {
-                    await Clients.Client(game.GuestConnectionId).SendAsync("OpponentDisconnected");
+                    await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
                     await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
@@ -61,7 +61,7 @@ namespace LanesBackend.Hubs
                 var playerIsGuest = game.GuestConnectionId == connectionId;
                 if (playerIsGuest)
                 {
-                    await Clients.Client(game.HostConnectionId).SendAsync("OpponentDisconnected");
+                    await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
                     await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
