@@ -1,5 +1,6 @@
 ﻿using LanesBackend.CacheModels;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 namespace LanesBackend.Hubs
 {
@@ -7,7 +8,7 @@ namespace LanesBackend.Hubs
     {
         private static readonly Dictionary<string, string> PendingGameCodeToHostConnectionId = new();
         
-        private static readonly List<GameState> Games = new();
+        private static readonly List<Game> Games = new();
 
         public async Task CreateGame()
         {
@@ -30,10 +31,10 @@ namespace LanesBackend.Hubs
             }
 
             await AddPlayersToRoom(hostConnectionId, guestConnectionId, gameCode);
-            GameState gameCacheModel = new(hostConnectionId, guestConnectionId, gameCode);
-            Games.Add(gameCacheModel);
+            Game game = new(hostConnectionId, guestConnectionId, gameCode);
+            Games.Add(game);
             PendingGameCodeToHostConnectionId.Remove(gameCode);
-            await Clients.Group(gameCode).SendAsync("GameStarted");
+            await Clients.Group(gameCode).SendAsync("GameStarted", JsonConvert.SerializeObject(game));
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
