@@ -2,11 +2,11 @@
 {
     public class Card
     {
-        public readonly string Kind;
+        public readonly Kind Kind;
 
-        public readonly string Suit;
+        public readonly Suit Suit;
 
-        public Card(string kind, string suit)
+        public Card(Kind kind, Suit suit)
         {
             Kind = kind;
             Suit = suit;

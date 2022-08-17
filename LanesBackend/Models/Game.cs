@@ -14,6 +14,10 @@ namespace LanesBackend.CacheModels
 
         public Lane[] Lanes = new Lane[5];
 
+        public Player HostPlayer { get; set; }
+
+        public Player GuestPlayer { get; set; }
+
         public Game(string hostConnectionId, string guestConnectionId, string gameCode)
         {
             HostConnectionId = hostConnectionId;
@@ -24,7 +28,15 @@ namespace LanesBackend.CacheModels
             {
                 Lanes[i] = new Lane();
             }
-        }
 
+            var deck = new DeckBuilder().FillWithCards().Build();
+            deck.Shuffle();
+
+            var hostPlayerDeck = deck.DrawCards(26);
+            var guestPlayerDeck = deck.DrawRemainingCards();
+
+            HostPlayer = new Player(hostPlayerDeck, "Host Player");
+            GuestPlayer = new Player(guestPlayerDeck, "Guest Player");
+        }
     }
 }
