@@ -3,7 +3,7 @@
     public class Deck
     {
 
-        private List<Card> Cards;
+        public List<Card> Cards;
 
         public Deck(List<Card> cards)
         {
@@ -42,7 +42,7 @@
                 return DrawRemainingCards();
             }
 
-            List<Card> cardsDrawn = new List<Card>();
+            List<Card> cardsDrawn = new();
 
             int topCardIndex = Cards.Count - 1;
             for (int i = topCardIndex; i > topCardIndex - numberOfCards; i--)

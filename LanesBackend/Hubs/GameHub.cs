@@ -1,4 +1,5 @@
 ﻿using LanesBackend.CacheModels;
+using LanesBackend.Models;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -35,7 +36,28 @@ namespace LanesBackend.Hubs
             Game game = new(hostConnectionId, guestConnectionId, gameCode);
             Games.Add(game);
             PendingGameCodeToHostConnectionId.Remove(gameCode);
-            await Clients.Group(gameCode).SendAsync("GameStarted", JsonConvert.SerializeObject(game, new StringEnumConverter()));
+
+            var hostGameState = new PlayerGameState(
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand.Cards.Count,
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand,
+                game.Lanes
+                );
+
+            var guestGameState = new PlayerGameState(
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand.Cards.Count,
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand,
+                game.Lanes
+                );
+
+            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
+            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
+
+            await Clients.Client(hostConnectionId).SendAsync("GameStarted", serializedHostGameState);
+            await Clients.Client(guestConnectionId).SendAsync("GameStarted", serializedGuestGameState);
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
