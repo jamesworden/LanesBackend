@@ -12,18 +12,22 @@
 
         public Lane[] Lanes { get; set; }
 
+        public bool IsHost { get; set; }
+
         public PlayerGameState(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
             int numCardsInPlayersDeck,
             Hand hand,
-            Lane[] lanes)
+            Lane[] lanes,
+            bool isHost)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
             NumCardsInPlayersDeck = numCardsInPlayersDeck;
             Hand = hand;
             Lanes = lanes;
+            IsHost = isHost;
         }
     }
 }

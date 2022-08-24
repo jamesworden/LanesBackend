@@ -42,7 +42,8 @@ namespace LanesBackend.Hubs
                 game.GuestPlayer.Hand.Cards.Count,
                 game.HostPlayer.Deck.Cards.Count,
                 game.HostPlayer.Hand,
-                game.Lanes
+                game.Lanes,
+                true
                 );
 
             var guestGameState = new PlayerGameState(
@@ -50,7 +51,8 @@ namespace LanesBackend.Hubs
                 game.HostPlayer.Hand.Cards.Count,
                 game.GuestPlayer.Deck.Cards.Count,
                 game.GuestPlayer.Hand,
-                game.Lanes
+                game.Lanes,
+                false
                 );
 
             var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
