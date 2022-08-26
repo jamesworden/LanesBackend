@@ -37,29 +37,7 @@ namespace LanesBackend.Hubs
             Games.Add(game);
             PendingGameCodeToHostConnectionId.Remove(gameCode);
 
-            var hostGameState = new PlayerGameState(
-                game.GuestPlayer.Deck.Cards.Count,
-                game.GuestPlayer.Hand.Cards.Count,
-                game.HostPlayer.Deck.Cards.Count,
-                game.HostPlayer.Hand,
-                game.Lanes,
-                true
-                );
-
-            var guestGameState = new PlayerGameState(
-                game.HostPlayer.Deck.Cards.Count,
-                game.HostPlayer.Hand.Cards.Count,
-                game.GuestPlayer.Deck.Cards.Count,
-                game.GuestPlayer.Hand,
-                game.Lanes,
-                false
-                );
-
-            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
-            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
-
-            await Clients.Client(hostConnectionId).SendAsync("GameStarted", serializedHostGameState);
-            await Clients.Client(guestConnectionId).SendAsync("GameStarted", serializedGuestGameState);
+            await UpdatePlayerGameStates(game, "GameStarted");
         }
 
         public async Task RearrangeHand(string stringifiedCards)
@@ -81,8 +59,8 @@ namespace LanesBackend.Hubs
 
             var playerIsHost = game.HostConnectionId == connectionId;
             var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
-            bool newHandHasSameCards = existingCards.ToHashSet().SetEquals(cards);
-            
+            bool newHandHasSameCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+
             if (!newHandHasSameCards)
             {
                 return;
@@ -91,35 +69,13 @@ namespace LanesBackend.Hubs
             if (playerIsHost)
             {
                 game.HostPlayer.Hand.Cards = cards;
+                await UpdateHostGameState(game, "GameUpdated");
             }
             else
             {
                 game.GuestPlayer.Hand.Cards = cards;
+                await UpdateGuestGameState(game, "GameUpdated");
             }
-
-            var hostGameState = new PlayerGameState(
-                game.GuestPlayer.Deck.Cards.Count,
-                game.GuestPlayer.Hand.Cards.Count,
-                game.HostPlayer.Deck.Cards.Count,
-                game.HostPlayer.Hand,
-                game.Lanes,
-                true
-                );
-
-            var guestGameState = new PlayerGameState(
-                game.HostPlayer.Deck.Cards.Count,
-                game.HostPlayer.Hand.Cards.Count,
-                game.GuestPlayer.Deck.Cards.Count,
-                game.GuestPlayer.Hand,
-                game.Lanes,
-                false
-                );
-
-            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
-            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
-
-            await Clients.Client(game.HostConnectionId).SendAsync("GameUpdated", serializedHostGameState);
-            await Clients.Client(game.GuestConnectionId).SendAsync("GameUpdated", serializedGuestGameState);
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
@@ -164,6 +120,46 @@ namespace LanesBackend.Hubs
         {
             await Groups.RemoveFromGroupAsync(hostConnectionId, gameCode);
             await Groups.RemoveFromGroupAsync(guestConnectionId, gameCode);
+        }
+
+        private async Task UpdateHostGameState(Game game, string messageType)
+        {
+            var hostGameState = new PlayerGameState(
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand.Cards.Count,
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand,
+                game.Lanes,
+                true
+                );
+
+            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
+
+            await Clients.Client(game.HostConnectionId).SendAsync(messageType, serializedHostGameState);
+        }
+
+        private async Task UpdateGuestGameState(Game game, string messageType)
+        {
+            
+
+            var guestGameState = new PlayerGameState(
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand.Cards.Count,
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand,
+                game.Lanes,
+                false
+                );
+
+            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
+            
+            await Clients.Client(game.GuestConnectionId).SendAsync(messageType, serializedGuestGameState);
+        }
+
+        private async Task UpdatePlayerGameStates(Game game, string messageType)
+        {
+            await UpdateHostGameState(game, messageType);
+            await UpdateGuestGameState(game, messageType);
         }
     }
 }
