@@ -4,7 +4,7 @@ namespace LanesBackend.Models
 {
     public class Hand
     {
-        public List<Card> Cards { get; }
+        public List<Card> Cards { get; set; }
 
         public Hand(List<Card> cards)
         {

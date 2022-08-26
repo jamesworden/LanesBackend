@@ -62,6 +62,66 @@ namespace LanesBackend.Hubs
             await Clients.Client(guestConnectionId).SendAsync("GameStarted", serializedGuestGameState);
         }
 
+        public async Task RearrangeHand(string stringifiedCards)
+        {
+            var cards = JsonConvert.DeserializeObject<List<Card>>(stringifiedCards);
+
+            if (cards == null)
+            {
+                return;
+            }
+
+            var connectionId = Context.ConnectionId;
+            var game = Games.Where(game => game.HostConnectionId == connectionId || game.GuestConnectionId == connectionId).FirstOrDefault();
+
+            if (game == null)
+            {
+                return;
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
+            bool newHandHasSameCards = existingCards.ToHashSet().SetEquals(cards);
+            
+            if (!newHandHasSameCards)
+            {
+                return;
+            }
+
+            if (playerIsHost)
+            {
+                game.HostPlayer.Hand.Cards = cards;
+            }
+            else
+            {
+                game.GuestPlayer.Hand.Cards = cards;
+            }
+
+            var hostGameState = new PlayerGameState(
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand.Cards.Count,
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand,
+                game.Lanes,
+                true
+                );
+
+            var guestGameState = new PlayerGameState(
+                game.HostPlayer.Deck.Cards.Count,
+                game.HostPlayer.Hand.Cards.Count,
+                game.GuestPlayer.Deck.Cards.Count,
+                game.GuestPlayer.Hand,
+                game.Lanes,
+                false
+                );
+
+            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
+            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
+
+            await Clients.Client(game.HostConnectionId).SendAsync("GameUpdated", serializedHostGameState);
+            await Clients.Client(game.GuestConnectionId).SendAsync("GameUpdated", serializedGuestGameState);
+        }
+
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
