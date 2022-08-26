@@ -69,12 +69,12 @@ namespace LanesBackend.Hubs
             if (playerIsHost)
             {
                 game.HostPlayer.Hand.Cards = cards;
-                await UpdateHostGameState(game, "GameUpdated");
+                // await UpdateHostGameState(game, "GameUpdated");
             }
             else
             {
                 game.GuestPlayer.Hand.Cards = cards;
-                await UpdateGuestGameState(game, "GameUpdated");
+                // await UpdateGuestGameState(game, "GameUpdated");
             }
         }
 
