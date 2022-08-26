@@ -140,8 +140,6 @@ namespace LanesBackend.Hubs
 
         private async Task UpdateGuestGameState(Game game, string messageType)
         {
-            
-
             var guestGameState = new PlayerGameState(
                 game.HostPlayer.Deck.Cards.Count,
                 game.HostPlayer.Hand.Cards.Count,
