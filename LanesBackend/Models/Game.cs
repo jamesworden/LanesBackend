@@ -6,6 +6,8 @@ namespace LanesBackend.CacheModels
     {
         public bool isRunning = true;
 
+        public bool IsHostPlayersTurn = true;
+
         public string HostConnectionId { get; set; }
 
         public string GuestConnectionId { get; set; }
@@ -37,6 +39,29 @@ namespace LanesBackend.CacheModels
 
             HostPlayer = new Player(hostPlayerDeck, "Host Player");
             GuestPlayer = new Player(guestPlayerDeck, "Guest Player");
+        }
+
+        /// <returns>
+        /// True if the move was valid and the game was updated;
+        /// False if the move was invalid.
+        /// </returns>
+        public bool AttemptMove(Move move, string playerConnectionId)
+        {
+            var playerIsHost = HostConnectionId == playerConnectionId;
+            var isPlayersTurn = playerIsHost && IsHostPlayersTurn || !playerIsHost && !IsHostPlayersTurn;
+
+            if (!isPlayersTurn)
+            {
+                return false;
+            }
+
+            // TODO: return if move is invalid.
+
+            Lanes[move.TargetLaneIndex].Rows[move.TargetRowIndex].Push(move.Card);
+
+            IsHostPlayersTurn = !IsHostPlayersTurn;
+
+            return true;
         }
     }
 }

@@ -78,6 +78,33 @@ namespace LanesBackend.Hubs
             }
         }
 
+        public async Task MakeMove(string stringifiedMove)
+        {
+            var move = JsonConvert.DeserializeObject<Move>(stringifiedMove);
+
+            if (move == null)
+            {
+                return;
+            }
+
+            var connectionId = Context.ConnectionId;
+            var game = Games.Where(game => game.HostConnectionId == connectionId || game.GuestConnectionId == connectionId).FirstOrDefault();
+
+            if (game == null)
+            {
+                return;
+            }
+
+            var moveWasValid = game.AttemptMove(move, connectionId);
+            
+            if (!moveWasValid)
+            {
+                return;
+            }
+
+            await UpdatePlayerGameStates(game, "GameUpdated");
+        }
+
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
