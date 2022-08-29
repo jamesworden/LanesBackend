@@ -18,7 +18,17 @@ namespace LanesBackend.Models
 
         public void RemoveCard(Card card)
         {
-            Cards.Remove(card);
+            for (int i = 0; i < Cards.Count; i++)
+            {
+                var cardInHand = Cards[i];
+                bool sameSuit = card.Suit.Equals(cardInHand.Suit);
+                bool sameKind = card.Kind.Equals(cardInHand.Kind);
+
+                if (sameSuit && sameKind)
+                {
+                    Cards.RemoveAt(i);
+                }
+            }
         }
     }
 }

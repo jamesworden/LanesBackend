@@ -102,6 +102,24 @@ namespace LanesBackend.Hubs
                 return;
             }
 
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            var playersDeckHasCards = player.Deck.Cards.Any();
+
+            if (playersDeckHasCards)
+            {
+                var cardFromDeck = player.Deck.DrawCard();
+
+                if (cardFromDeck != null)
+                {
+                    player.Hand.AddCard(cardFromDeck);
+                }
+            }
+
+
+
+            player.Hand.RemoveCard(move.Card);
+
             await UpdatePlayerGameStates(game, "GameUpdated");
         }
 
