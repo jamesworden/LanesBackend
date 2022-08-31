@@ -116,8 +116,6 @@ namespace LanesBackend.Hubs
                 }
             }
 
-
-
             player.Hand.RemoveCard(move.Card);
 
             await UpdatePlayerGameStates(game, "GameUpdated");
@@ -175,7 +173,8 @@ namespace LanesBackend.Hubs
                 game.HostPlayer.Deck.Cards.Count,
                 game.HostPlayer.Hand,
                 game.Lanes,
-                true
+                true,
+                game.IsHostPlayersTurn
                 );
 
             var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
@@ -191,7 +190,8 @@ namespace LanesBackend.Hubs
                 game.GuestPlayer.Deck.Cards.Count,
                 game.GuestPlayer.Hand,
                 game.Lanes,
-                false
+                false,
+                game.IsHostPlayersTurn
                 );
 
             var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());

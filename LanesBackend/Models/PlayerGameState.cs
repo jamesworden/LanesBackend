@@ -14,13 +14,16 @@
 
         public bool IsHost { get; set; }
 
+        public bool IsHostPlayersTurn { get; set; }
+
         public PlayerGameState(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
             int numCardsInPlayersDeck,
             Hand hand,
             Lane[] lanes,
-            bool isHost)
+            bool isHost,
+            bool isHostPlayersTurn)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -28,6 +31,7 @@
             Hand = hand;
             Lanes = lanes;
             IsHost = isHost;
+            IsHostPlayersTurn = isHostPlayersTurn;
         }
     }
 }

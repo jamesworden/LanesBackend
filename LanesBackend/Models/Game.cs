@@ -49,7 +49,7 @@ namespace LanesBackend.CacheModels
         {
             var playerIsHost = HostConnectionId == playerConnectionId;
             var isPlayersTurn = playerIsHost && IsHostPlayersTurn || !playerIsHost && !IsHostPlayersTurn;
-
+             
             if (!isPlayersTurn)
             {
                 return false;
@@ -57,7 +57,7 @@ namespace LanesBackend.CacheModels
 
             // TODO: return if move is invalid.
 
-            Lanes[move.TargetLaneIndex].Rows[move.TargetRowIndex].Push(move.Card);
+            Lanes[move.TargetLaneIndex].Rows[move.TargetRowIndex].Add(move.Card);
 
             IsHostPlayersTurn = !IsHostPlayersTurn;
 
