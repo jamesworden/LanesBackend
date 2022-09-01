@@ -57,7 +57,12 @@ namespace LanesBackend.CacheModels
 
             // TODO: return if move is invalid.
 
-            Lanes[move.TargetLaneIndex].Rows[move.TargetRowIndex].Add(move.Card);
+            var targetLane = Lanes[move.TargetLaneIndex];
+            var targetRow = targetLane.Rows[move.TargetRowIndex];
+
+            move.Card.PlayedBy = playerIsHost ? PlayedBy.Host : PlayedBy.Guest;
+            targetRow.Add(move.Card);
+            targetLane.LastCardPlayed = move.Card;
 
             IsHostPlayersTurn = !IsHostPlayersTurn;
 

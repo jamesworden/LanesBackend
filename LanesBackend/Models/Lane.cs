@@ -6,6 +6,8 @@
 
         public readonly LaneAdvantage LaneAdvantage = LaneAdvantage.None;
 
+        public Card? LastCardPlayed;
+
         public Lane()
         { 
             for (int i = 0; i < Rows.Length; i++)
