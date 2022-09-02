@@ -2,9 +2,9 @@
 {
     public class Lane
     {
-        public readonly List<Card>[] Rows = new List<Card>[7];
+        public List<Card>[] Rows = new List<Card>[7];
 
-        public readonly LaneAdvantage LaneAdvantage = LaneAdvantage.None;
+        public LaneAdvantage LaneAdvantage = LaneAdvantage.None;
 
         public Card? LastCardPlayed;
 
