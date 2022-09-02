@@ -122,25 +122,25 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            //// Can't reinforce with different suit card.
-            //if (
-            //  targetCard &&
-            //  playerPlayedTargetCard &&
-            //  !CardsHaveMatchingSuit(targetCard, Card)
-            //)
-            //{
-            //    return false;
-            //}
+            // Can't reinforce with different suit card.
+            if (
+              targetCard is not null &&
+              playerPlayedTargetCard &&
+              !CardsHaveMatchingSuit(targetCard, card)
+            )
+            {
+                return false;
+            }
 
-            //// Can't reinforce with a lesser card.
-            //if (
-            //  targetCard &&
-            //  playerPlayedTargetCard &&
-            //  !CardTrumpsCard(Card, targetCard)
-            //)
-            //{
-            //    return false;
-            //}
+            // Can't reinforce with a lesser card.
+            if (
+              targetCard is not null &&
+              playerPlayedTargetCard &&
+              !CardTrumpsCard(card, targetCard)
+            )
+            {
+                return false;
+            }
 
             return true;
         }
@@ -181,6 +181,27 @@ namespace LanesBackend.Utils
             var kindsMatch = card1.Kind == card2.Kind;
 
             return suitsMatch || kindsMatch;
+        }
+
+        private static bool CardsHaveMatchingSuit(Card card1, Card card2)
+        {
+            return card1.Suit == card2.Suit;
+        }
+
+        private static bool CardTrumpsCard(Card attackingCard, Card defendingCard)
+        {
+            var hasSameSuit = attackingCard.Suit == defendingCard.Suit;
+            var hasSameKind = attackingCard.Kind == defendingCard.Kind;
+
+            if (!hasSameSuit)
+            {
+                return hasSameKind;
+            }
+
+            var attackingKindValue = (int)attackingCard.Kind;
+            var defendingKindValue = (int)defendingCard.Kind;
+
+            return attackingKindValue > defendingKindValue;
         }
     }
 }

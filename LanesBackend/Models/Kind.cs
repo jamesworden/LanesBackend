@@ -1,8 +1,8 @@
 ﻿namespace LanesBackend.Models
 {
+    // The order of the enum values determine which cards can trump other cards.
     public enum Kind
     {
-        Ace,
         Two,
         Three,
         Four,
@@ -15,5 +15,6 @@
         Jack,
         Queen,
         King,
+        Ace
     }
 }
