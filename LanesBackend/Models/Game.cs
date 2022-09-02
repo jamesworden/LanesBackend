@@ -56,13 +56,6 @@ namespace LanesBackend.CacheModels
                 return false;
             }
 
-            var isPairMove = move.PlaceCardAttempts.Count > 1;
-
-            if (!isPairMove)
-            {
-                IsHostPlayersTurn = !IsHostPlayersTurn;
-            }
-
             // Move should contain place card attempts only for one specific lane.
             var targetLane = Lanes[move.PlaceCardAttempts[0].TargetLaneIndex];
 
@@ -71,6 +64,13 @@ namespace LanesBackend.CacheModels
             if (!moveIsValid)
             {
                 return false;
+            }
+
+            var isPairMove = move.PlaceCardAttempts.Count > 1;
+
+            if (!isPairMove)
+            {
+                IsHostPlayersTurn = !IsHostPlayersTurn;
             }
 
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
