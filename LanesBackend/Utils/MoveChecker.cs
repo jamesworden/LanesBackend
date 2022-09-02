@@ -7,25 +7,8 @@ namespace LanesBackend.Utils
     {
         public static bool IsMoveValid(Move move, Lane lane, bool playerIsHost)
         {
-            var serializedMove = JsonConvert.SerializeObject(move);
-            var clonedMove = JsonConvert.DeserializeObject<Move>(serializedMove);
-
-            var serializedLane = JsonConvert.SerializeObject(lane);
-            var clonedLane = JsonConvert.DeserializeObject<Lane>(serializedLane);
-
-            if (clonedMove == null || clonedLane == null)
-            {
-                throw new Exception("Error cloning move and lane in IsMoveValid()");
-            }
-
-            // Serialize rows seperately because it doesn't work when serializing and deserializing the lane itself.
-            var serializedRows = JsonConvert.SerializeObject(lane.Rows);
-            var clonedRows = JsonConvert.DeserializeObject<List<Card>[]>(serializedRows);
-            if (clonedRows == null)
-            {
-                throw new Exception("Error cloning rows in IsMoveValid()");
-            }
-            clonedLane.Rows = clonedRows;
+            var clonedMove = CloneMove(move);
+            var clonedLane = CloneLane(lane);
 
             if (!playerIsHost)
             {
@@ -34,6 +17,27 @@ namespace LanesBackend.Utils
             }
 
             return IsMoveValidFromHostPov(clonedMove, clonedLane);
+        }
+
+        private static Lane CloneLane(Lane lane)
+        {
+            var serializedLane = JsonConvert.SerializeObject(lane);
+            var clonedLane = JsonConvert.DeserializeObject<Lane>(serializedLane);
+            if (clonedLane == null) throw new Exception("Error cloning lane in CloneLane()");
+            // Serialize rows seperately because it doesn't work when serializing and deserializing the lane itself.
+            var serializedRows = JsonConvert.SerializeObject(lane.Rows);
+            var clonedRows = JsonConvert.DeserializeObject<List<Card>[]>(serializedRows);
+            if (clonedRows == null) throw new Exception("Error cloning rows in CloneLane()");
+            clonedLane.Rows = clonedRows;
+            return clonedLane;
+        }
+
+        private static Move CloneMove(Move move)
+        {
+            var serializedMove = JsonConvert.SerializeObject(move);
+            var clonedMove = JsonConvert.DeserializeObject<Move>(serializedMove);
+            if (clonedMove == null) throw new Exception("Error cloning move in CloneMove()");
+            return clonedMove;
         }
 
         private static void ConvertMoveToHostPov(Move move)
@@ -74,8 +78,7 @@ namespace LanesBackend.Utils
             var targetCard = GetTopCardOfTargetRow(lane, placeCardAttempt.TargetRowIndex);
             var playerPlayedTargetCard = targetCard?.PlayedBy == PlayedBy.Host;
 
-            Console.WriteLine(JsonConvert.SerializeObject(targetCard));
-            Console.WriteLine(playerPlayedTargetCard);
+            // TODO
 
             return true;
         }
