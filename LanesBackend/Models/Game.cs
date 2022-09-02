@@ -1,6 +1,5 @@
 ﻿using LanesBackend.Models;
 using LanesBackend.Utils;
-using Newtonsoft.Json;
 
 namespace LanesBackend.CacheModels
 {
