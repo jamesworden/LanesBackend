@@ -74,11 +74,73 @@ namespace LanesBackend.Utils
 
         private static bool IsMoveValidFromHostPov(Move move, Lane lane)
         {
+            var lastCardPlayed = lane.LastCardPlayed;
+            var laneAdvantage = lane.LaneAdvantage;
             var placeCardAttempt = move.PlaceCardAttempts[0]; // For now, assume all moves are one place card attempt.
-            var targetCard = GetTopCardOfTargetRow(lane, placeCardAttempt.TargetRowIndex);
+            var targetRowIndex = placeCardAttempt.TargetRowIndex;
+            var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
+            var card = placeCardAttempt.Card;
+            
+            var targetCard = GetTopCardOfTargetRow(lane, targetLaneIndex);
             var playerPlayedTargetCard = targetCard?.PlayedBy == PlayedBy.Host;
 
-            // TODO
+            var moveIsPlayerSide = targetRowIndex < 3;
+            var moveIsMiddle = targetRowIndex == 3;
+            var moveIsOpponentSide = targetRowIndex > 3;
+
+            var playerHasAdvantage = laneAdvantage == LaneAdvantage.Host;
+            var opponentHasAdvantage = laneAdvantage == LaneAdvantage.Guest;
+            var noAdvantage = laneAdvantage == LaneAdvantage.None;
+
+            if (moveIsMiddle)
+            {
+                return false;
+            }
+
+            if (moveIsPlayerSide && playerHasAdvantage)
+            {
+                return true;
+            }
+
+            if (moveIsOpponentSide && opponentHasAdvantage)
+            {
+                return false;
+            }
+
+            if (moveIsOpponentSide && noAdvantage)
+            {
+                return false;
+            }
+
+            if (moveIsPlayerSide && !AllPreviousRowsOccupied(lane, targetRowIndex))
+            {
+                return false;
+            }
+
+            if (lastCardPlayed is not null && !CardsHaveMatchingSuitOrKind(card, lastCardPlayed))
+            {
+                return false;
+            }
+
+            //// Can't reinforce with different suit card.
+            //if (
+            //  targetCard &&
+            //  playerPlayedTargetCard &&
+            //  !CardsHaveMatchingSuit(targetCard, Card)
+            //)
+            //{
+            //    return false;
+            //}
+
+            //// Can't reinforce with a lesser card.
+            //if (
+            //  targetCard &&
+            //  playerPlayedTargetCard &&
+            //  !CardTrumpsCard(Card, targetCard)
+            //)
+            //{
+            //    return false;
+            //}
 
             return true;
         }
@@ -95,6 +157,30 @@ namespace LanesBackend.Utils
             }
 
             return null;
+        }
+
+        private static bool AllPreviousRowsOccupied(Lane lane, int targetRowIndex)
+        {
+            for (int i = 0; i < targetRowIndex; i++)
+            {
+                var previousLane = lane.Rows[i];
+                var previousLaneNotOccupied = previousLane.Count == 0;
+
+                if (previousLaneNotOccupied)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CardsHaveMatchingSuitOrKind(Card card1, Card card2)
+        {
+            var suitsMatch = card1.Suit == card2.Suit;
+            var kindsMatch = card1.Kind == card2.Kind;
+
+            return suitsMatch || kindsMatch;
         }
     }
 }
