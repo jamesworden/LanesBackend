@@ -2,8 +2,8 @@
 {
     public enum LaneAdvantage
     {
-        Player,
-        Opponent,
+        Host,
+        Guest,
         None
     }
 }
