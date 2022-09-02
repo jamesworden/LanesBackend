@@ -55,16 +55,25 @@ namespace LanesBackend.CacheModels
                 return false;
             }
 
-            // TODO: return if move is invalid.
+            var isPairMove = move.PlaceCardAttempts.Count > 1;
 
-            var targetLane = Lanes[move.TargetLaneIndex];
-            var targetRow = targetLane.Rows[move.TargetRowIndex];
+            if (isPairMove)
+            {
+                // TODO: Check if each one is valid and that they match up
+            }
+            else {
+                // TODO: Check if move is valid
+                IsHostPlayersTurn = !IsHostPlayersTurn;
+            }
 
-            move.Card.PlayedBy = playerIsHost ? PlayedBy.Host : PlayedBy.Guest;
-            targetRow.Add(move.Card);
-            targetLane.LastCardPlayed = move.Card;
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
+            {
+                placeCardAttempt.Card.PlayedBy = playerIsHost ? PlayedBy.Host : PlayedBy.Guest;
 
-            IsHostPlayersTurn = !IsHostPlayersTurn;
+                var targetLane = Lanes[placeCardAttempt.TargetLaneIndex];
+                var targetRow = targetLane.Rows[placeCardAttempt.TargetRowIndex];
+                targetRow.Add(placeCardAttempt.Card);
+            }
 
             return true;
         }

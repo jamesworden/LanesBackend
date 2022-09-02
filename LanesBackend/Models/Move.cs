@@ -2,17 +2,11 @@
 {
     public class Move
     {
-        public Card Card { get; set; }
+        public List<PlaceCardAttempt> PlaceCardAttempts { get; set; }
 
-        public int TargetLaneIndex { get; set; }
-
-        public int TargetRowIndex { get; set; }
-
-        public Move(Card card, int targetLaneIndex, int targetRowIndex)
+        public Move(List<PlaceCardAttempt> placeCardAttempts)
         {
-            Card = card;
-            TargetLaneIndex = targetLaneIndex;
-            TargetRowIndex = targetRowIndex;
+            PlaceCardAttempts = placeCardAttempts;
         }
     }
 }

@@ -116,7 +116,7 @@ namespace LanesBackend.Hubs
                 }
             }
 
-            player.Hand.RemoveCard(move.Card);
+            player.Hand.RemoveCard(move.PlaceCardAttempts[0].Card); // For now assume all moves are one place card attempt.
 
             await UpdatePlayerGameStates(game, "GameUpdated");
         }
