@@ -73,6 +73,8 @@ namespace LanesBackend.CacheModels
                 var targetLane = Lanes[placeCardAttempt.TargetLaneIndex];
                 var targetRow = targetLane.Rows[placeCardAttempt.TargetRowIndex];
                 targetRow.Add(placeCardAttempt.Card);
+
+                targetLane.LastCardPlayed = placeCardAttempt.Card;
             }
 
             return true;
