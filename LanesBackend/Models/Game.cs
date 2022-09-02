@@ -1,4 +1,5 @@
 ﻿using LanesBackend.Models;
+using LanesBackend.Utils;
 using Newtonsoft.Json;
 
 namespace LanesBackend.CacheModels
@@ -66,7 +67,9 @@ namespace LanesBackend.CacheModels
             // Move should contain place card attempts only for one specific lane.
             var targetLane = Lanes[move.PlaceCardAttempts[0].TargetLaneIndex];
 
-            if (!IsMoveValid(move, targetLane, playerIsHost))
+            var moveIsValid = MoveChecker.IsMoveValid(move, targetLane, playerIsHost);
+
+            if (!moveIsValid)
             {
                 return false;
             }
@@ -81,63 +84,6 @@ namespace LanesBackend.CacheModels
                 targetLane.LastCardPlayed = placeCardAttempt.Card;
             }
 
-            return true;
-        }
-
-        public bool IsMoveValid(Move move, Lane lane, bool playerIsHost)
-        {
-            var clonedMove = JsonConvert.DeserializeObject<Move>(JsonConvert.SerializeObject(move));
-            var clonedLane = JsonConvert.DeserializeObject<Lane>(JsonConvert.SerializeObject(lane));
-
-            if (clonedMove == null || clonedLane == null)
-            {
-                throw new Exception("Error cloning move and lane in IsMoveValid()");
-            }
-
-            if (!playerIsHost)
-            {
-                ConvertMoveToHostPov(clonedMove);
-                ConvertLaneToHostPov(clonedLane);
-            }
-
-            return IsMoveValidFromHostPov(clonedMove, clonedLane);
-        }
-
-        public void ConvertMoveToHostPov(Move move)
-        {
-            foreach (var placeCardAttempt in move.PlaceCardAttempts)
-            {
-                placeCardAttempt.TargetLaneIndex = 4 - placeCardAttempt.TargetLaneIndex;
-                placeCardAttempt.TargetRowIndex = 6 - placeCardAttempt.TargetRowIndex;
-            }
-        }
-
-        public void ConvertLaneToHostPov(Lane lane)
-        {
-            lane.Rows.Reverse();
-
-            foreach(var row in lane.Rows)
-            {
-                foreach(var card in row)
-                {
-                    SwitchHostAndGuestPlayedBy(card);
-                }
-            }
-
-            if (lane.LastCardPlayed != null)
-            {
-                SwitchHostAndGuestPlayedBy(lane.LastCardPlayed);
-            }
-        }
-
-        public void SwitchHostAndGuestPlayedBy(Card card)
-        {
-            card.PlayedBy = card.PlayedBy == PlayedBy.Host ? PlayedBy.Guest : PlayedBy.Host;
-        }
-
-        private bool IsMoveValidFromHostPov(Move move, Lane lane)
-        {
-            // TODO
             return true;
         }
     }
