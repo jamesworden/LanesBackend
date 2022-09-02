@@ -95,7 +95,7 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var moveWasValid = game.AttemptMove(move, connectionId);
+            var moveWasValid = game.MakeMoveIfValid(move, connectionId);
             
             if (!moveWasValid)
             {

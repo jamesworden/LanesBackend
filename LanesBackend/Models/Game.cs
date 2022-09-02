@@ -46,7 +46,7 @@ namespace LanesBackend.CacheModels
         /// True if the move was valid and the game was updated;
         /// False if the move was invalid.
         /// </returns>
-        public bool AttemptMove(Move move, string playerConnectionId)
+        public bool MakeMoveIfValid(Move move, string playerConnectionId)
         {
             var playerIsHost = HostConnectionId == playerConnectionId;
             var isPlayersTurn = playerIsHost && IsHostPlayersTurn || !playerIsHost && !IsHostPlayersTurn;
@@ -61,11 +61,16 @@ namespace LanesBackend.CacheModels
 
             var moveIsValid = MoveChecker.IsMoveValid(move, targetLane, playerIsHost);
 
-            if (!moveIsValid)
+            if (moveIsValid)
             {
-                return false;
+                MakeMove(move, playerIsHost, targetLane);
             }
 
+            return moveIsValid;
+        }
+
+        private void MakeMove(Move move, bool playerIsHost, Lane targetLane)
+        {
             var isPairMove = move.PlaceCardAttempts.Count > 1;
 
             if (!isPairMove)
@@ -82,8 +87,6 @@ namespace LanesBackend.CacheModels
 
                 targetLane.LastCardPlayed = placeCardAttempt.Card;
             }
-
-            return true;
         }
     }
 }
