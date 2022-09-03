@@ -106,9 +106,8 @@ namespace LanesBackend.CacheModels
                     cardsFromLane.Add(placeCardAttempt.Card);
                     lane.Rows[3].AddRange(cardsFromLane);
                 }
-
-                //      If there is an opponent advantage - gather top three cards from player side
-                //      Comment with don't worry about playerside advantage because you can't move on playerside if there's a player advantage.
+                
+                
             }
 
             var cardIsLastOnGuestSide = placeCardAttempt.TargetRowIndex == 4;
