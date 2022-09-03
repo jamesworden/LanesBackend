@@ -86,6 +86,40 @@ namespace LanesBackend.CacheModels
                 targetRow.Add(placeCardAttempt.Card);
 
                 targetLane.LastCardPlayed = placeCardAttempt.Card;
+
+                // CaptureMiddleIfAppropriate(placeCardAttempt, targetLane, playerIsHost);
+            }
+        }
+
+        private void CaptureMiddleIfAppropriate(PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsHost)
+        {
+            var cardIsLastOnHostSide = placeCardAttempt.TargetRowIndex == 2;
+            var hostShouldCaptureMiddle = playerIsHost && cardIsLastOnHostSide;
+
+            if (hostShouldCaptureMiddle)
+            {
+                if (lane.LaneAdvantage == LaneAdvantage.None)
+                {
+                    var cardsFromLane = lane.GrabAllCards();
+                    // Put last placed card at top of pile
+                    cardsFromLane.Remove(placeCardAttempt.Card);
+                    cardsFromLane.Add(placeCardAttempt.Card);
+                    lane.Rows[3].AddRange(cardsFromLane);
+                }
+
+                //      If there is an opponent advantage - gather top three cards from player side
+                //      Comment with don't worry about playerside advantage because you can't move on playerside if there's a player advantage.
+            }
+
+            var cardIsLastOnGuestSide = placeCardAttempt.TargetRowIndex == 4;
+            var guestShouldCaptureMiddle = !playerIsHost && cardIsLastOnGuestSide;
+
+            if (guestShouldCaptureMiddle)
+            {
+                //      If no advantage - gather all cards from lane into new list - put that list of cards in the middle with the top card as the card that is played
+                //      If there is an opponent advantage - gather top three cards from player side
+                //      Comment with don't worry about playerside advantage because you can't move on playerside if there's a player advantage.
+                return;
             }
         }
     }

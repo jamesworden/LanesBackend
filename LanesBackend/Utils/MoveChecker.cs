@@ -51,7 +51,7 @@ namespace LanesBackend.Utils
 
         private static void ConvertLaneToHostPov(Lane lane)
         {
-            lane.Rows.Reverse();
+            lane.Rows = lane.Rows.Reverse().ToArray();
 
             foreach (var row in lane.Rows)
             {
@@ -78,10 +78,9 @@ namespace LanesBackend.Utils
             var laneAdvantage = lane.LaneAdvantage;
             var placeCardAttempt = move.PlaceCardAttempts[0]; // For now, assume all moves are one place card attempt.
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
-            var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var card = placeCardAttempt.Card;
             
-            var targetCard = GetTopCardOfTargetRow(lane, targetLaneIndex);
+            var targetCard = GetTopCardOfTargetRow(lane, targetRowIndex);
             var playerPlayedTargetCard = targetCard?.PlayedBy == PlayedBy.Host;
 
             var moveIsPlayerSide = targetRowIndex < 3;
@@ -94,31 +93,37 @@ namespace LanesBackend.Utils
 
             if (moveIsMiddle)
             {
+                Console.WriteLine("Client broke the rules: Tried to move in middle row.");
                 return false;
             }
 
             if (moveIsPlayerSide && playerHasAdvantage)
             {
+                Console.WriteLine("Client broke the rules: Tried to move on their own side when they have the advantage.");
                 return true;
             }
 
             if (moveIsOpponentSide && opponentHasAdvantage)
             {
+                Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when they have their opponent has the advantage.");
                 return false;
             }
 
             if (moveIsOpponentSide && noAdvantage)
             {
+                Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when there is no advantage.");
                 return false;
             }
 
             if (moveIsPlayerSide && !AllPreviousRowsOccupied(lane, targetRowIndex))
             {
+                Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
                 return false;
             }
 
             if (lastCardPlayed is not null && !CardsHaveMatchingSuitOrKind(card, lastCardPlayed))
             {
+                Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played.");
                 return false;
             }
 
@@ -129,6 +134,7 @@ namespace LanesBackend.Utils
               !CardsHaveMatchingSuit(targetCard, card)
             )
             {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a different suit.");
                 return false;
             }
 
@@ -139,6 +145,7 @@ namespace LanesBackend.Utils
               !CardTrumpsCard(card, targetCard)
             )
             {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
                 return false;
             }
 
