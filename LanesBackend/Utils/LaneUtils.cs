@@ -19,7 +19,23 @@ namespace LanesBackend.Utils
             {
                 SwitchLanePov(lane);
             }
+        }
 
+        public static void ModifyMoveFromHostPov(Move move, bool playerIsHost, Action<Move> hostPovMove)
+        {
+            var playerIsGuest = !playerIsHost;
+
+            if (playerIsGuest)
+            {
+                ConvertMoveToHostPov(move);
+            }
+
+            hostPovMove(move);
+
+            if (playerIsGuest)
+            {
+                ConvertMoveToGuestPov(move);
+            }
         }
 
         private static void SwitchLanePov(Lane lane)
@@ -43,6 +59,24 @@ namespace LanesBackend.Utils
         private static void SwitchHostAndGuestPlayedBy(Card card)
         {
             card.PlayedBy = card.PlayedBy == PlayedBy.Host ? PlayedBy.Guest : PlayedBy.Host;
+        }
+
+        private static void ConvertMoveToHostPov(Move move)
+        {
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
+            {
+                placeCardAttempt.TargetLaneIndex = 4 - placeCardAttempt.TargetLaneIndex;
+                placeCardAttempt.TargetRowIndex = 6 - placeCardAttempt.TargetRowIndex;
+            }
+        }
+
+        private static void ConvertMoveToGuestPov(Move move)
+        {
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
+            {
+                placeCardAttempt.TargetLaneIndex = Math.Abs(placeCardAttempt.TargetLaneIndex - 4);
+                placeCardAttempt.TargetRowIndex =  Math.Abs(placeCardAttempt.TargetRowIndex - 6);
+            }
         }
     }
 }
