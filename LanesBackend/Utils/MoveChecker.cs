@@ -1,5 +1,4 @@
 ﻿using LanesBackend.Models;
-using Newtonsoft.Json;
 
 namespace LanesBackend.Utils
 {
@@ -28,7 +27,7 @@ namespace LanesBackend.Utils
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
             var card = placeCardAttempt.Card;
             
-            var targetCard = GetTopCardOfTargetRow(lane, targetRowIndex);
+            var targetCard = LaneUtils.GetTopCardOfTargetRow(lane, targetRowIndex);
             var playerPlayedTargetCard = targetCard?.PlayedBy == PlayedBy.Host;
 
             var moveIsPlayerSide = targetRowIndex < 3;
@@ -63,13 +62,13 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            if (moveIsPlayerSide && !AllPreviousRowsOccupied(lane, targetRowIndex))
+            if (moveIsPlayerSide && !LaneUtils.AllPreviousRowsOccupied(lane, targetRowIndex))
             {
                 Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
                 return false;
             }
 
-            if (lastCardPlayed is not null && !CardsHaveMatchingSuitOrKind(card, lastCardPlayed))
+            if (lastCardPlayed is not null && !LaneUtils.CardsHaveMatchingSuitOrKind(card, lastCardPlayed))
             {
                 Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played.");
                 return false;
@@ -79,7 +78,7 @@ namespace LanesBackend.Utils
             if (
               targetCard is not null &&
               playerPlayedTargetCard &&
-              !CardsHaveMatchingSuit(targetCard, card)
+              !LaneUtils.CardsHaveMatchingSuit(targetCard, card)
             )
             {
                 Console.WriteLine("Client broke the rules: Tried to reinforce with a different suit.");
@@ -90,7 +89,7 @@ namespace LanesBackend.Utils
             if (
               targetCard is not null &&
               playerPlayedTargetCard &&
-              !CardTrumpsCard(card, targetCard)
+              !LaneUtils.CardTrumpsCard(card, targetCard)
             )
             {
                 Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
@@ -98,65 +97,6 @@ namespace LanesBackend.Utils
             }
 
             return true;
-        }
-
-        private static Card? GetTopCardOfTargetRow(Lane lane, int targetRowIndex)
-        {
-            var targetRow = lane.Rows[targetRowIndex];
-            var targetRowHasCards = targetRow.Any();
-
-            if (targetRowHasCards)
-            {
-                var topCard = targetRow.First();
-                return topCard;
-            }
-
-            return null;
-        }
-
-        private static bool AllPreviousRowsOccupied(Lane lane, int targetRowIndex)
-        {
-            for (int i = 0; i < targetRowIndex; i++)
-            {
-                var previousLane = lane.Rows[i];
-                var previousLaneNotOccupied = previousLane.Count == 0;
-
-                if (previousLaneNotOccupied)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool CardsHaveMatchingSuitOrKind(Card card1, Card card2)
-        {
-            var suitsMatch = card1.Suit == card2.Suit;
-            var kindsMatch = card1.Kind == card2.Kind;
-
-            return suitsMatch || kindsMatch;
-        }
-
-        private static bool CardsHaveMatchingSuit(Card card1, Card card2)
-        {
-            return card1.Suit == card2.Suit;
-        }
-
-        private static bool CardTrumpsCard(Card attackingCard, Card defendingCard)
-        {
-            var hasSameSuit = attackingCard.Suit == defendingCard.Suit;
-            var hasSameKind = attackingCard.Kind == defendingCard.Kind;
-
-            if (!hasSameSuit)
-            {
-                return hasSameKind;
-            }
-
-            var attackingKindValue = (int)attackingCard.Kind;
-            var defendingKindValue = (int)defendingCard.Kind;
-
-            return attackingKindValue > defendingKindValue;
         }
     }
 }

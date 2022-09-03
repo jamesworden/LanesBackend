@@ -93,40 +93,72 @@ namespace LanesBackend.CacheModels
 
         private void CaptureMiddleIfAppropriate(PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsHost)
         {
-            var cardIsLastOnHostSide = placeCardAttempt.TargetRowIndex == 2;
-            var hostShouldCaptureMiddle = playerIsHost && cardIsLastOnHostSide;
-
-            if (hostShouldCaptureMiddle)
+            LaneUtils.ModifyLaneFromHostPov(lane, playerIsHost, (hostPovLane) =>
             {
-                if (lane.LaneAdvantage == LaneAdvantage.None)
+                LaneUtils.ModifyPlaceCardAttemptFromHostPov(placeCardAttempt, playerIsHost, (placeCardAttemptHostPov) =>
                 {
-                    var cardsFromLane = lane.GrabAllCards();
-                    // Put last placed card at top of pile
-                    cardsFromLane.Remove(placeCardAttempt.Card);
-                    cardsFromLane.Add(placeCardAttempt.Card);
-                    lane.Rows[3].AddRange(cardsFromLane);
+                    var cardIsLastOnHostSide = placeCardAttempt.TargetRowIndex == 2;
+
+                    if (!cardIsLastOnHostSide)
+                    {
+                        return;
+                    }
+
+                    if (lane.LaneAdvantage == LaneAdvantage.None)
+                    {
+                        CaptureNoAdvantageLane(lane, placeCardAttempt);
+                        return;
+                    }
+
+                    if (lane.LaneAdvantage == LaneAdvantage.Guest)
+                    {
+                        CaptureOpponentAdvantageLane(lane, playerIsHost);
+                    }
+                });
+            });
+        }
+
+        private void CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt)
+        {
+            var cardsFromLane = lane.GrabAllCards();
+            // Put last placed card at top of pile
+            cardsFromLane.Remove(placeCardAttempt.Card);
+            cardsFromLane.Add(placeCardAttempt.Card);
+            var middleRow = lane.Rows[3];
+            middleRow.AddRange(cardsFromLane);
+
+            lane.LaneAdvantage = LaneAdvantage.Host;
+        }
+
+        private void CaptureOpponentAdvantageLane(Lane lane, bool playerIsHost)
+        {
+            List<Card> topCardsOfFirstThreeRows = new();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var card = lane.Rows[i].TakeLast(1).FirstOrDefault();
+
+                if (card is not null)
+                {
+                    topCardsOfFirstThreeRows.Add(card);
                 }
-                
-                
             }
 
-            var cardIsLastOnGuestSide = placeCardAttempt.TargetRowIndex == 4;
-            var guestShouldCaptureMiddle = !playerIsHost && cardIsLastOnGuestSide;
+            var remainingCardsInLane = lane.GrabAllCards();
 
-            if (guestShouldCaptureMiddle)
-            {
-                if (lane.LaneAdvantage == LaneAdvantage.None)
-                {
-                    var cardsFromLane = lane.GrabAllCards();
-                    // Put last placed card at top of pile
-                    cardsFromLane.Remove(placeCardAttempt.Card);
-                    cardsFromLane.Add(placeCardAttempt.Card);
-                    lane.Rows[3].AddRange(cardsFromLane);
-                }
-                //      If there is an opponent advantage - gather top three cards from player side
-                //      Comment with don't worry about playerside advantage because you can't move on playerside if there's a player advantage.
-                return;
-            }
+            var middleRow = lane.Rows[3];
+            middleRow.AddRange(topCardsOfFirstThreeRows);
+
+            // This updates the Game State without any transformations with the modify functions so it needs
+            // to know exactly whose deck to add cards to
+            var player = playerIsHost ? HostPlayer : GuestPlayer;
+
+            player.Deck.Cards.AddRange(remainingCardsInLane);
+            player.Deck.Shuffle();
+
+            // This lane advantage goes to the current player; if guest, it will be transformed
+            // to guest in the modify function
+            lane.LaneAdvantage = LaneAdvantage.Host;
         }
     }
 }

@@ -38,7 +38,24 @@ namespace LanesBackend.Utils
             }
         }
 
-        private static void SwitchLanePov(Lane lane)
+        public static void ModifyPlaceCardAttemptFromHostPov(PlaceCardAttempt placeCardAttempt, bool playerIsHost, Action<PlaceCardAttempt> placeCardAttemptHostPov)
+        {
+            var playerIsGuest = !playerIsHost;
+
+            if (playerIsGuest)
+            {
+                ConvertPlaceCardAttemptToHostPov(placeCardAttempt);
+            }
+
+            placeCardAttemptHostPov(placeCardAttempt);
+
+            if (playerIsGuest)
+            {
+                ConvertPlaceCardAttemptToGuestPov(placeCardAttempt);
+            }
+        }
+
+        public static void SwitchLanePov(Lane lane)
         {
             lane.Rows = lane.Rows.Reverse().ToArray();
 
@@ -54,28 +71,107 @@ namespace LanesBackend.Utils
             {
                 SwitchHostAndGuestPlayedBy(lane.LastCardPlayed);
             }
+
+            SwitchLaneAdvantage(lane);
         }
 
-        private static void SwitchHostAndGuestPlayedBy(Card card)
+        public static void SwitchHostAndGuestPlayedBy(Card card)
         {
             card.PlayedBy = card.PlayedBy == PlayedBy.Host ? PlayedBy.Guest : PlayedBy.Host;
         }
 
-        private static void ConvertMoveToHostPov(Move move)
+        public static void ConvertMoveToHostPov(Move move)
         {
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
-                placeCardAttempt.TargetLaneIndex = 4 - placeCardAttempt.TargetLaneIndex;
-                placeCardAttempt.TargetRowIndex = 6 - placeCardAttempt.TargetRowIndex;
+                ConvertPlaceCardAttemptToHostPov(placeCardAttempt);
             }
         }
 
-        private static void ConvertMoveToGuestPov(Move move)
+        public static void ConvertPlaceCardAttemptToHostPov(PlaceCardAttempt placeCardAttempt)
+        {
+            placeCardAttempt.TargetLaneIndex = 4 - placeCardAttempt.TargetLaneIndex;
+            placeCardAttempt.TargetRowIndex = 6 - placeCardAttempt.TargetRowIndex;
+        }
+
+        public static void ConvertMoveToGuestPov(Move move)
         {
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
-                placeCardAttempt.TargetLaneIndex = Math.Abs(placeCardAttempt.TargetLaneIndex - 4);
-                placeCardAttempt.TargetRowIndex =  Math.Abs(placeCardAttempt.TargetRowIndex - 6);
+                ConvertPlaceCardAttemptToGuestPov(placeCardAttempt);
+            }
+        }
+
+        public static void ConvertPlaceCardAttemptToGuestPov(PlaceCardAttempt placeCardAttempt)
+        {
+            placeCardAttempt.TargetLaneIndex = Math.Abs(placeCardAttempt.TargetLaneIndex - 4);
+            placeCardAttempt.TargetRowIndex = Math.Abs(placeCardAttempt.TargetRowIndex - 6);
+        }
+
+        public static Card? GetTopCardOfTargetRow(Lane lane, int targetRowIndex)
+        {
+            var targetRow = lane.Rows[targetRowIndex];
+            var targetRowHasCards = targetRow.Any();
+
+            if (targetRowHasCards)
+            {
+                var topCard = targetRow.First();
+                return topCard;
+            }
+
+            return null;
+        }
+
+        public static bool AllPreviousRowsOccupied(Lane lane, int targetRowIndex)
+        {
+            for (int i = 0; i < targetRowIndex; i++)
+            {
+                var previousLane = lane.Rows[i];
+                var previousLaneNotOccupied = previousLane.Count == 0;
+
+                if (previousLaneNotOccupied)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool CardsHaveMatchingSuitOrKind(Card card1, Card card2)
+        {
+            var suitsMatch = card1.Suit == card2.Suit;
+            var kindsMatch = card1.Kind == card2.Kind;
+
+            return suitsMatch || kindsMatch;
+        }
+
+        public static bool CardsHaveMatchingSuit(Card card1, Card card2)
+        {
+            return card1.Suit == card2.Suit;
+        }
+
+        public static bool CardTrumpsCard(Card attackingCard, Card defendingCard)
+        {
+            var hasSameSuit = attackingCard.Suit == defendingCard.Suit;
+            var hasSameKind = attackingCard.Kind == defendingCard.Kind;
+
+            if (!hasSameSuit)
+            {
+                return hasSameKind;
+            }
+
+            var attackingKindValue = (int)attackingCard.Kind;
+            var defendingKindValue = (int)defendingCard.Kind;
+
+            return attackingKindValue > defendingKindValue;
+        }
+
+        public static void SwitchLaneAdvantage(Lane lane)
+        {
+            if (lane.LaneAdvantage != LaneAdvantage.None)
+            {
+                lane.LaneAdvantage = lane.LaneAdvantage == LaneAdvantage.Host ? LaneAdvantage.Guest : LaneAdvantage.Host;
             }
         }
     }
