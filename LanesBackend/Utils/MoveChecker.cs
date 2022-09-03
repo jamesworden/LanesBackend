@@ -8,15 +8,20 @@ namespace LanesBackend.Utils
         public static bool IsMoveValid(Move move, Lane lane, bool playerIsHost)
         {
             var clonedMove = CloneMove(move);
-            var clonedLane = CloneLane(lane);
 
             if (!playerIsHost)
             {
                 ConvertMoveToHostPov(clonedMove);
-                ConvertLaneToHostPov(clonedLane);
             }
 
-            return IsMoveValidFromHostPov(clonedMove, clonedLane);
+            var isMoveValid = false;
+
+            LaneUtils.ModifyLaneFromHostPov(lane, playerIsHost, (hostPovLane) =>
+            {
+                isMoveValid = IsMoveValidFromHostPov(clonedMove, hostPovLane);
+            });
+
+            return isMoveValid;
         }
 
         private static Lane CloneLane(Lane lane)
