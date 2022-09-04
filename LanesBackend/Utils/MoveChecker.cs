@@ -85,10 +85,9 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            // Can't reinforce with a lesser card.
+            // Can't reinforce or capture a lesser card.
             if (
               targetCard is not null &&
-              playerPlayedTargetCard &&
               !LaneUtils.CardTrumpsCard(card, targetCard)
             )
             {
