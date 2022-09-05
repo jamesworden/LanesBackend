@@ -89,18 +89,18 @@ namespace LanesBackend.CacheModels
 
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
-                var targetRow = targetLane.Rows[placeCardAttempt.TargetRowIndex];
-                placeCardAttempt.Card.PlayedBy = playerIsTruelyHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
-                targetRow.Add(placeCardAttempt.Card);
-
-                targetLane.LastCardPlayed = placeCardAttempt.Card;
-
                 var aceRuleTriggered = TriggerAceRuleIfAppropriate(placeCardAttempt, targetLane);
 
                 if (aceRuleTriggered)
                 {
                     return;
                 }
+
+                var targetRow = targetLane.Rows[placeCardAttempt.TargetRowIndex];
+                placeCardAttempt.Card.PlayedBy = playerIsTruelyHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+                targetRow.Add(placeCardAttempt.Card);
+
+                targetLane.LastCardPlayed = placeCardAttempt.Card;
 
                 var middleCaptured = CaptureMiddleIfAppropriate(placeCardAttempt, targetLane, playerIsTruelyHost);
 
@@ -188,9 +188,12 @@ namespace LanesBackend.CacheModels
             {
                 var topCard = LaneUtils.GetTopCardOfTargetRow(lane, i);
 
-                var playedByGuest = topCard.PlayedBy == PlayerOrNone.Guest;
+                if (topCard is null)
+                {
+                    continue;
+                }
 
-                if (topCard is not null && playedByGuest && topCard.Kind == Kind.Ace)
+                if (topCard.PlayedBy == PlayerOrNone.Guest && topCard.Kind == Kind.Ace)
                 {
                     opponentAceOnTopCardOfAnyRow = true;
                     break;
