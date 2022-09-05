@@ -107,8 +107,14 @@ namespace LanesBackend.Utils
         {
             foreach(var row in lane.Rows)
             {
-                var topCardIndex = row.Count() - 1;
-                var topCard = row[topCardIndex];
+                var rowHasCards = row.Count > 0;
+
+                if (!rowHasCards)
+                { 
+                    continue;
+                }
+
+                var topCard = row.LastOrDefault();
 
                 if (topCard is null)
                 {
