@@ -77,7 +77,10 @@ namespace LanesBackend.Utils
 
         public static void SwitchHostAndGuestPlayedBy(Card card)
         {
-            card.PlayedBy = card.PlayedBy == PlayerOrNone.Host ? PlayerOrNone.Guest : PlayerOrNone.Host;
+            if (card.PlayedBy != PlayerOrNone.None)
+            {
+                card.PlayedBy = card.PlayedBy == PlayerOrNone.Host ? PlayerOrNone.Guest : PlayerOrNone.Host;
+            }
         }
 
         public static void ConvertMoveToHostPov(Move move)

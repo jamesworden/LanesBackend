@@ -76,9 +76,21 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            // Can't reinforce or capture a lesser card.
+            // Can't reinforce a lesser card.
             if (
               targetCard is not null &&
+              playerPlayedTargetCard &&
+              !LaneUtils.CardTrumpsCard(card, targetCard)
+            )
+            {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+                return false;
+            }
+
+            // Can't capture a lesser card.
+            if (
+              targetCard is not null &&
+              card.Suit == targetCard.Suit &&
               !LaneUtils.CardTrumpsCard(card, targetCard)
             )
             {
