@@ -59,9 +59,11 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            if (lastCardPlayed is not null && !LaneUtils.CardsHaveMatchingSuitOrKind(card, lastCardPlayed))
+            var playedAceToNukeRow = card.Kind == Kind.Ace && GuestAceTopOfAnyRow(lane);
+
+            if (lastCardPlayed is not null && !LaneUtils.CardsHaveMatchingSuitOrKind(card, lastCardPlayed) && !playedAceToNukeRow)
             {
-                Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played.");
+                Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played OR not an ace to nuke the row.");
                 return false;
             }
 
@@ -99,6 +101,30 @@ namespace LanesBackend.Utils
             }
 
             return true;
+        }
+
+        private static bool GuestAceTopOfAnyRow(Lane lane)
+        {
+            foreach(var row in lane.Rows)
+            {
+                var topCardIndex = row.Count() - 1;
+                var topCard = row[topCardIndex];
+
+                if (topCard is null)
+                {
+                    continue;
+                }
+
+                var topCardIsAce = topCard.Kind == Kind.Ace;
+                var topCardPlayedbyGuest = topCard.PlayedBy == PlayerOrNone.Guest;
+
+                if (topCardIsAce && topCardPlayedbyGuest)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

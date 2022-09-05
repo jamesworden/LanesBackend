@@ -113,7 +113,7 @@ namespace LanesBackend.Utils
 
             if (targetRowHasCards)
             {
-                var topCard = targetRow.First();
+                var topCard = targetRow.Last();
                 return topCard;
             }
 
