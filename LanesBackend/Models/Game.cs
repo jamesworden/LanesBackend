@@ -69,7 +69,7 @@ namespace LanesBackend.CacheModels
 
                     if (moveIsValid)
                     {
-                        MakeMoveFromHostPov(move, targetLane, playerIsHost);
+                        MakeMoveFromHostPov(hostPovMove, hostPovLane, playerIsHost);
                         moveWasValid = true;
                     }
                 });
@@ -89,32 +89,41 @@ namespace LanesBackend.CacheModels
 
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
-                var aceRuleTriggered = TriggerAceRuleIfAppropriate(placeCardAttempt, targetLane);
-
-                if (aceRuleTriggered)
-                {
-                    return;
-                }
-
-                var targetRow = targetLane.Rows[placeCardAttempt.TargetRowIndex];
-                placeCardAttempt.Card.PlayedBy = playerIsTruelyHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
-                targetRow.Add(placeCardAttempt.Card);
-
-                targetLane.LastCardPlayed = placeCardAttempt.Card;
-
-                var middleCaptured = CaptureMiddleIfAppropriate(placeCardAttempt, targetLane, playerIsTruelyHost);
-
-                if (middleCaptured)
-                {
-                    return;
-                }
-
-                _ = WinLaneIfAppropriate(placeCardAttempt, targetLane);
+                PlaceCardFromHostPovAndApplyGameRules(placeCardAttempt, targetLane, playerIsTruelyHost);
             }
         }
 
+        private void PlaceCardFromHostPovAndApplyGameRules(PlaceCardAttempt placeCardAttempt, Lane targetLane, bool playerIsTruelyHost)
+        {
+            var aceRuleTriggered = TriggerAceRuleIfAppropriateFromHostPov(placeCardAttempt, targetLane);
+
+            if (aceRuleTriggered)
+            {
+                return;
+            }
+
+            PlaceCardFromHostPov(targetLane, placeCardAttempt);
+
+            var middleCaptured = CaptureMiddleIfAppropriateFromHostPov(placeCardAttempt, targetLane, playerIsTruelyHost);
+
+            if (middleCaptured)
+            {
+                return;
+            }
+
+            _ = WinLaneIfAppropriateFromHostPov(placeCardAttempt, targetLane, playerIsTruelyHost);
+        }
+
+        private void PlaceCardFromHostPov(Lane lane, PlaceCardAttempt placeCardAttempt)
+        {
+            var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
+            placeCardAttempt.Card.PlayedBy = PlayerOrNone.Host;
+            targetRow.Add(placeCardAttempt.Card);
+            lane.LastCardPlayed = placeCardAttempt.Card;
+        }
+
         /// <returns>True if the middle was captured, false if not.</returns>
-        private bool CaptureMiddleIfAppropriate(PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
+        private bool CaptureMiddleIfAppropriateFromHostPov(PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
         {
             var cardIsLastOnHostSide = placeCardAttempt.TargetRowIndex == 2;
 
@@ -138,12 +147,13 @@ namespace LanesBackend.CacheModels
         private void CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt)
         {
             var cardsFromLane = lane.GrabAllCards();
+
             // Put last placed card at top of pile
             cardsFromLane.Remove(placeCardAttempt.Card);
             cardsFromLane.Add(placeCardAttempt.Card);
+
             var middleRow = lane.Rows[3];
             middleRow.AddRange(cardsFromLane);
-
             lane.LaneAdvantage = PlayerOrNone.Host;
         }
 
@@ -173,7 +183,7 @@ namespace LanesBackend.CacheModels
             lane.LaneAdvantage = PlayerOrNone.Host;
         }
 
-        private bool TriggerAceRuleIfAppropriate(PlaceCardAttempt placeCardAttempt, Lane lane)
+        private bool TriggerAceRuleIfAppropriateFromHostPov(PlaceCardAttempt placeCardAttempt, Lane lane)
         {
             var playerPlayedAnAce = placeCardAttempt.Card.Kind == Kind.Ace;
 
@@ -210,7 +220,7 @@ namespace LanesBackend.CacheModels
             return true;
         }
 
-        private bool WinLaneIfAppropriate(PlaceCardAttempt placeCardAttempt, Lane lane)
+        private bool WinLaneIfAppropriateFromHostPov(PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
         {
             var placeCardInLastRow = placeCardAttempt.TargetRowIndex == 6;
 
@@ -220,8 +230,11 @@ namespace LanesBackend.CacheModels
             }
 
             lane.WonBy = PlayerOrNone.Host;
-            _ = lane.GrabAllCards();
-            // Joker?
+            var allCardsInLane = lane.GrabAllCards();
+            var player = playerIsTruelyHost ? HostPlayer : GuestPlayer;
+            player.Deck.Cards.AddRange(allCardsInLane);
+            player.Deck.Shuffle();
+            // TODO: Add joker to lane?
             return true;
         }
     }

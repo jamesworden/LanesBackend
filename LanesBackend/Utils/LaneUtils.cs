@@ -67,11 +67,6 @@ namespace LanesBackend.Utils
                 }
             }
 
-            if (lane.LastCardPlayed != null)
-            {
-                SwitchHostAndGuestPlayedBy(lane.LastCardPlayed);
-            }
-
             SwitchLaneAdvantage(lane);
         }
 
