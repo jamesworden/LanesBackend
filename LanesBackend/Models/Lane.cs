@@ -4,9 +4,11 @@
     {
         public List<Card>[] Rows = new List<Card>[7];
 
-        public LaneAdvantage LaneAdvantage = LaneAdvantage.None;
+        public PlayerOrNone LaneAdvantage = PlayerOrNone.None;
 
         public Card? LastCardPlayed;
+
+        public PlayerOrNone WonBy = PlayerOrNone.None;
 
         public Lane()
         {

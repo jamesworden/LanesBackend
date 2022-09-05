@@ -1,9 +1,9 @@
 ﻿namespace LanesBackend.Models
 {
-    public enum PlayedBy
+    public enum PlayerOrNone
     {
         Host,
         Guest,
-        NotYetPlayed
+        None
     }
 }

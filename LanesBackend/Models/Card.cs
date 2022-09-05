@@ -6,7 +6,7 @@
 
         public readonly Suit Suit;
 
-        public PlayedBy PlayedBy = PlayedBy.NotYetPlayed;
+        public PlayerOrNone PlayedBy = PlayerOrNone.None;
 
         public Card(Kind kind, Suit suit)
         {

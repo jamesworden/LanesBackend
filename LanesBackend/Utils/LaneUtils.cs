@@ -77,7 +77,7 @@ namespace LanesBackend.Utils
 
         public static void SwitchHostAndGuestPlayedBy(Card card)
         {
-            card.PlayedBy = card.PlayedBy == PlayedBy.Host ? PlayedBy.Guest : PlayedBy.Host;
+            card.PlayedBy = card.PlayedBy == PlayerOrNone.Host ? PlayerOrNone.Guest : PlayerOrNone.Host;
         }
 
         public static void ConvertMoveToHostPov(Move move)
@@ -169,9 +169,9 @@ namespace LanesBackend.Utils
 
         public static void SwitchLaneAdvantage(Lane lane)
         {
-            if (lane.LaneAdvantage != LaneAdvantage.None)
+            if (lane.LaneAdvantage != PlayerOrNone.None)
             {
-                lane.LaneAdvantage = lane.LaneAdvantage == LaneAdvantage.Host ? LaneAdvantage.Guest : LaneAdvantage.Host;
+                lane.LaneAdvantage = lane.LaneAdvantage == PlayerOrNone.Host ? PlayerOrNone.Guest : PlayerOrNone.Host;
             }
         }
     }

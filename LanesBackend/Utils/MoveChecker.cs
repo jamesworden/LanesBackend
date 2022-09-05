@@ -4,22 +4,7 @@ namespace LanesBackend.Utils
 {
     public static class MoveChecker
     {
-        public static bool IsMoveValid(Move move, Lane lane, bool playerIsHost)
-        {
-            var isMoveValid = false;
-
-            LaneUtils.ModifyLaneFromHostPov(lane, playerIsHost, (hostPovLane) =>
-            {
-                LaneUtils.ModifyMoveFromHostPov(move, playerIsHost, (hostPovMove) =>
-                {
-                    isMoveValid = IsMoveValidFromHostPov(hostPovMove, hostPovLane);
-                });
-            });
-
-            return isMoveValid;
-        }
-
-        private static bool IsMoveValidFromHostPov(Move move, Lane lane)
+        public static bool IsMoveValidFromHostPov(Move move, Lane lane)
         {
             var lastCardPlayed = lane.LastCardPlayed;
             var laneAdvantage = lane.LaneAdvantage;
@@ -28,15 +13,21 @@ namespace LanesBackend.Utils
             var card = placeCardAttempt.Card;
             
             var targetCard = LaneUtils.GetTopCardOfTargetRow(lane, targetRowIndex);
-            var playerPlayedTargetCard = targetCard?.PlayedBy == PlayedBy.Host;
+            var playerPlayedTargetCard = targetCard?.PlayedBy == PlayerOrNone.Host;
 
             var moveIsPlayerSide = targetRowIndex < 3;
             var moveIsMiddle = targetRowIndex == 3;
             var moveIsOpponentSide = targetRowIndex > 3;
 
-            var playerHasAdvantage = laneAdvantage == LaneAdvantage.Host;
-            var opponentHasAdvantage = laneAdvantage == LaneAdvantage.Guest;
-            var noAdvantage = laneAdvantage == LaneAdvantage.None;
+            var playerHasAdvantage = laneAdvantage == PlayerOrNone.Host;
+            var opponentHasAdvantage = laneAdvantage == PlayerOrNone.Guest;
+            var noAdvantage = laneAdvantage == PlayerOrNone.None;
+
+            if (lane.WonBy != PlayerOrNone.None)
+            {
+                Console.WriteLine("Client broke the rules: Tried to move a lane that has been won.");
+                return false;
+            }
 
             if (moveIsMiddle)
             {
