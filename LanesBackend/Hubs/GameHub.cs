@@ -16,12 +16,20 @@ namespace LanesBackend.Hubs
         
         private readonly IDeckService DeckService;
 
-        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache, IGameService gameService, IDeckService deckService)
+        private readonly ICardService CardService;
+
+        public GameHub(
+            IGameCache gameCache, 
+            IPendingGameCache pendingGameCache, 
+            IGameService gameService, 
+            IDeckService deckService, 
+            ICardService cardService)
         { 
             GameCache = gameCache;
             PendingGameCache = pendingGameCache;
             GameService = gameService;
             DeckService = deckService;
+            CardService = cardService;
         }
 
         public async Task CreateGame()
@@ -130,7 +138,10 @@ namespace LanesBackend.Hubs
                 }
             }
 
-            player.Hand.RemoveCard(move.PlaceCardAttempts[0].Card); // For now assume all moves are one place card attempt.
+            // For now assume all moves are one place card attempt.
+            var card = move.PlaceCardAttempts[0].Card;
+
+            CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, card);
 
             await UpdatePlayerGameStates(game, "GameUpdated");
         }
