@@ -21,11 +21,7 @@ namespace LanesBackend.Caching
                 return null;
             }
 
-            var pendingGame = new PendingGame
-            {
-                GameCode = gameCode,
-                HostConnectionId = hostConnectionId
-            };
+            var pendingGame = new PendingGame(gameCode, hostConnectionId);
 
             return pendingGame;
         }
@@ -39,11 +35,7 @@ namespace LanesBackend.Caching
                 return null;
             }
 
-            var pendingGame = new PendingGame
-            {
-                GameCode = pendingGameCode,
-                HostConnectionId = hostConnectionId
-            };
+            var pendingGame = new PendingGame(pendingGameCode, hostConnectionId);
 
             return pendingGame;
         }

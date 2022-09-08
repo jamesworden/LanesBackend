@@ -23,11 +23,7 @@ namespace LanesBackend.Hubs
             string gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
             string hostConnectionId = Context.ConnectionId;
 
-            var pendingGame = new PendingGame
-            {
-                GameCode = gameCode,
-                HostConnectionId = hostConnectionId
-            };
+            var pendingGame = new PendingGame(gameCode, hostConnectionId);
 
             PendingGameCache.AddPendingGame(pendingGame);
 
