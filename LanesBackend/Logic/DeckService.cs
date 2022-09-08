@@ -15,7 +15,9 @@ namespace LanesBackend.Logic
 
         public Tuple<Deck, Deck> SplitDeck(Deck deck)
         {
-            var firstDeckCards = DrawCards(deck, 26);
+            var numCardsInHalfDeck = deck.Cards.Count / 2;
+
+            var firstDeckCards = DrawCards(deck, numCardsInHalfDeck);
             var firstDeck = new Deck(firstDeckCards);
 
             var secondDeckCards = DrawRemainingCards(deck);
