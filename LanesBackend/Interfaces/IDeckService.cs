@@ -7,5 +7,9 @@ namespace LanesBackend.Interfaces
         public Deck CreateAndShuffleDeck();
 
         public Tuple<Deck, Deck> SplitDeck(Deck deck);
+
+        public Deck ShuffleDeck(Deck deck);
+
+        public List<Card> DrawCards(Deck deck, int numberOfCards);
     }
 }

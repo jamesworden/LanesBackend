@@ -7,9 +7,12 @@ namespace LanesBackend.Logic
     {
         private readonly IDeckService DeckService;
 
-        public GameService(IDeckService deckService)
+        private readonly ILanesService LanesService;
+
+        public GameService(IDeckService deckService, ILanesService lanesService)
         {
             DeckService = deckService;
+            LanesService = lanesService;
         }
 
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode)
@@ -20,7 +23,18 @@ namespace LanesBackend.Logic
             var hostDeck = playerDecks.Item1;
             var guestDeck = playerDecks.Item2;
 
-            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostDeck, guestDeck);
+            var hostHandCards = DeckService.DrawCards(hostDeck, 5);
+            var guestHandCards = DeckService.DrawCards(guestDeck, 5);
+
+            var hostHand = new Hand(hostHandCards);
+            var guestHand = new Hand(guestHandCards);
+
+            var hostPlayer = new Player(hostDeck, hostHand);
+            var guestPlayer = new Player(guestDeck, guestHand);
+
+            var lanes = LanesService.CreateEmptyLanes();
+
+            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostPlayer, guestPlayer, lanes);
 
             return game;
         }

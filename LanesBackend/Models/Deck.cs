@@ -10,12 +10,6 @@
             Cards = cards;
         }
 
-        public void Shuffle()
-        {
-            Random random = new();
-            Cards = Cards.OrderBy(card => random.Next()).ToList();
-        }
-
         public List<Card> DrawRemainingCards()
         {
             List<Card> remainingCards = new(Cards);

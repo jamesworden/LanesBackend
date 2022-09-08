@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
 // builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IDeckService, DeckService>();
+builder.Services.AddScoped<ILanesService, LanesService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();

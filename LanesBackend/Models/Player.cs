@@ -4,14 +4,11 @@
     {
         public Hand Hand { get; set; }
         public Deck Deck { get; set; }
-        public string Name { get; set; }
 
-        public Player(List<Card> initialCards, string name)
+        public Player(Deck deck, Hand hand)
         {
-            Deck = new Deck(initialCards);
-            var fiveCards = Deck.DrawCards(5);
-            Hand = new Hand(fiveCards);
-            Name = name;
+            Deck = deck;
+            Hand = hand;
         }
     }
 }

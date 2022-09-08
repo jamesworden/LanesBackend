@@ -10,9 +10,9 @@
 
         public PlayerOrNone WonBy = PlayerOrNone.None;
 
-        public Lane()
+        public Lane(List<Card>[] rows)
         {
-            InitEmptyLanes();
+            Rows = rows;
         }
 
         /// <summary>
@@ -20,7 +20,7 @@
         /// </summary>
         public List<Card> GrabAllCards()
         {
-            List<Card> cards = new List<Card>();
+            List<Card> cards = new();
 
             foreach(var row in Rows)
             {
@@ -30,17 +30,9 @@
                 }
             }
 
-            InitEmptyLanes();
+            // REFACTOR DEBT: INIT EMPTY LANES!
 
             return cards;
-        }
-
-        private void InitEmptyLanes()
-        {
-            for (int i = 0; i < Rows.Length; i++)
-            {
-                Rows[i] = new List<Card>();
-            }
         }
     }
 }

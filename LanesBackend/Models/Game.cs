@@ -20,24 +20,20 @@ namespace LanesBackend.Models
 
         public Player GuestPlayer { get; set; }
 
-        public Game(string hostConnectionId, string guestConnectionId, string gameCode, Deck hostDeck, Deck guestDeck)
+        public Game(
+            string hostConnectionId, 
+            string guestConnectionId, 
+            string gameCode, 
+            Player hostPlayer,
+            Player guestPlayer,
+            Lane[] lanes)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
             GameCode = gameCode;
-
-            InitEmptyLanes();
-
-            HostPlayer = new Player(hostDeck.DrawRemainingCards(), "Host Player");
-            GuestPlayer = new Player(guestDeck.DrawRemainingCards(), "Guest Player");
-        }
-
-        private void InitEmptyLanes()
-        {
-            for (int i = 0; i < Lanes.Length; i++)
-            {
-                Lanes[i] = new Lane();
-            }
+            HostPlayer = hostPlayer;
+            GuestPlayer = guestPlayer;
+            Lanes = lanes;
         }
 
         /// <returns>
@@ -176,7 +172,8 @@ namespace LanesBackend.Models
 
             var player = playerIsTruelyHost ? HostPlayer : GuestPlayer;
             player.Deck.Cards.AddRange(remainingCardsInLane);
-            player.Deck.Shuffle();
+            
+            // REFACTOR DEBT: Shuffle Deck Here!
 
             lane.LaneAdvantage = PlayerOrNone.Host;
         }
@@ -231,7 +228,7 @@ namespace LanesBackend.Models
             var allCardsInLane = lane.GrabAllCards();
             var player = playerIsTruelyHost ? HostPlayer : GuestPlayer;
             player.Deck.Cards.AddRange(allCardsInLane);
-            player.Deck.Shuffle();
+            // REFACTOR DEBT: Shuffle Deck Here!
             // TODO: Add joker to lane?
             return true;
         }
