@@ -1,4 +1,5 @@
 ﻿using LanesBackend.CacheModels;
+using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -8,34 +9,45 @@ namespace LanesBackend.Hubs
 {
     public class GameHub : Hub
     {
-        private static readonly Dictionary<string, string> PendingGameCodeToHostConnectionId = new();
-        
         private static readonly List<Game> Games = new();
+
+        private readonly IPendingGameCache PendingGameCache;
+
+        public GameHub(IPendingGameCache pendingGameCache)
+        { 
+            PendingGameCache = pendingGameCache;
+        }
 
         public async Task CreateGame()
         {
             string gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
-            string connectionId = Context.ConnectionId;
-            PendingGameCodeToHostConnectionId.Add(gameCode, connectionId);
-            await Groups.AddToGroupAsync(connectionId, gameCode);
-            await Clients.Client(connectionId).SendAsync("CreatedPendingGame", gameCode);
+            string hostConnectionId = Context.ConnectionId;
+
+            var pendingGame = new PendingGame
+            {
+                GameCode = gameCode,
+                HostConnectionId = hostConnectionId
+            };
+
+            PendingGameCache.AddPendingGame(pendingGame);
+
+            await Clients.Client(hostConnectionId).SendAsync("CreatedPendingGame", gameCode);
         }
 
         public async Task JoinGame(string gameCode)
         {
             var guestConnectionId = Context.ConnectionId;
-            PendingGameCodeToHostConnectionId.TryGetValue(gameCode, out var hostConnectionId);
- 
-            if (hostConnectionId is null)
+            var pendingGame = PendingGameCache.GetPendingGameByGameCode(gameCode);
+
+            if (pendingGame is null)
             {
                 await Clients.Client(guestConnectionId).SendAsync("InvalidGameCode");
                 return;
             }
 
-            await AddPlayersToRoom(hostConnectionId, guestConnectionId, gameCode);
-            Game game = new(hostConnectionId, guestConnectionId, gameCode);
+            Game game = new(pendingGame.HostConnectionId, guestConnectionId, gameCode);
             Games.Add(game);
-            PendingGameCodeToHostConnectionId.Remove(gameCode);
+            PendingGameCache.RemovePendingGame(gameCode);
 
             await UpdatePlayerGameStates(game, "GameStarted");
         }
@@ -124,12 +136,11 @@ namespace LanesBackend.Hubs
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
-            var pendingGameCode = PendingGameCodeToHostConnectionId
-                .FirstOrDefault(row => row.Value == connectionId).Key;
+            var pendingGame = PendingGameCache.GetPendingGameByConnectionId(connectionId);
 
-            if (pendingGameCode is not null)
+            if (pendingGame is not null)
             {
-                PendingGameCodeToHostConnectionId.Remove(pendingGameCode);
+                PendingGameCache.RemovePendingGame(pendingGame.GameCode);
                 return;
             }
 
@@ -139,7 +150,6 @@ namespace LanesBackend.Hubs
                 if (playerIsHost)
                 {
                     await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
-                    await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
 
@@ -147,22 +157,9 @@ namespace LanesBackend.Hubs
                 if (playerIsGuest)
                 {
                     await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
-                    await RemovePlayersFromRoom(game.HostConnectionId, game.GuestConnectionId, game.GameCode);
                     Games.Remove(game);
                 }
             }
-        }
-
-        private async Task AddPlayersToRoom(string hostConnectionId, string guestConnectionId, string gameCode)
-        {
-            await Groups.AddToGroupAsync(guestConnectionId, gameCode);
-            await Groups.AddToGroupAsync(hostConnectionId, gameCode);
-        }
-
-        private async Task RemovePlayersFromRoom(string hostConnectionId, string guestConnectionId, string gameCode)
-        {
-            await Groups.RemoveFromGroupAsync(hostConnectionId, gameCode);
-            await Groups.RemoveFromGroupAsync(guestConnectionId, gameCode);
         }
 
         private async Task UpdateHostGameState(Game game, string messageType)
