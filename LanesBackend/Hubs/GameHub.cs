@@ -1,5 +1,4 @@
-﻿using LanesBackend.CacheModels;
-using LanesBackend.Interfaces;
+﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -13,10 +12,13 @@ namespace LanesBackend.Hubs
 
         private readonly IPendingGameCache PendingGameCache;
 
-        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache)
+        private readonly IGameService GameService;
+
+        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache, IGameService gameService)
         { 
             GameCache = gameCache;
             PendingGameCache = pendingGameCache;
+            GameService = gameService;
         }
 
         public async Task CreateGame()
@@ -42,14 +44,15 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            Game game = new(pendingGame.HostConnectionId, guestConnectionId, gameCode);
+            var game = GameService.CreateGame(pendingGame.HostConnectionId, guestConnectionId, gameCode);
+
             GameCache.AddGame(game);
             PendingGameCache.RemovePendingGame(gameCode);
 
             await UpdatePlayerGameStates(game, "GameStarted");
         }
 
-        public async Task RearrangeHand(string stringifiedCards)
+        public void RearrangeHand(string stringifiedCards)
         {
             var cards = JsonConvert.DeserializeObject<List<Card>>(stringifiedCards);
 

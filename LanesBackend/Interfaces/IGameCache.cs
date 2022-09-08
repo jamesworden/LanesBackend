@@ -1,4 +1,4 @@
-﻿using LanesBackend.CacheModels;
+﻿using LanesBackend.Models;
 
 namespace LanesBackend.Interfaces
 {

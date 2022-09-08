@@ -1,7 +1,6 @@
-﻿using LanesBackend.Models;
-using LanesBackend.Utils;
+﻿using LanesBackend.Utils;
 
-namespace LanesBackend.CacheModels
+namespace LanesBackend.Models
 {
     public class Game
     {
@@ -21,25 +20,24 @@ namespace LanesBackend.CacheModels
 
         public Player GuestPlayer { get; set; }
 
-        public Game(string hostConnectionId, string guestConnectionId, string gameCode)
+        public Game(string hostConnectionId, string guestConnectionId, string gameCode, Deck hostDeck, Deck guestDeck)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
             GameCode = gameCode;
-            
+
+            InitEmptyLanes();
+
+            HostPlayer = new Player(hostDeck.DrawRemainingCards(), "Host Player");
+            GuestPlayer = new Player(guestDeck.DrawRemainingCards(), "Guest Player");
+        }
+
+        private void InitEmptyLanes()
+        {
             for (int i = 0; i < Lanes.Length; i++)
             {
                 Lanes[i] = new Lane();
             }
-
-            var deck = new DeckBuilder().FillWithCards().Build();
-            deck.Shuffle();
-
-            var hostPlayerDeck = deck.DrawCards(26);
-            var guestPlayerDeck = deck.DrawRemainingCards();
-
-            HostPlayer = new Player(hostPlayerDeck, "Host Player");
-            GuestPlayer = new Player(guestPlayerDeck, "Guest Player");
         }
 
         /// <returns>

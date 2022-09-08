@@ -1,5 +1,5 @@
-﻿using LanesBackend.CacheModels;
-using LanesBackend.Interfaces;
+﻿using LanesBackend.Interfaces;
+using LanesBackend.Models;
 
 namespace LanesBackend.Caching
 {
