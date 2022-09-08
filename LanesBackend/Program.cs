@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
 // builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
 builder.Services.AddSignalR();
 builder.Services.AddCors();

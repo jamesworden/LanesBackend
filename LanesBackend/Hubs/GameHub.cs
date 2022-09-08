@@ -9,12 +9,13 @@ namespace LanesBackend.Hubs
 {
     public class GameHub : Hub
     {
-        private static readonly List<Game> Games = new();
+        private readonly IGameCache GameCache;
 
         private readonly IPendingGameCache PendingGameCache;
 
-        public GameHub(IPendingGameCache pendingGameCache)
+        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache)
         { 
+            GameCache = gameCache;
             PendingGameCache = pendingGameCache;
         }
 
@@ -42,7 +43,7 @@ namespace LanesBackend.Hubs
             }
 
             Game game = new(pendingGame.HostConnectionId, guestConnectionId, gameCode);
-            Games.Add(game);
+            GameCache.AddGame(game);
             PendingGameCache.RemovePendingGame(gameCode);
 
             await UpdatePlayerGameStates(game, "GameStarted");
@@ -58,9 +59,10 @@ namespace LanesBackend.Hubs
             }
 
             var connectionId = Context.ConnectionId;
-            var game = Games.Where(game => game.HostConnectionId == connectionId || game.GuestConnectionId == connectionId).FirstOrDefault();
 
-            if (game == null)
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
             {
                 return;
             }
@@ -77,12 +79,10 @@ namespace LanesBackend.Hubs
             if (playerIsHost)
             {
                 game.HostPlayer.Hand.Cards = cards;
-                // await UpdateHostGameState(game, "GameUpdated");
             }
             else
             {
                 game.GuestPlayer.Hand.Cards = cards;
-                // await UpdateGuestGameState(game, "GameUpdated");
             }
         }
 
@@ -96,7 +96,7 @@ namespace LanesBackend.Hubs
             }
 
             var connectionId = Context.ConnectionId;
-            var game = Games.Where(game => game.HostConnectionId == connectionId || game.GuestConnectionId == connectionId).FirstOrDefault();
+            var game = GameCache.FindGameByConnectionId(connectionId);
 
             if (game == null)
             {
@@ -132,6 +132,7 @@ namespace LanesBackend.Hubs
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
+            
             var pendingGame = PendingGameCache.GetPendingGameByConnectionId(connectionId);
 
             if (pendingGame is not null)
@@ -140,22 +141,21 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            foreach (var game in Games)
-            {
-                var playerIsHost = game.HostConnectionId == connectionId;
-                if (playerIsHost)
-                {
-                    await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
-                    Games.Remove(game);
-                }
+            var game = GameCache.RemoveGameByConnectionId(connectionId);
 
-                var playerIsGuest = game.GuestConnectionId == connectionId;
-                if (playerIsGuest)
-                {
-                    await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
-                    Games.Remove(game);
-                }
+            if (game is not null)
+            {
+                var hostDisconnected = connectionId == game.HostConnectionId;
+                var opponentConnectionId = hostDisconnected ? game.GuestConnectionId : game.HostConnectionId;
+
+                await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
             }
+        }
+
+        private async Task UpdatePlayerGameStates(Game game, string messageType)
+        {
+            await UpdateHostGameState(game, messageType);
+            await UpdateGuestGameState(game, messageType);
         }
 
         private async Task UpdateHostGameState(Game game, string messageType)
@@ -190,12 +190,6 @@ namespace LanesBackend.Hubs
             var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
             
             await Clients.Client(game.GuestConnectionId).SendAsync(messageType, serializedGuestGameState);
-        }
-
-        private async Task UpdatePlayerGameStates(Game game, string messageType)
-        {
-            await UpdateHostGameState(game, messageType);
-            await UpdateGuestGameState(game, messageType);
         }
     }
 }
