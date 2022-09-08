@@ -13,12 +13,15 @@ namespace LanesBackend.Hubs
         private readonly IPendingGameCache PendingGameCache;
 
         private readonly IGameService GameService;
+        
+        private readonly IDeckService DeckService;
 
-        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache, IGameService gameService)
+        public GameHub(IGameCache gameCache, IPendingGameCache pendingGameCache, IGameService gameService, IDeckService deckService)
         { 
             GameCache = gameCache;
             PendingGameCache = pendingGameCache;
             GameService = gameService;
+            DeckService = deckService;
         }
 
         public async Task CreateGame()
@@ -119,9 +122,9 @@ namespace LanesBackend.Hubs
 
             if (playersDeckHasCards)
             {
-                var cardFromDeck = player.Deck.DrawCard();
+                var cardFromDeck = DeckService.DrawCard(player.Deck);
 
-                if (cardFromDeck != null)
+                if (cardFromDeck is not null)
                 {
                     player.Hand.AddCard(cardFromDeck);
                 }

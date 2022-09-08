@@ -11,5 +11,9 @@ namespace LanesBackend.Interfaces
         public Deck ShuffleDeck(Deck deck);
 
         public List<Card> DrawCards(Deck deck, int numberOfCards);
+
+        public Card? DrawCard(Deck deck);
+
+        public List<Card> DrawRemainingCards(Deck deck);
     }
 }

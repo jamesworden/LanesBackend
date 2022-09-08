@@ -15,10 +15,10 @@ namespace LanesBackend.Logic
 
         public Tuple<Deck, Deck> SplitDeck(Deck deck)
         {
-            var firstDeckCards = deck.DrawCards(26);
+            var firstDeckCards = DrawCards(deck, 26);
             var firstDeck = new Deck(firstDeckCards);
 
-            var secondDeckCards = deck.DrawRemainingCards();
+            var secondDeckCards = DrawRemainingCards(deck);
             var secondDeck = new Deck(secondDeckCards);
 
             var decks = new Tuple<Deck, Deck>(firstDeck, secondDeck);
@@ -53,7 +53,29 @@ namespace LanesBackend.Logic
             return deck;
         }
 
-        private Deck CreateDeck()
+        public Card? DrawCard(Deck deck)
+        {
+            List<Card> singleCardList = DrawCards(deck, 1);
+
+            if (singleCardList.Count != 1)
+            {
+                return null;
+            }
+            
+            var card = singleCardList.ElementAt(0);
+
+            return card;
+        }
+
+        public List<Card> DrawRemainingCards(Deck deck)
+        {
+            List<Card> remainingCards = new(deck.Cards);
+            deck.Cards.Clear();
+
+            return remainingCards;
+        }
+
+        private static Deck CreateDeck()
         {
             var cards = new List<Card>();
 
