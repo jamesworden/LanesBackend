@@ -109,7 +109,7 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var moveWasValid = game.MakeMoveIfValid(move, connectionId);
+            var moveWasValid = GameService.MakeMoveIfValid(game, move, connectionId);
             
             if (!moveWasValid)
             {

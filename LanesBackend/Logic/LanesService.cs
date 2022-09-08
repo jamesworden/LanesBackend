@@ -21,6 +21,23 @@ namespace LanesBackend.Logic
             return lanes;
         }
 
+        public List<Card> GrabAllCardsAndClearLane(Lane lane)
+        {
+            List<Card> cards = new();
+
+            foreach (var row in lane.Rows)
+            {
+                foreach (var card in row)
+                {
+                    cards.Add(card);
+                }
+            }
+
+            lane.Rows = CreateEmptyRows();
+
+            return cards;
+        }
+
         private Lane CreateEmptyLane()
         {
             var rows = CreateEmptyRows();
