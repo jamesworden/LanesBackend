@@ -186,7 +186,7 @@ namespace LanesBackend.Logic
                 return;
             }
 
-            //PlaceCardFromHostPov(targetLane, placeCardAttempt);
+            PlaceCard(algoLane, algoPlaceCardAttempt);
 
             //var middleCaptured = CaptureMiddleIfAppropriateFromHostPov(game, placeCardAttempt, targetLane, playerIsTruelyHost);
 
@@ -198,13 +198,13 @@ namespace LanesBackend.Logic
             //_ = WinLaneIfAppropriateFromHostPov(game, placeCardAttempt, targetLane, playerIsTruelyHost);
         }
 
-        //private void PlaceCardFromHostPov(Lane lane, PlaceCardAttempt placeCardAttempt)
-        //{
-        //    var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
-        //    placeCardAttempt.Card.PlayedBy = PlayerOrNone.Host;
-        //    targetRow.Add(placeCardAttempt.Card);
-        //    lane.LastCardPlayed = placeCardAttempt.Card;
-        //}
+        private void PlaceCard(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
+        {
+            var targetRow = algoLane.Rows[algoPlaceCardAttempt.TargetRowIndex];
+            algoPlaceCardAttempt.Card.PlayedBy = AlgoPlayer.Player;
+            targetRow.Add(algoPlaceCardAttempt.Card);
+            algoLane.LastCardPlayed = algoPlaceCardAttempt.Card;
+        }
 
         //private bool CaptureMiddleIfAppropriateFromHostPov(Game game, PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
         //{
