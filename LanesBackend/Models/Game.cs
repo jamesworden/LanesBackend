@@ -1,6 +1,4 @@
-﻿using LanesBackend.Utils;
-
-namespace LanesBackend.Models
+﻿namespace LanesBackend.Models
 {
     public class Game
     {

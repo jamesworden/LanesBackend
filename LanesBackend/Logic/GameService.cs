@@ -1,6 +1,5 @@
 ﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
-using LanesBackend.Utils;
 
 namespace LanesBackend.Logic
 {
