@@ -188,12 +188,12 @@ namespace LanesBackend.Logic
 
             PlaceCard(algoLane, algoPlaceCardAttempt);
 
-            //var middleCaptured = CaptureMiddleIfAppropriateFromHostPov(game, placeCardAttempt, targetLane, playerIsTruelyHost);
+            var middleCaptured = CaptureMiddleIfAppropriate(game, algoPlaceCardAttempt, algoLane, playerIsHost);
 
-            //if (middleCaptured)
-            //{
-            //    return;
-            //}
+            if (middleCaptured)
+            {
+                return;
+            }
 
             //_ = WinLaneIfAppropriateFromHostPov(game, placeCardAttempt, targetLane, playerIsTruelyHost);
         }
@@ -206,39 +206,39 @@ namespace LanesBackend.Logic
             algoLane.LastCardPlayed = algoPlaceCardAttempt.Card;
         }
 
-        //private bool CaptureMiddleIfAppropriateFromHostPov(Game game, PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
-        //{
-        //    var cardIsLastOnHostSide = placeCardAttempt.TargetRowIndex == 2;
+        private bool CaptureMiddleIfAppropriate(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
+        {
+            var cardIsLastOnHostSide = algoPlaceCardAttempt.TargetRowIndex == 2;
 
-        //    if (!cardIsLastOnHostSide)
-        //    {
-        //        return false;
-        //    }
+            if (!cardIsLastOnHostSide)
+            {
+                return false;
+            }
 
-        //    if (lane.LaneAdvantage == PlayerOrNone.None)
-        //    {
-        //        CaptureNoAdvantageLane(lane, placeCardAttempt);
-        //    }
-        //    else if (lane.LaneAdvantage == PlayerOrNone.Guest)
-        //    {
-        //        CaptureOpponentAdvantageLane(game, lane, playerIsTruelyHost);
-        //    }
+            if (algoLane.LaneAdvantage == AlgoPlayer.None)
+            {
+                CaptureNoAdvantageLane(algoLane, algoPlaceCardAttempt);
+            }
+            else if (algoLane.LaneAdvantage == AlgoPlayer.Opponent)
+            {
+                //CaptureOpponentAdvantageLane(game, lane, playerIsTruelyHost);
+            }
 
-        //    return true;
-        //}
+            return true;
+        }
 
-        //private void CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt)
-        //{
-        //    var cardsFromLane = LanesService.GrabAllCardsAndClearLane(lane);
+        private void CaptureNoAdvantageLane(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
+        {
+            var cardsFromLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
 
-        //    // Put last placed card at top of pile
-        //    cardsFromLane.Remove(placeCardAttempt.Card);
-        //    cardsFromLane.Add(placeCardAttempt.Card);
+            // Put last placed card at top of pile
+            cardsFromLane.Remove(algoPlaceCardAttempt.Card);
+            cardsFromLane.Add(algoPlaceCardAttempt.Card);
 
-        //    var middleRow = lane.Rows[3];
-        //    middleRow.AddRange(cardsFromLane);
-        //    lane.LaneAdvantage = PlayerOrNone.Host;
-        //}
+            var middleRow = algoLane.Rows[3];
+            middleRow.AddRange(cardsFromLane);
+            algoLane.LaneAdvantage = AlgoPlayer.Player;
+        }
 
         //private void CaptureOpponentAdvantageLane(Game game, Lane lane, bool playerIsTruelyHost)
         //{
