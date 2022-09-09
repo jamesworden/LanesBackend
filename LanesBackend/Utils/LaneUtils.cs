@@ -118,23 +118,7 @@ namespace LanesBackend.Utils
             }
 
             return null;
-        }
-
-        public static bool AllPreviousRowsOccupied(Lane lane, int targetRowIndex)
-        {
-            for (int i = 0; i < targetRowIndex; i++)
-            {
-                var previousLane = lane.Rows[i];
-                var previousLaneNotOccupied = previousLane.Count == 0;
-
-                if (previousLaneNotOccupied)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        } 
 
         public static bool CardsHaveMatchingSuitOrKind(Card card1, Card card2)
         {
@@ -147,22 +131,6 @@ namespace LanesBackend.Utils
         public static bool CardsHaveMatchingSuit(Card card1, Card card2)
         {
             return card1.Suit == card2.Suit;
-        }
-
-        public static bool CardTrumpsCard(Card attackingCard, Card defendingCard)
-        {
-            var hasSameSuit = attackingCard.Suit == defendingCard.Suit;
-            var hasSameKind = attackingCard.Kind == defendingCard.Kind;
-
-            if (!hasSameSuit)
-            {
-                return hasSameKind;
-            }
-
-            var attackingKindValue = (int)attackingCard.Kind;
-            var defendingKindValue = (int)defendingCard.Kind;
-
-            return attackingKindValue > defendingKindValue;
         }
 
         public static void SwitchLaneAdvantage(Lane lane)

@@ -53,11 +53,11 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            if (moveIsPlayerSide && !LaneUtils.AllPreviousRowsOccupied(lane, targetRowIndex))
-            {
-                Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
-                return false;
-            }
+            //if (moveIsPlayerSide && !LaneUtils.AllPreviousRowsOccupied(lane, targetRowIndex))
+            //{
+            //    Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
+            //    return false;
+            //}
 
             var playedAceToNukeRow = card.Kind == Kind.Ace && GuestAceTopOfAnyRow(lane);
 
@@ -78,27 +78,27 @@ namespace LanesBackend.Utils
                 return false;
             }
 
-            // Can't reinforce a lesser card.
-            if (
-              targetCard is not null &&
-              playerPlayedTargetCard &&
-              !LaneUtils.CardTrumpsCard(card, targetCard)
-            )
-            {
-                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
-                return false;
-            }
+            //// Can't reinforce a lesser card.
+            //if (
+            //  targetCard is not null &&
+            //  playerPlayedTargetCard &&
+            //  !LaneUtils.CardTrumpsCard(card, targetCard)
+            //)
+            //{
+            //    Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+            //    return false;
+            //}
 
-            // Can't capture a lesser card.
-            if (
-              targetCard is not null &&
-              card.Suit == targetCard.Suit &&
-              !LaneUtils.CardTrumpsCard(card, targetCard)
-            )
-            {
-                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
-                return false;
-            }
+            //// Can't capture a lesser card.
+            //if (
+            //  targetCard is not null &&
+            //  card.Suit == targetCard.Suit &&
+            //  !LaneUtils.CardTrumpsCard(card, targetCard)
+            //)
+            //{
+            //    Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+            //    return false;
+            //}
 
             return true;
         }

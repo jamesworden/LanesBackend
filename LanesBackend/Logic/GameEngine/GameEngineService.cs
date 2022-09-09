@@ -53,7 +53,8 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
+            var placeCardAttempt = move.PlaceCardAttempts[0];
+            var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var lane = game.Lanes[targetLaneIndex];
 
             var laneWon = lane.WonBy != PlayerOrNone.None;
@@ -65,6 +66,88 @@ namespace LanesBackend.Logic
 
             var algoLane = AlgoModelMapperService.ToAlgoLane(lane, playerIsHost);
             var algoMove = AlgoModelMapperService.ToAlgoMove(move, playerIsHost);
+
+            // For now assume all moves are one place card attempt.
+            var algoPlaceCardAttempt = algoMove.PlaceCardAttempts.First();
+
+            var moveStartsOnPlayerSide = algoPlaceCardAttempt.TargetRowIndex < 3;
+            var playerHasAdvantage = algoLane.LaneAdvantage == AlgoPlayer.Player;
+            if (moveStartsOnPlayerSide && playerHasAdvantage)
+            {
+                Console.WriteLine("Client broke the rules: Tried to move on their own side when they have the advantage.");
+                return false;
+            }
+
+            var moveStartsOnOpponentSide = algoMove.PlaceCardAttempts.First().TargetRowIndex < 3;
+            var opponentHasAdvantage = algoLane.LaneAdvantage == AlgoPlayer.Opponent;
+            if (moveStartsOnOpponentSide && opponentHasAdvantage)
+            {
+                Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when they have their opponent has the advantage.");
+                return false;
+            }
+
+            var noAdvantage = algoLane.LaneAdvantage == AlgoPlayer.None;
+            if (moveStartsOnOpponentSide && noAdvantage)
+            {
+                Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when there is no advantage.");
+                return false;
+            }
+
+            var allPreviousRowsOccupied = AlgoMoveChecksService.AllPreviousRowsOccupied(algoLane, algoPlaceCardAttempt.TargetRowIndex);
+            if (moveStartsOnPlayerSide && !allPreviousRowsOccupied)
+            {
+                Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
+                return false;
+            }
+
+            var cardIsAce = algoPlaceCardAttempt.Card.Kind == Kind.Ace;
+            var opponentAceOnTopOfAnyRow = AlgoMoveChecksService.OpponentAceOnTopOfAnyRow(algoLane);
+            var playedAceToNukeRow = cardIsAce && opponentAceOnTopOfAnyRow;
+            var cardsHaveMatchingSuitOrKind =
+                lane.LastCardPlayed is not null &&
+                (placeCardAttempt.Card.Suit == lane.LastCardPlayed.Suit ||
+                placeCardAttempt.Card.Kind == lane.LastCardPlayed.Kind);
+            if (lane.LastCardPlayed is not null && !cardsHaveMatchingSuitOrKind && !playedAceToNukeRow)
+            {
+                Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played OR not an ace to nuke the row.");
+                return false;
+            }
+
+            var targetRow = algoLane.Rows[placeCardAttempt.TargetRowIndex];
+            var targetCard = targetRow.Last();
+
+            // Can't reinforce with different suit card.
+            if (
+              targetCard is not null &&
+              targetCard.PlayedBy == AlgoPlayer.Player &&
+              targetCard.Suit != placeCardAttempt.Card.Suit
+            )
+            {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a different suit.");
+                return false;
+            }
+
+            // Can't reinforce a lesser card.
+            if (
+              targetCard is not null &&
+              targetCard.PlayedBy == AlgoPlayer.Player &&
+              !AlgoMoveChecksService.CardTrumpsCard(algoPlaceCardAttempt.Card, targetCard)
+            )
+            {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+                return false;
+            }
+
+            // Can't capture a lesser card.
+            if (
+              targetCard is not null &&
+              targetCard.Suit == placeCardAttempt.Card.Suit &&
+              !AlgoMoveChecksService.CardTrumpsCard(algoPlaceCardAttempt.Card, targetCard)
+            )
+            {
+                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+                return false;
+            }
 
             return true;
         }
