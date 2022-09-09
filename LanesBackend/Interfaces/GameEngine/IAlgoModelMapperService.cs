@@ -7,9 +7,15 @@ namespace LanesBackend.Interfaces.GameEngine
     {
         public AlgoLane ToAlgoLane(Lane lane, bool playerIsHost);
 
+        public Lane FromAlgoLane(AlgoLane algoLane, bool playerIsHost);
+
         public AlgoMove ToAlgoMove(Move move, bool playerIsHost);
 
+        public Move FromAlgoMove(AlgoMove algoMove, bool playerIsHost);
+
         public AlgoPlaceCardAttempt ToAlgoPlaceCardAttempt(PlaceCardAttempt placeCardAttempt, bool playerIsHost);
+
+        public PlaceCardAttempt FromAlgoPlaceCardAttempt(AlgoPlaceCardAttempt algoPlaceCardAttempt, bool playerIsHost);
 
         public AlgoCard ToAlgoCard(Card card);
 

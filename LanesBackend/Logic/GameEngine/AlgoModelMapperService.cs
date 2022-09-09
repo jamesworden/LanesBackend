@@ -6,7 +6,6 @@ namespace LanesBackend.Logic.GameEngine
 {
     public class AlgoModelMapperService : IAlgoModelMapperService
     {
-        private readonly int MAX_ROW_INDEX = 6; // Replace with number of rows constant - 1;
 
         public AlgoLane ToAlgoLane(Lane lane, bool playerIsHost)
         {
@@ -27,7 +26,7 @@ namespace LanesBackend.Logic.GameEngine
                 algoRows[i] = algoCards;
             }
 
-            if (playerIsHost)
+            if (!playerIsHost)
             {
                 var reverseAlgoRowsList = algoRows.ToList();
                 reverseAlgoRowsList.Reverse();
@@ -63,17 +62,53 @@ namespace LanesBackend.Logic.GameEngine
             return algoMove;
         }
 
+        public Move FromAlgoMove(AlgoMove algoMove, bool playerIsHost)
+        {
+            List<PlaceCardAttempt> placeCardAttempts = new();
+
+            foreach (var algoPlaceCardAttempt in algoMove.PlaceCardAttempts)
+            {
+                PlaceCardAttempt placeCardAttempt = FromAlgoPlaceCardAttempt(algoPlaceCardAttempt, playerIsHost);
+                placeCardAttempts.Add(placeCardAttempt);
+            }
+
+            Move move = new(placeCardAttempts);
+
+            return move;
+        }
+
         public AlgoPlaceCardAttempt ToAlgoPlaceCardAttempt(PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             AlgoCard algoCard = ToAlgoCard(placeCardAttempt.Card);
+            int algoTargetLaneIndex = placeCardAttempt.TargetLaneIndex;
+            int algoTargetRowIndex = placeCardAttempt.TargetRowIndex;
 
-            int targetRowIndex = playerIsHost ? 
-                placeCardAttempt.TargetRowIndex : 
-                MAX_ROW_INDEX - placeCardAttempt.TargetRowIndex;
+            if (!playerIsHost)
+            {
+                algoTargetLaneIndex =  4 - algoTargetLaneIndex;
+                algoTargetRowIndex = 6 - algoTargetRowIndex;
+            }
 
-            AlgoPlaceCardAttempt algoPlaceCardAttempt = new(algoCard, placeCardAttempt.TargetLaneIndex, targetRowIndex);
+            AlgoPlaceCardAttempt algoPlaceCardAttempt = new(algoCard, algoTargetLaneIndex, algoTargetRowIndex);
 
             return algoPlaceCardAttempt;
+        }
+
+        public PlaceCardAttempt FromAlgoPlaceCardAttempt(AlgoPlaceCardAttempt algoPlaceCardAttempt, bool playerIsHost)
+        {
+            Card card = FromAlgoCard(algoPlaceCardAttempt.Card, playerIsHost);
+            int targetLaneIndex = algoPlaceCardAttempt.TargetLaneIndex;
+            int targetRowIndex = algoPlaceCardAttempt.TargetRowIndex;
+
+            if (!playerIsHost)
+            {
+                targetLaneIndex = Math.Abs(targetLaneIndex - 4);
+                targetRowIndex = Math.Abs(targetRowIndex - 6);
+            }
+
+            PlaceCardAttempt placeCardAttempt = new(card, targetLaneIndex, targetRowIndex);
+
+            return placeCardAttempt;
         }
 
         public AlgoCard ToAlgoCard(Card card)
@@ -120,6 +155,46 @@ namespace LanesBackend.Logic.GameEngine
             }
 
             return PlayerOrNone.None;
+        }
+
+        public Lane FromAlgoLane(AlgoLane algoLane, bool playerIsHost)
+        {
+            List<Card>[] rows = new List<Card>[algoLane.Rows.Length];
+
+            for (int i = 0; i < algoLane.Rows.Length; i++)
+            {
+                var algoRow = algoLane.Rows[i];
+
+                List<Card> cards = new();
+
+                foreach (var algoCard in algoRow)
+                {
+                    Card card = FromAlgoCard(algoCard, playerIsHost);
+                    cards.Add(card);
+                }
+
+                rows[i] = cards;
+            }
+
+            if (!playerIsHost)
+            {
+                var reverseRowsList = rows.ToList();
+                reverseRowsList.Reverse();
+                var reverseRows = reverseRowsList.ToArray();
+
+                rows = reverseRows;
+            }
+
+            Card? lastCardPlayed = algoLane.LastCardPlayed is null ?
+                null :
+                FromAlgoCard(algoLane.LastCardPlayed,playerIsHost);
+
+            Lane lane = new(rows);
+            lane.LastCardPlayed = lastCardPlayed;
+            lane.LaneAdvantage = FromAlgoPlayer(algoLane.LaneAdvantage, playerIsHost);
+            lane.WonBy = FromAlgoPlayer(algoLane.WonBy, playerIsHost);
+
+            return lane;
         }
     }
 }

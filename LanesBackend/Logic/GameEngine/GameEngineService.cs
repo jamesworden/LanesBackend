@@ -179,6 +179,9 @@ namespace LanesBackend.Logic
             {
                 PlaceCardAndApplyGameRules(game, placeCardAttempt, algoLane, playerIsHost);
             }
+
+            var algoLaneBackToOriginal = AlgoModelMapperService.FromAlgoLane(algoLane, playerIsHost);
+            game.Lanes[targetLaneIndex] = algoLaneBackToOriginal;
         }
 
         private void PlaceCardAndApplyGameRules(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
