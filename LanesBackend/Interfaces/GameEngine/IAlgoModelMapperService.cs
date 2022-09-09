@@ -13,6 +13,10 @@ namespace LanesBackend.Interfaces.GameEngine
 
         public AlgoCard ToAlgoCard(Card card);
 
+        public Card FromAlgoCard(AlgoCard algoCard, bool playerIsHost);
+
         public AlgoPlayer ToAlgoPlayer(PlayerOrNone playerOrNone);
+
+        public PlayerOrNone FromAlgoPlayer(AlgoPlayer algoPlayer, bool playerIsHost);
     }
 }

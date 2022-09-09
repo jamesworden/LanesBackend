@@ -15,16 +15,20 @@ namespace LanesBackend.Logic
 
         private readonly IAlgoLanesService AlgoLanesService;
 
+        private readonly IDeckService DeckService;
+
         public GameEngineService(
             IMoveChecksService moveChecksService,
             IAlgoModelMapperService algoModelMapperService,
             IAlgoMoveChecksService algoMoveChecksService,
-            IAlgoLanesService algoLanesService)
+            IAlgoLanesService algoLanesService,
+            IDeckService deckService)
         {
             MoveChecksService = moveChecksService;
             AlgoModelMapperService = algoModelMapperService;
             AlgoMoveChecksService = algoMoveChecksService;
             AlgoLanesService = algoLanesService;
+            DeckService = deckService;
         }
 
         public bool MoveIsValid(Game game, Move move, bool playerIsHost)
@@ -195,7 +199,7 @@ namespace LanesBackend.Logic
                 return;
             }
 
-            //_ = WinLaneIfAppropriateFromHostPov(game, placeCardAttempt, targetLane, playerIsTruelyHost);
+            _ = WinLaneIfAppropriate(game, algoPlaceCardAttempt, algoLane, playerIsHost);
         }
 
         private void PlaceCard(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
@@ -221,7 +225,7 @@ namespace LanesBackend.Logic
             }
             else if (algoLane.LaneAdvantage == AlgoPlayer.Opponent)
             {
-                //CaptureOpponentAdvantageLane(game, lane, playerIsTruelyHost);
+                CaptureOpponentAdvantageLane(game, algoLane, playerIsHost);
             }
 
             return true;
@@ -240,32 +244,33 @@ namespace LanesBackend.Logic
             algoLane.LaneAdvantage = AlgoPlayer.Player;
         }
 
-        //private void CaptureOpponentAdvantageLane(Game game, Lane lane, bool playerIsTruelyHost)
-        //{
-        //    List<Card> topCardsOfFirstThreeRows = new();
+        private void CaptureOpponentAdvantageLane(Game game, AlgoLane algoLane, bool playerIsHost)
+        {
+            List<AlgoCard> topCardsOfFirstThreeRows = new();
 
-        //    for (int i = 0; i < 3; i++)
-        //    {
-        //        var card = lane.Rows[i].TakeLast(1).FirstOrDefault();
+            for (int i = 0; i < 3; i++)
+            {
+                var algoCard = algoLane.Rows[i].Last();
 
-        //        if (card is not null)
-        //        {
-        //            topCardsOfFirstThreeRows.Add(card);
-        //        }
-        //    }
+                if (algoCard is not null)
+                {
+                    topCardsOfFirstThreeRows.Add(algoCard);
+                }
+            }
 
-        //    var remainingCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
+            var remainingAlgoCardsInLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
 
-        //    var middleRow = lane.Rows[3];
-        //    middleRow.AddRange(topCardsOfFirstThreeRows);
+            var middleRow = algoLane.Rows[3];
+            middleRow.AddRange(topCardsOfFirstThreeRows);
 
-        //    var player = playerIsTruelyHost ? game.HostPlayer : game.GuestPlayer;
-        //    player.Deck.Cards.AddRange(remainingCardsInLane);
+            // This is bad. We are in algorithm territory manipulating non-algorithmic models.
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            var remainingCardsInLane = remainingAlgoCardsInLane.Select(algoCard => AlgoModelMapperService.FromAlgoCard(algoCard, playerIsHost));
+            player.Deck.Cards.AddRange(remainingCardsInLane);
+            DeckService.ShuffleDeck(player.Deck);
 
-        //    DeckService.ShuffleDeck(player.Deck);
-
-        //    lane.LaneAdvantage = PlayerOrNone.Host;
-        //}
+            algoLane.LaneAdvantage = AlgoPlayer.Player;
+        }
 
         private bool TriggerAceRuleIfAppropriate(AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane)
         {
@@ -286,22 +291,24 @@ namespace LanesBackend.Logic
             return true;
         }
 
-        //private bool WinLaneIfAppropriateFromHostPov(Game game, PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsTruelyHost)
-        //{
-        //    var placeCardInLastRow = placeCardAttempt.TargetRowIndex == 6;
+        private bool WinLaneIfAppropriate(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
+        {
+            var placeCardInLastRow = algoPlaceCardAttempt.TargetRowIndex == 6;
 
-        //    if (!placeCardInLastRow)
-        //    {
-        //        return false;
-        //    }
+            if (!placeCardInLastRow)
+            {
+                return false;
+            }
 
-        //    lane.WonBy = PlayerOrNone.Host;
-        //    var allCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
-        //    var player = playerIsTruelyHost ? game.HostPlayer : game.GuestPlayer;
-        //    player.Deck.Cards.AddRange(allCardsInLane);
-        //    DeckService.ShuffleDeck(player.Deck);
-        //    // TODO: Add joker to lane?
-        //    return true;
-        //}
+            algoLane.WonBy = AlgoPlayer.Player;
+            // This is bad. We are in algorithm territory manipulating non-algorithmic models.
+            var allAlgoCardsInLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
+            var allCardsInLane = allAlgoCardsInLane.Select(algoCard => AlgoModelMapperService.FromAlgoCard(algoCard, playerIsHost));
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            player.Deck.Cards.AddRange(allCardsInLane);
+            DeckService.ShuffleDeck(player.Deck);
+            // TODO: Add joker to lane?
+            return true;
+        }
     }
 }

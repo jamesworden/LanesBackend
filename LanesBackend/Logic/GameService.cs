@@ -11,12 +11,19 @@ namespace LanesBackend.Logic
 
         private readonly IGameEngineService GameEngineService;
 
-        public GameService(IDeckService deckService, ILanesService lanesService, IGameEngineService gameEngineService)
+        private readonly ICardService CardService;
+
+        public GameService(
+            IDeckService deckService,
+            ILanesService lanesService,
+            IGameEngineService gameEngineService, 
+            ICardService cardService)
         {
             DeckService = deckService;
             LanesService = lanesService;
             GameEngineService = gameEngineService;
-        }
+            CardService = cardService;
+         }
 
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode)
         {
@@ -54,6 +61,33 @@ namespace LanesBackend.Logic
             }
 
             return moveIsValid;
+        }
+
+        public void RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
+        {
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            // For now assume all moves are one place card attempt.
+            var card = move.PlaceCardAttempts[0].Card;
+
+            CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, card);
+        }
+
+        public void DrawCardFromDeck(Game game, bool playerIsHost)
+        {
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            var playersDeckHasCards = player.Deck.Cards.Any();
+
+            if (!playersDeckHasCards)
+            {
+                return;
+            }
+
+            var cardFromDeck = DeckService.DrawCard(player.Deck);
+
+            if (cardFromDeck is not null)
+            {
+                player.Hand.AddCard(cardFromDeck);
+            }
         }
     }
 }

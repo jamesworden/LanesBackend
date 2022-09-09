@@ -124,24 +124,9 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var playerIsHost = game.HostConnectionId == connectionId;
-            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            var playersDeckHasCards = player.Deck.Cards.Any();
-
-            if (playersDeckHasCards)
-            {
-                var cardFromDeck = DeckService.DrawCard(player.Deck);
-
-                if (cardFromDeck is not null)
-                {
-                    player.Hand.AddCard(cardFromDeck);
-                }
-            }
-
-            // For now assume all moves are one place card attempt.
-            var card = move.PlaceCardAttempts[0].Card;
-
-            CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, card);
+            var playerIsHost = connectionId == game.HostConnectionId;
+            GameService.RemoveCardsFromHand(game, playerIsHost, move);
+            GameService.DrawCardFromDeck(game, playerIsHost);
 
             await UpdatePlayerGameStates(game, "GameUpdated");
         }

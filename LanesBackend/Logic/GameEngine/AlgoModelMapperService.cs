@@ -84,6 +84,14 @@ namespace LanesBackend.Logic.GameEngine
             return algoCard;
         }
 
+        public Card FromAlgoCard(AlgoCard algoCard, bool playerIsHost)
+        {
+            Card card = new(algoCard.Kind, algoCard.Suit);
+            card.PlayedBy = FromAlgoPlayer(algoCard.PlayedBy, playerIsHost);
+
+            return card;
+        }
+
         public AlgoPlayer ToAlgoPlayer(PlayerOrNone playerOrNone)
         {            
             if (playerOrNone == PlayerOrNone.Host)
@@ -97,6 +105,21 @@ namespace LanesBackend.Logic.GameEngine
             }
 
             return AlgoPlayer.None;
+        }
+
+        public PlayerOrNone FromAlgoPlayer(AlgoPlayer algoPlayer, bool playerIsHost)
+        {
+            if (algoPlayer == AlgoPlayer.Player)
+            {
+                return playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            }
+
+            if (algoPlayer == AlgoPlayer.Opponent)
+            {
+                return playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host;
+            }
+
+            return PlayerOrNone.None;
         }
     }
 }
