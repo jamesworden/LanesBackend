@@ -12,6 +12,7 @@ builder.Services.AddScoped<IDeckService, DeckService>();
 builder.Services.AddScoped<ILanesService, LanesService>();
 builder.Services.AddScoped<IMoveChecksService, MoveChecksService>();
 builder.Services.AddScoped<IAlgoMoveChecksService, AlgoMoveChecksService>();
+builder.Services.AddScoped<IAlgoLanesService, AlgoLanesService>();
 builder.Services.AddScoped<IGameEngineService, GameEngineService>();
 builder.Services.AddScoped<IAlgoModelMapperService, AlgoModelMapperService>();
 builder.Services.AddScoped<IGameService, GameService>();

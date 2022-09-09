@@ -6,6 +6,6 @@ namespace LanesBackend.Interfaces
     {
         public bool MoveIsValid(Game game, Move move, bool playerIsHost);
 
-        public bool MakeMove(Game game, Move move, bool playerIsHost);
+        public void MakeMove(Game game, Move move, bool playerIsHost);
     }
 }

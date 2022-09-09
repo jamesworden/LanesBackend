@@ -67,7 +67,7 @@ namespace LanesBackend.Hubs
         {
             var cards = JsonConvert.DeserializeObject<List<Card>>(stringifiedCards);
 
-            if (cards == null)
+            if (cards is null)
             {
                 return;
             }
@@ -104,7 +104,7 @@ namespace LanesBackend.Hubs
         {
             var move = JsonConvert.DeserializeObject<Move>(stringifiedMove);
 
-            if (move == null)
+            if (move is null)
             {
                 return;
             }
@@ -112,7 +112,7 @@ namespace LanesBackend.Hubs
             var connectionId = Context.ConnectionId;
             var game = GameCache.FindGameByConnectionId(connectionId);
 
-            if (game == null)
+            if (game is null)
             {
                 return;
             }
