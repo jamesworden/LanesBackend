@@ -121,6 +121,17 @@ namespace LanesBackend.Hubs
             
             if (!moveWasValid)
             {
+                var playerIsHost = connectionId == game.HostConnectionId;
+                
+                if (playerIsHost)
+                {
+                    await UpdateHostGameState(game, "GameUpdated");
+                }
+                else
+                {
+                    await UpdateGuestGameState(game, "GameUpdated");
+                }
+
                 return;
             }
 

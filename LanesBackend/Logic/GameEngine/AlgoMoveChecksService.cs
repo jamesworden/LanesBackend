@@ -24,16 +24,22 @@ namespace LanesBackend.Logic.GameEngine
 
         public bool OpponentAceOnTopOfAnyRow(AlgoLane algoLane)
         {
-            return algoLane.Rows.Any(row => {
+            foreach(var row in algoLane.Rows)
+            {
+                if (row.Count <= 0)
+                {
+                    continue;
+                }
+
                 var topCard = row.Last();
 
                 if (topCard is not null && topCard.Kind == Kind.Ace && topCard.PlayedBy == AlgoPlayer.Opponent)
                 {
                     return true;
                 }
+            }
 
-                return false;
-            });
+            return false;
         }
 
         public bool CardTrumpsCard(AlgoCard attackingCard, AlgoCard defendingCard)

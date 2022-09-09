@@ -87,7 +87,7 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            var moveStartsOnOpponentSide = algoMove.PlaceCardAttempts.First().TargetRowIndex < 3;
+            var moveStartsOnOpponentSide = algoMove.PlaceCardAttempts.First().TargetRowIndex > 3;
             var opponentHasAdvantage = algoLane.LaneAdvantage == AlgoPlayer.Opponent;
             if (moveStartsOnOpponentSide && opponentHasAdvantage)
             {
@@ -123,7 +123,7 @@ namespace LanesBackend.Logic
             }
 
             var targetRow = algoLane.Rows[placeCardAttempt.TargetRowIndex];
-            var targetCard = targetRow.Last();
+            var targetCard = targetRow.Any() ? targetRow.Last() : null;
 
             // Can't reinforce with different suit card.
             if (
