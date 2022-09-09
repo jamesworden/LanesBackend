@@ -124,10 +124,6 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var playerIsHost = connectionId == game.HostConnectionId;
-            GameService.RemoveCardsFromHand(game, playerIsHost, move);
-            GameService.DrawCardFromDeck(game, playerIsHost);
-
             await UpdatePlayerGameStates(game, "GameUpdated");
         }
 

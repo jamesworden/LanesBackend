@@ -60,6 +60,10 @@ namespace LanesBackend.Logic
                 GameEngineService.MakeMove(game, move, playerIsHost);
             }
 
+            RemoveCardsFromHand(game, playerIsHost, move);
+
+            DrawCardFromDeck(game, playerIsHost);
+
             return moveIsValid;
         }
 

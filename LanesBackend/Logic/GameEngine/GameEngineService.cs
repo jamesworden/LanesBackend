@@ -202,7 +202,7 @@ namespace LanesBackend.Logic
             _ = WinLaneIfAppropriate(game, algoPlaceCardAttempt, algoLane, playerIsHost);
         }
 
-        private void PlaceCard(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
+        private static void PlaceCard(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
         {
             var targetRow = algoLane.Rows[algoPlaceCardAttempt.TargetRowIndex];
             algoPlaceCardAttempt.Card.PlayedBy = AlgoPlayer.Player;
