@@ -125,7 +125,6 @@ namespace LanesBackend.Logic
             var targetRow = algoLane.Rows[placeCardAttempt.TargetRowIndex];
             var targetCard = targetRow.Any() ? targetRow.Last() : null;
 
-            // Can't reinforce with different suit card.
             if (
               targetCard is not null &&
               targetCard.PlayedBy == AlgoPlayer.Player &&
@@ -136,7 +135,6 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            // Can't reinforce a lesser card.
             if (
               targetCard is not null &&
               targetCard.PlayedBy == AlgoPlayer.Player &&
@@ -147,14 +145,13 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            // Can't capture a lesser card.
             if (
               targetCard is not null &&
               targetCard.Suit == algoCard.Suit &&
               !AlgoMoveChecksService.CardTrumpsCard(algoCard, targetCard)
             )
             {
-                Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
+                Console.WriteLine("Client broke the rules: Tried to capture a lesser card.");
                 return false;
             }
 
