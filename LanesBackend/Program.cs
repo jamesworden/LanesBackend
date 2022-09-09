@@ -1,13 +1,19 @@
 using LanesBackend.Caching;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
+using LanesBackend.Interfaces.GameEngine;
 using LanesBackend.Logic;
+using LanesBackend.Logic.GameEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IDeckService, DeckService>();
 builder.Services.AddScoped<ILanesService, LanesService>();
+builder.Services.AddScoped<IMoveChecksService, MoveChecksService>();
+builder.Services.AddScoped<IAlgoMoveChecksService, AlgoMoveChecksService>();
+builder.Services.AddScoped<IGameEngineService, GameEngineService>();
+builder.Services.AddScoped<IAlgoModelMapperService, AlgoModelMapperService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
