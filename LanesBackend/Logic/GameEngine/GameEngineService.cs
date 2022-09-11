@@ -1,7 +1,6 @@
 ﻿using LanesBackend.Interfaces;
 using LanesBackend.Interfaces.GameEngine;
 using LanesBackend.Models;
-using LanesBackend.Models.GameEngine;
 
 namespace LanesBackend.Logic
 {
@@ -9,26 +8,18 @@ namespace LanesBackend.Logic
     {
         private readonly IMoveChecksService MoveChecksService;
 
-        private readonly IAlgoModelMapperService AlgoModelMapperService;
-
-        private readonly IAlgoMoveChecksService AlgoMoveChecksService;
-
-        private readonly IAlgoLanesService AlgoLanesService;
-
         private readonly IDeckService DeckService;
+
+        private readonly IGameRuleService GameRuleService;
 
         public GameEngineService(
             IMoveChecksService moveChecksService,
-            IAlgoModelMapperService algoModelMapperService,
-            IAlgoMoveChecksService algoMoveChecksService,
-            IAlgoLanesService algoLanesService,
-            IDeckService deckService)
+            IDeckService deckService,
+            IGameRuleService gameRuleService)
         {
             MoveChecksService = moveChecksService;
-            AlgoModelMapperService = algoModelMapperService;
-            AlgoMoveChecksService = algoMoveChecksService;
-            AlgoLanesService = algoLanesService;
             DeckService = deckService;
+            GameRuleService = gameRuleService;
         }
 
         public bool MoveIsValid(Game game, Move move, bool playerIsHost)
@@ -61,6 +52,7 @@ namespace LanesBackend.Logic
                 return false;
             }
 
+            // For now assume all moves are one place card attempt.
             var placeCardAttempt = move.PlaceCardAttempts[0];
             var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var lane = game.Lanes[targetLaneIndex];
@@ -72,63 +64,71 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            var algoLane = AlgoModelMapperService.ToAlgoLane(lane, playerIsHost);
-            var algoMove = AlgoModelMapperService.ToAlgoMove(move, playerIsHost);
-
-            // For now assume all moves are one place card attempt.
-            var algoPlaceCardAttempt = algoMove.PlaceCardAttempts.First();
-            var algoCard = algoPlaceCardAttempt.Card;
-
-            var moveStartsOnPlayerSide = algoPlaceCardAttempt.TargetRowIndex < 3;
-            var playerHasAdvantage = algoLane.LaneAdvantage == AlgoPlayer.Player;
+            
+            var moveStartsOnPlayerSide = playerIsHost ? 
+                placeCardAttempt.TargetRowIndex < 3 :
+                placeCardAttempt.TargetRowIndex > 3;
+            var playerHasAdvantage = playerIsHost ?
+                lane.LaneAdvantage == PlayerOrNone.Host :
+                lane.LaneAdvantage == PlayerOrNone.Guest;
             if (moveStartsOnPlayerSide && playerHasAdvantage)
             {
                 Console.WriteLine("Client broke the rules: Tried to move on their own side when they have the advantage.");
                 return false;
             }
 
-            var moveStartsOnOpponentSide = algoMove.PlaceCardAttempts.First().TargetRowIndex > 3;
-            var opponentHasAdvantage = algoLane.LaneAdvantage == AlgoPlayer.Opponent;
+            var moveStartsOnOpponentSide = playerIsHost ?
+                placeCardAttempt.TargetRowIndex > 3 :
+                placeCardAttempt.TargetRowIndex < 3;
+            var opponentHasAdvantage = playerIsHost ?
+                 lane.LaneAdvantage == PlayerOrNone.Guest :
+                 lane.LaneAdvantage == PlayerOrNone.Host;
             if (moveStartsOnOpponentSide && opponentHasAdvantage)
             {
                 Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when they have their opponent has the advantage.");
                 return false;
             }
 
-            var noAdvantage = algoLane.LaneAdvantage == AlgoPlayer.None;
+            var noAdvantage = lane.LaneAdvantage == PlayerOrNone.None;
             if (moveStartsOnOpponentSide && noAdvantage)
             {
                 Console.WriteLine("Client broke the rules: Tried to move on their opponent's side when there is no advantage.");
                 return false;
             }
 
-            var allPreviousRowsOccupied = AlgoMoveChecksService.AllPreviousRowsOccupied(algoLane, algoPlaceCardAttempt.TargetRowIndex);
-            if (moveStartsOnPlayerSide && !allPreviousRowsOccupied)
+            // TODO: Make sure not only the rows are occupied but the top card of the row was last played by player
+            var playerSideCardsInOrder = playerIsHost ?
+                MoveChecksService.AllPreviousRowsOccupied(lane, placeCardAttempt.TargetRowIndex) :
+                MoveChecksService.AllFollowingRowsOccupied(lane, placeCardAttempt.TargetRowIndex);
+            if (playerIsHost && moveStartsOnPlayerSide && !playerSideCardsInOrder)
             {
                 Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
                 return false;
             }
 
-            var cardIsAce = algoCard.Kind == Kind.Ace;
-            var opponentAceOnTopOfAnyRow = AlgoMoveChecksService.OpponentAceOnTopOfAnyRow(algoLane);
+            var cardIsAce = placeCardAttempt.Card.Kind == Kind.Ace;
+            var opponentAceOnTopOfAnyRow = MoveChecksService.OpponentAceOnTopOfAnyRow(lane, playerIsHost);
             var playedAceToNukeRow = cardIsAce && opponentAceOnTopOfAnyRow;
             var cardsHaveMatchingSuitOrKind =
                 lane.LastCardPlayed is not null &&
-                (algoCard.Suit == lane.LastCardPlayed.Suit ||
-                algoCard.Kind == lane.LastCardPlayed.Kind);
+                (placeCardAttempt.Card.Suit == lane.LastCardPlayed.Suit ||
+                placeCardAttempt.Card.Kind == lane.LastCardPlayed.Kind);
             if (lane.LastCardPlayed is not null && !cardsHaveMatchingSuitOrKind && !playedAceToNukeRow)
             {
                 Console.WriteLine("Client broke the rules: Tried to play a card that has other suit or other kind than the last card played OR not an ace to nuke the row.");
                 return false;
             }
 
-            var targetRow = algoLane.Rows[placeCardAttempt.TargetRowIndex];
+            var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
             var targetCard = targetRow.Any() ? targetRow.Last() : null;
-
+            var playerPlayedTargetCard = targetCard is not null &&
+                (playerIsHost ?
+                targetCard.PlayedBy == PlayerOrNone.Host :
+                targetCard.PlayedBy == PlayerOrNone.Guest);
             if (
               targetCard is not null &&
-              targetCard.PlayedBy == AlgoPlayer.Player &&
-              targetCard.Suit != algoCard.Suit
+              targetCard.Suit != placeCardAttempt.Card.Suit &&
+              playerPlayedTargetCard
             )
             {
                 Console.WriteLine("Client broke the rules: Tried to reinforce with a different suit.");
@@ -137,8 +137,8 @@ namespace LanesBackend.Logic
 
             if (
               targetCard is not null &&
-              targetCard.PlayedBy == AlgoPlayer.Player &&
-              !AlgoMoveChecksService.CardTrumpsCard(algoCard, targetCard)
+              playerPlayedTargetCard &&
+              !MoveChecksService.CardTrumpsCard(placeCardAttempt.Card, targetCard)
             )
             {
                 Console.WriteLine("Client broke the rules: Tried to reinforce with a lesser card.");
@@ -147,8 +147,8 @@ namespace LanesBackend.Logic
 
             if (
               targetCard is not null &&
-              targetCard.Suit == algoCard.Suit &&
-              !AlgoMoveChecksService.CardTrumpsCard(algoCard, targetCard)
+              targetCard.Suit == placeCardAttempt.Card.Suit &&
+              !MoveChecksService.CardTrumpsCard(placeCardAttempt.Card, targetCard)
             )
             {
                 Console.WriteLine("Client broke the rules: Tried to capture a lesser card.");
@@ -162,153 +162,47 @@ namespace LanesBackend.Logic
         {
             var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
             var lane = game.Lanes[targetLaneIndex];
-            var algoLane = AlgoModelMapperService.ToAlgoLane(lane, playerIsHost);
-            var algoMove = AlgoModelMapperService.ToAlgoMove(move, playerIsHost);
 
-            var isPairMove = algoMove.PlaceCardAttempts.Count > 1;
+            var multipleCardsPlayed = move.PlaceCardAttempts.Count > 1;
 
-            if (!isPairMove)
+            if (!multipleCardsPlayed)
             {
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
             }
 
-            foreach (var placeCardAttempt in algoMove.PlaceCardAttempts)
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
-                PlaceCardAndApplyGameRules(game, placeCardAttempt, algoLane, playerIsHost);
+                PlaceCardAndApplyGameRules(game, placeCardAttempt, lane, playerIsHost);
             }
-
-            var algoLaneBackToOriginal = AlgoModelMapperService.FromAlgoLane(algoLane, playerIsHost);
-            game.Lanes[targetLaneIndex] = algoLaneBackToOriginal;
         }
 
-        private void PlaceCardAndApplyGameRules(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
+        private void PlaceCardAndApplyGameRules(Game game, PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsHost)
         {
-            var aceRuleTriggered = TriggerAceRuleIfAppropriate(algoPlaceCardAttempt, algoLane);
+            var aceRuleTriggered = GameRuleService.TriggerAceRuleIfAppropriate(lane, placeCardAttempt, playerIsHost);
 
             if (aceRuleTriggered)
             {
                 return;
             }
 
-            PlaceCard(algoLane, algoPlaceCardAttempt);
+            PlaceCard(lane, placeCardAttempt, playerIsHost);
 
-            var middleCaptured = CaptureMiddleIfAppropriate(game, algoPlaceCardAttempt, algoLane, playerIsHost);
+            var middleCaptured = GameRuleService.CaptureMiddleIfAppropriate(game, placeCardAttempt, playerIsHost);
 
             if (middleCaptured)
             {
                 return;
             }
 
-            _ = WinLaneIfAppropriate(game, algoPlaceCardAttempt, algoLane, playerIsHost);
+            _ = GameRuleService.WinGameIfAppropriate(game, placeCardAttempt, playerIsHost);
         }
 
-        private static void PlaceCard(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
+        private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
-            var targetRow = algoLane.Rows[algoPlaceCardAttempt.TargetRowIndex];
-            algoPlaceCardAttempt.Card.PlayedBy = AlgoPlayer.Player;
-            targetRow.Add(algoPlaceCardAttempt.Card);
-            algoLane.LastCardPlayed = algoPlaceCardAttempt.Card;
-        }
-
-        private bool CaptureMiddleIfAppropriate(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
-        {
-            var cardIsLastOnHostSide = algoPlaceCardAttempt.TargetRowIndex == 2;
-
-            if (!cardIsLastOnHostSide)
-            {
-                return false;
-            }
-
-            if (algoLane.LaneAdvantage == AlgoPlayer.None)
-            {
-                CaptureNoAdvantageLane(algoLane, algoPlaceCardAttempt);
-            }
-            else if (algoLane.LaneAdvantage == AlgoPlayer.Opponent)
-            {
-                CaptureOpponentAdvantageLane(game, algoLane, playerIsHost);
-            }
-
-            return true;
-        }
-
-        private void CaptureNoAdvantageLane(AlgoLane algoLane, AlgoPlaceCardAttempt algoPlaceCardAttempt)
-        {
-            var cardsFromLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
-
-            // Put last placed card at top of pile
-            cardsFromLane.Remove(algoPlaceCardAttempt.Card);
-            cardsFromLane.Add(algoPlaceCardAttempt.Card);
-
-            var middleRow = algoLane.Rows[3];
-            middleRow.AddRange(cardsFromLane);
-            algoLane.LaneAdvantage = AlgoPlayer.Player;
-        }
-
-        private void CaptureOpponentAdvantageLane(Game game, AlgoLane algoLane, bool playerIsHost)
-        {
-            List<AlgoCard> topCardsOfFirstThreeRows = new();
-
-            for (int i = 0; i < 3; i++)
-            {
-                var algoCard = algoLane.Rows[i].Last();
-
-                if (algoCard is not null)
-                {
-                    topCardsOfFirstThreeRows.Add(algoCard);
-                }
-            }
-
-            var remainingAlgoCardsInLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
-
-            var middleRow = algoLane.Rows[3];
-            middleRow.AddRange(topCardsOfFirstThreeRows);
-
-            // This is bad. We are in algorithm territory manipulating non-algorithmic models.
-            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            var remainingCardsInLane = remainingAlgoCardsInLane.Select(algoCard => AlgoModelMapperService.FromAlgoCard(algoCard, playerIsHost));
-            player.Deck.Cards.AddRange(remainingCardsInLane);
-            DeckService.ShuffleDeck(player.Deck);
-
-            algoLane.LaneAdvantage = AlgoPlayer.Player;
-        }
-
-        private bool TriggerAceRuleIfAppropriate(AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane)
-        {
-            var playerPlayedAnAce = algoPlaceCardAttempt.Card.Kind == Kind.Ace;
-            if (!playerPlayedAnAce)
-            {
-                return false;
-            }
-
-            var opponentAceOnTopOfAnyRow = AlgoMoveChecksService.OpponentAceOnTopOfAnyRow(algoLane);
-            if (!opponentAceOnTopOfAnyRow)
-            {
-                return false;
-            }
-
-            _ = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
-
-            return true;
-        }
-
-        private bool WinLaneIfAppropriate(Game game, AlgoPlaceCardAttempt algoPlaceCardAttempt, AlgoLane algoLane, bool playerIsHost)
-        {
-            var placeCardInLastRow = algoPlaceCardAttempt.TargetRowIndex == 6;
-
-            if (!placeCardInLastRow)
-            {
-                return false;
-            }
-
-            algoLane.WonBy = AlgoPlayer.Player;
-            // This is bad. We are in algorithm territory manipulating non-algorithmic models.
-            var allAlgoCardsInLane = AlgoLanesService.GrabAllCardsAndClearLane(algoLane);
-            var allCardsInLane = allAlgoCardsInLane.Select(algoCard => AlgoModelMapperService.FromAlgoCard(algoCard, playerIsHost));
-            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            player.Deck.Cards.AddRange(allCardsInLane);
-            DeckService.ShuffleDeck(player.Deck);
-            // TODO: Add joker to lane?
-            return true;
+            var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
+            placeCardAttempt.Card.PlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            targetRow.Add(placeCardAttempt.Card);
+            lane.LastCardPlayed = placeCardAttempt.Card;
         }
     }
 }
