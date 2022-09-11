@@ -49,10 +49,8 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public bool MakeMoveIfValid(Game game, Move move, string playerConnectionId)
+        public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost)
         {
-            var playerIsHost = game.HostConnectionId == playerConnectionId;
-
             var moveIsValid = GameEngineService.MoveIsValid(game, move, playerIsHost);
 
             if (moveIsValid)

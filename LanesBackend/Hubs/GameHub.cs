@@ -117,21 +117,11 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var moveWasValid = GameService.MakeMoveIfValid(game, move, connectionId);
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var moveWasValid = GameService.MakeMoveIfValid(game, move, playerIsHost);
             
             if (!moveWasValid)
             {
-                var playerIsHost = connectionId == game.HostConnectionId;
-                
-                if (playerIsHost)
-                {
-                    await UpdateHostGameState(game, "GameUpdated");
-                }
-                else
-                {
-                    await UpdateGuestGameState(game, "GameUpdated");
-                }
-
                 return;
             }
 

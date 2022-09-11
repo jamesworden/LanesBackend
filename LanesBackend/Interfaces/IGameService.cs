@@ -6,7 +6,7 @@ namespace LanesBackend.Interfaces
     {
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode);
 
-        public bool MakeMoveIfValid(Game game, Move move, string playerConnectionId);
+        public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost);
 
         public void RemoveCardsFromHand(Game game, bool playerIsHost, Move move);
 
