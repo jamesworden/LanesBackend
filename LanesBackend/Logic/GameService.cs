@@ -53,16 +53,18 @@ namespace LanesBackend.Logic
         {
             var moveIsValid = GameEngineService.MoveIsValid(game, move, playerIsHost);
 
-            if (moveIsValid)
+            if (!moveIsValid)
             {
-                GameEngineService.MakeMove(game, move, playerIsHost);
+                return false;
             }
+
+            GameEngineService.MakeMove(game, move, playerIsHost);
 
             RemoveCardsFromHand(game, playerIsHost, move);
 
             DrawCardFromDeck(game, playerIsHost);
 
-            return moveIsValid;
+            return true;
         }
 
         public void RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
