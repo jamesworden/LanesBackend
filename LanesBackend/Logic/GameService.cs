@@ -61,37 +61,46 @@ namespace LanesBackend.Logic
 
             GameEngineService.MakeMove(game, move, playerIsHost);
 
-            RemoveCardsFromHand(game, playerIsHost, move);
+            var numCardsRemoved = RemoveCardsFromHand(game, playerIsHost, move);
 
-            DrawCardFromDeck(game, playerIsHost);
+            DrawCardsFromDeck(game, playerIsHost, numCardsRemoved);
 
             return true;
         }
 
-        public void RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
+        public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
         {
+            var numCardsRemoved = 0;
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            // For now assume all moves are one place card attempt.
-            var card = move.PlaceCardAttempts[0].Card;
-
-            CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, card);
-        }
-
-        public void DrawCardFromDeck(Game game, bool playerIsHost)
-        {
-            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            var playersDeckHasCards = player.Deck.Cards.Any();
-
-            if (!playersDeckHasCards)
+            
+            foreach(var placeCardAttempt in move.PlaceCardAttempts)
             {
-                return;
+                CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, placeCardAttempt.Card);
+                numCardsRemoved++;
             }
 
-            var cardFromDeck = DeckService.DrawCard(player.Deck);
+            return numCardsRemoved;
+        }
 
-            if (cardFromDeck is not null)
+        public void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
+        {
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+
+            for(int i = 0; i < numCardsToDraw; i++)
             {
-                player.Hand.AddCard(cardFromDeck);
+                var playersDeckHasCards = player.Deck.Cards.Any();
+
+                if (!playersDeckHasCards)
+                {
+                    return;
+                }
+
+                var cardFromDeck = DeckService.DrawCard(player.Deck);
+
+                if (cardFromDeck is not null)
+                {
+                    player.Hand.AddCard(cardFromDeck);
+                }
             }
         }
     }

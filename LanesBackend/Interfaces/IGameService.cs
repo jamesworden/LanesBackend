@@ -8,8 +8,8 @@ namespace LanesBackend.Interfaces
 
         public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost);
 
-        public void RemoveCardsFromHand(Game game, bool playerIsHost, Move move);
+        public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move);
 
-        public void DrawCardFromDeck(Game game, bool playerIsHost);
+        public void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw);
     }
 }
