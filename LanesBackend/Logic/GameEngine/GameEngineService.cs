@@ -8,8 +8,6 @@ namespace LanesBackend.Logic
     {
         private readonly IMoveChecksService MoveChecksService;
 
-        private readonly IDeckService DeckService;
-
         private readonly IGameRuleService GameRuleService;
 
         public GameEngineService(
@@ -18,7 +16,6 @@ namespace LanesBackend.Logic
             IGameRuleService gameRuleService)
         {
             MoveChecksService = moveChecksService;
-            DeckService = deckService;
             GameRuleService = gameRuleService;
         }
 
@@ -63,7 +60,6 @@ namespace LanesBackend.Logic
                 Console.WriteLine("Client broke the rules: Tried to move a lane that has been won.");
                 return false;
             }
-
             
             var moveStartsOnPlayerSide = playerIsHost ? 
                 placeCardAttempt.TargetRowIndex < 3 :
@@ -100,7 +96,7 @@ namespace LanesBackend.Logic
             var playerSideCardsInOrder = playerIsHost ?
                 MoveChecksService.AllPreviousRowsOccupied(lane, placeCardAttempt.TargetRowIndex) :
                 MoveChecksService.AllFollowingRowsOccupied(lane, placeCardAttempt.TargetRowIndex);
-            if (playerIsHost && moveStartsOnPlayerSide && !playerSideCardsInOrder)
+            if (moveStartsOnPlayerSide && !playerSideCardsInOrder)
             {
                 Console.WriteLine("Client broke the rules: Tried to move on position where previous rows aren't occupied.");
                 return false;

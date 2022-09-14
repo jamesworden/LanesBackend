@@ -55,6 +55,7 @@ namespace LanesBackend.Logic
 
             if (!moveIsValid)
             {
+                // TODO: Player commited illegal move; end game and penalize player.
                 return false;
             }
 

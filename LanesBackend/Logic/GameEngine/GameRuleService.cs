@@ -131,6 +131,7 @@ namespace LanesBackend.Logic.GameEngine
             }
 
             _ = LanesService.GrabAllCardsAndClearLane(lane);
+            lane.LastCardPlayed = null;
 
             return true;
         }

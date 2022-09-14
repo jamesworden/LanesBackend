@@ -53,10 +53,10 @@ namespace LanesBackend.Logic
         {
             for (int i = 0; i < targetRowIndex; i++)
             {
-                var previousLane = lane.Rows[i];
-                var previousLaneNotOccupied = previousLane.Count == 0;
+                var previousRow = lane.Rows[i];
+                var previousRowNotOccupied = previousRow.Count == 0;
 
-                if (previousLaneNotOccupied)
+                if (previousRowNotOccupied)
                 {
                     return false;
                 }
@@ -69,10 +69,10 @@ namespace LanesBackend.Logic
         {
             for (int i = lane.Rows.Length - 1; i > targetRowIndex; i--)
             {
-                var followingLane = lane.Rows[i];
-                var followingLaneNotOccupied = followingLane.Count == 0;
+                var followingRow = lane.Rows[i];
+                var followingRowNotOccupied = followingRow.Count == 0;
 
-                if (followingLaneNotOccupied)
+                if (followingRowNotOccupied)
                 {
                     return false;
                 }
