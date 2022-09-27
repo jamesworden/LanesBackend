@@ -16,6 +16,10 @@
 
         public bool IsHostPlayersTurn { get; set; }
 
+        public int? RedJokerLaneIndex { get; set; }
+
+        public int? BlackJokerLaneIndex { get; set; }
+
         public PlayerGameState(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
@@ -23,7 +27,9 @@
             Hand hand,
             Lane[] lanes,
             bool isHost,
-            bool isHostPlayersTurn)
+            bool isHostPlayersTurn,
+            int? redJokerLaneIndex,
+            int? blackJokerLaneIndex)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -32,6 +38,8 @@
             Lanes = lanes;
             IsHost = isHost;
             IsHostPlayersTurn = isHostPlayersTurn;
+            RedJokerLaneIndex = redJokerLaneIndex;
+            BlackJokerLaneIndex = blackJokerLaneIndex;
         }
     }
 }

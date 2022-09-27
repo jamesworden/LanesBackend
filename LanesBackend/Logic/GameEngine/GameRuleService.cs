@@ -92,22 +92,22 @@ namespace LanesBackend.Logic.GameEngine
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    var algoCard = lane.Rows[i].Last();
+                    var card = lane.Rows[i].Last();
 
-                    if (algoCard is not null)
+                    if (card is not null)
                     {
-                        topCardsOfFirstThreeRows.Add(algoCard);
+                        topCardsOfFirstThreeRows.Add(card);
                     }
                 }
             }
             else {
-                for (int i = 6; i > 3; i++)
+                for (int i = 6; i > 3; i--)
                 {
-                    var algoCard = lane.Rows[i].Last();
+                    var card = lane.Rows[i].Last();
 
-                    if (algoCard is not null)
+                    if (card is not null)
                     {
-                        topCardsOfFirstThreeRows.Add(algoCard);
+                        topCardsOfFirstThreeRows.Add(card);
                     }
                 }
             }
@@ -132,6 +132,7 @@ namespace LanesBackend.Logic.GameEngine
 
             _ = LanesService.GrabAllCardsAndClearLane(lane);
             lane.LastCardPlayed = null;
+            lane.LaneAdvantage = PlayerOrNone.None;
 
             return true;
         }
@@ -154,7 +155,16 @@ namespace LanesBackend.Logic.GameEngine
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             player.Deck.Cards.AddRange(allCardsInLane);
             DeckService.ShuffleDeck(player.Deck);
-            // TODO: Add joker to lane?
+            
+            // Set first won lane to red joker, second to black joker.
+            if (game.RedJokerLaneIndex is null)
+            {
+                game.RedJokerLaneIndex = placeCardAttempt.TargetLaneIndex;
+            }
+            else
+            {
+                game.BlackJokerLaneIndex = placeCardAttempt.TargetLaneIndex;
+            }
 
             return true;
         }

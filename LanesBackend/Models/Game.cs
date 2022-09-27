@@ -18,6 +18,10 @@
 
         public Player GuestPlayer { get; set; }
 
+        public int? RedJokerLaneIndex { get; set; }
+
+        public int? BlackJokerLaneIndex { get; set; }
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 

@@ -166,7 +166,9 @@ namespace LanesBackend.Hubs
                 game.HostPlayer.Hand,
                 game.Lanes,
                 true,
-                game.IsHostPlayersTurn
+                game.IsHostPlayersTurn,
+                game.RedJokerLaneIndex,
+                game.BlackJokerLaneIndex
                 );
 
             var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
@@ -183,7 +185,9 @@ namespace LanesBackend.Hubs
                 game.GuestPlayer.Hand,
                 game.Lanes,
                 false,
-                game.IsHostPlayersTurn
+                game.IsHostPlayersTurn,
+                game.RedJokerLaneIndex,
+                game.BlackJokerLaneIndex
                 );
 
             var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
