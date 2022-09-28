@@ -4,6 +4,8 @@
     {
         public bool isRunning = true;
 
+        public PlayerOrNone WonBy = PlayerOrNone.None;
+
         public bool IsHostPlayersTurn = true;
 
         public string HostConnectionId { get; set; }

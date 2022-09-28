@@ -137,7 +137,7 @@ namespace LanesBackend.Logic.GameEngine
             return true;
         }
 
-        public bool WinGameIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        public bool WinLaneIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var placeCardInLastRow = playerIsHost ?
                 placeCardAttempt.TargetRowIndex == 6 :
@@ -167,6 +167,27 @@ namespace LanesBackend.Logic.GameEngine
             }
 
             return true;
+        }
+
+        public bool WinGameIfAppropriate(Game game)
+        {
+            var hostWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host).Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Host;
+                game.isRunning = false;
+                return true;
+            }
+
+            var guestWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest).Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Guest;
+                game.isRunning = false;
+                return true;
+            }
+
+            return false;
         }
     }
 }

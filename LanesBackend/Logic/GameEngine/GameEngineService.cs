@@ -190,7 +190,9 @@ namespace LanesBackend.Logic
                 return;
             }
 
-            _ = GameRuleService.WinGameIfAppropriate(game, placeCardAttempt, playerIsHost);
+            GameRuleService.WinLaneIfAppropriate(game, placeCardAttempt, playerIsHost);
+
+            GameRuleService.WinGameIfAppropriate(game);
         }
 
         private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)

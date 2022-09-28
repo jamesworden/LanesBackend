@@ -51,15 +51,7 @@ namespace LanesBackend.Logic
 
         public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost)
         {
-            // TODO: Backend move validation
-
-            //var moveIsValid = GameEngineService.MoveIsValid(game, move, playerIsHost);
-
-            //if (!moveIsValid)
-            //{
-            //    // TODO: Player commited illegal move; end game and penalize player.
-            //    return false;
-            //}
+            // TODO: Backend move validation: Check if move valid; If not, penalize player and end game.
 
             GameEngineService.MakeMove(game, move, playerIsHost);
 

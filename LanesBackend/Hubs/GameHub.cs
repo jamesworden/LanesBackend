@@ -119,13 +119,25 @@ namespace LanesBackend.Hubs
 
             var playerIsHost = game.HostConnectionId == connectionId;
             var moveWasValid = GameService.MakeMoveIfValid(game, move, playerIsHost);
-            
+
             if (!moveWasValid)
             {
+                // TODO: Penalize client for invalid move.
                 return;
             }
 
             await UpdatePlayerGameStates(game, "GameUpdated");
+
+            if (game.WonBy == PlayerOrNone.None)
+            {
+                return;
+            }
+
+            var winnerConnId = game.WonBy == PlayerOrNone.Host ? game.HostConnectionId : game.GuestConnectionId;
+            var loserConnId = game.WonBy == PlayerOrNone.Host ? game.GuestConnectionId : game.HostConnectionId;
+
+            await Clients.Client(winnerConnId).SendAsync("GameOver", "You win.");
+            await Clients.Client(loserConnId).SendAsync("GameOver", "You lose.");
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
