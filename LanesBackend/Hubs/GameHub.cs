@@ -140,6 +140,32 @@ namespace LanesBackend.Hubs
             await Clients.Client(loserConnId).SendAsync("GameOver", "You lose.");
         }
 
+        public async Task PassMove()
+        {
+            var connectionId = Context.ConnectionId;
+
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            var playerIsHost = connectionId == game.HostConnectionId;
+            var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
+            var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
+            var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
+
+            if (!isPlayersTurn)
+            {
+                return;
+            }
+
+            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
+            await UpdatePlayerGameStates(game, "PassedMove");
+        }
+
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
@@ -159,7 +185,7 @@ namespace LanesBackend.Hubs
                 var hostDisconnected = connectionId == game.HostConnectionId;
                 var opponentConnectionId = hostDisconnected ? game.GuestConnectionId : game.HostConnectionId;
 
-                await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected.");
+                await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected. You win!");
             }
         }
 
