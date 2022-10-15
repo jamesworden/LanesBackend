@@ -159,7 +159,12 @@ namespace LanesBackend.Logic
             var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
             var lane = game.Lanes[targetLaneIndex];
 
-            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            var multipleCardsPlayed = move.PlaceCardAttempts.Count > 1;
+
+            if (!multipleCardsPlayed)
+            {
+                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            }
 
             foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {

@@ -11,5 +11,7 @@ namespace LanesBackend.Interfaces
         public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move);
 
         public void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw);
+
+        public void DrawCardsUntilHandAtFive(Game game, bool playerIsHost);
     }
 }

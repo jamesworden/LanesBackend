@@ -161,6 +161,8 @@ namespace LanesBackend.Hubs
                 return;
             }
 
+            GameService.DrawCardsUntilHandAtFive(game, playerIsHost);
+
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
 
             await UpdatePlayerGameStates(game, "PassedMove");

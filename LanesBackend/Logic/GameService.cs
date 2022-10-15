@@ -55,9 +55,19 @@ namespace LanesBackend.Logic
 
             GameEngineService.MakeMove(game, move, playerIsHost);
 
-            var numCardsRemoved = RemoveCardsFromHand(game, playerIsHost, move);
+            RemoveCardsFromHand(game, playerIsHost, move);
 
-            DrawCardsFromDeck(game, playerIsHost, numCardsRemoved);
+            var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
+
+
+            if (placedMultipleCards)
+            {
+                DrawCardsFromDeck(game, playerIsHost, 1);
+            }
+            else 
+            {
+                DrawCardsUntilHandAtFive(game, playerIsHost);
+            }
 
             return true;
         }
@@ -96,6 +106,15 @@ namespace LanesBackend.Logic
                     player.Hand.AddCard(cardFromDeck);
                 }
             }
+        }
+
+        public void DrawCardsUntilHandAtFive(Game game, bool playerIsHost)
+        {
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+
+            var numCardsInPlayersHand = player.Hand.Cards.Count;
+
+            DrawCardsFromDeck(game, playerIsHost, 5 - numCardsInPlayersHand);
         }
     }
 }
