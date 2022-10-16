@@ -1,20 +1,21 @@
 ﻿version: 0.0
 os: linux
 files:
-  - source: app
-    destination: /var/www
-  - source: deploy-scripts/webapi.service
-    destination: /etc/systemd/system
+  - source: Config/config.txt
+    destination: /webapps/Config
+  - source: source
+    destination: /webapps/myApp
 hooks:
   BeforeInstall:
-    - location: deploy-scripts/before_install.sh
-      timeout: 120
-      runas: root
-  ApplicationStop:
-    - location: deploy-scripts/stop_app.sh
-      timeout: 120
-      runas: root
+    - location: Scripts/UnzipResourceBundle.sh
+    - location: Scripts/UnzipDataBundle.sh
+  AfterInstall:
+    - location: Scripts/RunResourceTests.sh
+      timeout: 180
   ApplicationStart:
-    - location: deploy-scripts/start_app.sh
-      timeout: 120
-      runas: root
+    - location: Scripts/RunFunctionalTests.sh
+      timeout: 3600
+  ValidateService:
+    - location: Scripts/MonitorService.sh
+      timeout: 3600
+      runas: codedeployuser
