@@ -36,7 +36,7 @@ app.UseStaticFiles();
 
 app.UseCors(builder =>
 {
-    builder.WithOrigins("http://localhost:4200", "http://lanes-frontend.s3-website-us-east-1.amazonaws.com")
+    builder.WithOrigins("http://localhost:4200", "http://chessofcards.com")
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials();
