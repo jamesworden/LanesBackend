@@ -40,8 +40,6 @@ app.UseCors(builder =>
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials();
-
-    app.UseHttpsRedirection();
 });
 
 app.UseRouting();
