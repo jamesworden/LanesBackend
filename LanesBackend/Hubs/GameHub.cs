@@ -47,7 +47,8 @@ namespace LanesBackend.Hubs
         public async Task JoinGame(string gameCode)
         {
             var guestConnectionId = Context.ConnectionId;
-            var pendingGame = PendingGameCache.GetPendingGameByGameCode(gameCode);
+            var upperCaseGameCode = gameCode.ToUpper();
+            var pendingGame = PendingGameCache.GetPendingGameByGameCode(upperCaseGameCode);
 
             if (pendingGame is null)
             {
