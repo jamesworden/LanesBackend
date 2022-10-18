@@ -34,7 +34,7 @@ namespace LanesBackend.Hubs
 
         public async Task CreateGame()
         {
-            string gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
+            string gameCode = GetUnusedGameCode();
             string hostConnectionId = Context.ConnectionId;
 
             var pendingGame = new PendingGame(gameCode, hostConnectionId);
@@ -190,6 +190,28 @@ namespace LanesBackend.Hubs
 
                 await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected. You win!");
             }
+        }
+
+        private string GetUnusedGameCode()
+        {
+            var numRetries = 10;
+            var currentRetry = 0;
+
+            while (currentRetry < numRetries)
+            {
+                var gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
+                var gameCodeIsUnused = PendingGameCache.GetPendingGameByGameCode(gameCode) is null;
+
+                if (gameCodeIsUnused)
+                {
+                    return gameCode;
+                } else
+                {
+                    currentRetry++;
+                }
+            }
+
+            throw new Exception("Unable to generate an unused game code.");
         }
 
         private async Task UpdatePlayerGameStates(Game game, string messageType)
