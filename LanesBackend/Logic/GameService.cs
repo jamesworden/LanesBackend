@@ -109,7 +109,7 @@ namespace LanesBackend.Logic
             }
         }
 
-        public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
+        private int RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
         {
             var numCardsRemoved = 0;
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
@@ -123,7 +123,7 @@ namespace LanesBackend.Logic
             return numCardsRemoved;
         }
 
-        public void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
+        private void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
         {
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
 
@@ -145,7 +145,7 @@ namespace LanesBackend.Logic
             }
         }
 
-        public void DrawCardsUntilHandAtFive(Game game, bool playerIsHost)
+        private void DrawCardsUntilHandAtFive(Game game, bool playerIsHost)
         {
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
 
@@ -172,7 +172,7 @@ namespace LanesBackend.Logic
                 return;
             }
 
-            WinLaneIfAppropriate(game, placeCardAttempt, playerIsHost);
+            WinLaneAndOrGameIfAppropriate(game, placeCardAttempt, playerIsHost);
         }
 
         private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
@@ -183,7 +183,7 @@ namespace LanesBackend.Logic
             lane.LastCardPlayed = placeCardAttempt.Card;
         }
 
-        public bool CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private bool CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var cardIsLastOnPlayerSide = playerIsHost ?
                 placeCardAttempt.TargetRowIndex == 2 :
@@ -277,7 +277,7 @@ namespace LanesBackend.Logic
             return topCardsOfFirstThreeRows;
         }
 
-        public bool TriggerAceRuleIfAppropriate(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private bool TriggerAceRuleIfAppropriate(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var playerPlayedAnAce = placeCardAttempt.Card.Kind == Kind.Ace;
             if (!playerPlayedAnAce)
@@ -285,7 +285,6 @@ namespace LanesBackend.Logic
                 return false;
             }
 
-            // Move this fn from move checks service to lanes service? Def no move checks in this class.
             var opponentAceOnTopOfAnyRow = OpponentAceOnTopOfAnyRow(lane, playerIsHost);
             if (!opponentAceOnTopOfAnyRow)
             {
@@ -299,7 +298,7 @@ namespace LanesBackend.Logic
             return true;
         }
 
-        public bool WinLaneIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private bool WinLaneAndOrGameIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var placeCardInLastRow = playerIsHost ?
                 placeCardAttempt.TargetRowIndex == 6 :
@@ -310,32 +309,16 @@ namespace LanesBackend.Logic
                 return false;
             }
 
+            game.Lanes[placeCardAttempt.TargetLaneIndex].WonBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+
+            var gameWon = WinGameIfAppropriate(game);
+
+            if (gameWon)
+            {
+                return true;
+            }
+
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
-
-            lane.WonBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
-
-            // Don't clear lane if it's the one that won the game.
-
-            var lanesWonByHost = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host);
-            var hostWon = lanesWonByHost.Count() == 2;
-            if (hostWon)
-            {
-                game.WonBy = PlayerOrNone.Host;
-                game.isRunning = false;
-                return true;
-            }
-
-            var lanesWonByGuest = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest);
-            var guestWon = lanesWonByGuest.Count() == 2;
-            if (hostWon)
-            {
-                game.WonBy = PlayerOrNone.Guest;
-                game.isRunning = false;
-                return true;
-            }
-
-            // Game not won, clear lane and proceed.
-
             var allCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             player.Deck.Cards.AddRange(allCardsInLane);
@@ -354,7 +337,30 @@ namespace LanesBackend.Logic
             return true;
         }
 
-        public bool OpponentAceOnTopOfAnyRow(Lane algoLane, bool playerIsHost)
+        private static bool WinGameIfAppropriate(Game game)
+        {
+            var lanesWonByHost = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host);
+            var hostWon = lanesWonByHost.Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Host;
+                game.isRunning = false;
+                return true;
+            }
+
+            var lanesWonByGuest = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest);
+            var guestWon = lanesWonByGuest.Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Guest;
+                game.isRunning = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool OpponentAceOnTopOfAnyRow(Lane algoLane, bool playerIsHost)
         {
             foreach (var row in algoLane.Rows)
             {
