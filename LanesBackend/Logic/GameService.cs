@@ -5,36 +5,28 @@ namespace LanesBackend.Logic
 {
     public class GameService : IGameService
     {
-        private readonly IDeckService DeckService;
-
         private readonly ILanesService LanesService;
-
-        private readonly IGameEngineService GameEngineService;
 
         private readonly ICardService CardService;
 
         public GameService(
-            IDeckService deckService,
             ILanesService lanesService,
-            IGameEngineService gameEngineService, 
             ICardService cardService)
         {
-            DeckService = deckService;
             LanesService = lanesService;
-            GameEngineService = gameEngineService;
             CardService = cardService;
          }
 
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode)
         {
-            var deck = DeckService.CreateAndShuffleDeck();
-            var playerDecks = DeckService.SplitDeck(deck);
+            var deck = CardService.CreateAndShuffleDeck();
+            var playerDecks = CardService.SplitDeck(deck);
 
             var hostDeck = playerDecks.Item1;
             var guestDeck = playerDecks.Item2;
 
-            var hostHandCards = DeckService.DrawCards(hostDeck, 5);
-            var guestHandCards = DeckService.DrawCards(guestDeck, 5);
+            var hostHandCards = CardService.DrawCards(hostDeck, 5);
+            var guestHandCards = CardService.DrawCards(guestDeck, 5);
 
             var hostHand = new Hand(hostHandCards);
             var guestHand = new Hand(guestHandCards);
@@ -49,16 +41,25 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost)
+        public bool MakeMove(Game game, Move move, bool playerIsHost)
         {
-            // TODO: Backend move validation: Check if move valid; If not, penalize player and end game.
+            var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
+            var lane = game.Lanes[targetLaneIndex];
+            var multipleCardsPlayed = move.PlaceCardAttempts.Count > 1;
 
-            GameEngineService.MakeMove(game, move, playerIsHost);
+            if (!multipleCardsPlayed)
+            {
+                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            }
+
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
+            {
+                PlaceCardAndApplyGameRules(game, placeCardAttempt, lane, playerIsHost);
+            }
 
             RemoveCardsFromHand(game, playerIsHost, move);
 
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
-
 
             if (placedMultipleCards)
             {
@@ -70,6 +71,42 @@ namespace LanesBackend.Logic
             }
 
             return true;
+        }
+
+        public void PassMove(Game game, bool playerIsHost)
+        {
+            var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
+            var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
+            var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
+
+            if (!isPlayersTurn)
+            {
+                return;
+            }
+
+            DrawCardsUntilHandAtFive(game, playerIsHost);
+
+            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+        }
+
+        public void RearrangeHand(Game game, bool playerIsHost, List<Card> cards)
+        {
+            var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
+            bool newHandHasSameCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+
+            if (!newHandHasSameCards)
+            {
+                return;
+            }
+
+            if (playerIsHost)
+            {
+                game.HostPlayer.Hand.Cards = cards;
+            }
+            else
+            {
+                game.GuestPlayer.Hand.Cards = cards;
+            }
         }
 
         public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
@@ -99,7 +136,7 @@ namespace LanesBackend.Logic
                     return;
                 }
 
-                var cardFromDeck = DeckService.DrawCard(player.Deck);
+                var cardFromDeck = CardService.DrawCard(player.Deck);
 
                 if (cardFromDeck is not null)
                 {
@@ -115,6 +152,230 @@ namespace LanesBackend.Logic
             var numCardsInPlayersHand = player.Hand.Cards.Count;
 
             DrawCardsFromDeck(game, playerIsHost, 5 - numCardsInPlayersHand);
+        }
+
+        private void PlaceCardAndApplyGameRules(Game game, PlaceCardAttempt placeCardAttempt, Lane lane, bool playerIsHost)
+        {
+            var aceRuleTriggered = TriggerAceRuleIfAppropriate(lane, placeCardAttempt, playerIsHost);
+
+            if (aceRuleTriggered)
+            {
+                return;
+            }
+
+            PlaceCard(lane, placeCardAttempt, playerIsHost);
+
+            var middleCaptured = CaptureMiddleIfAppropriate(game, placeCardAttempt, playerIsHost);
+
+            if (middleCaptured)
+            {
+                return;
+            }
+
+            WinLaneIfAppropriate(game, placeCardAttempt, playerIsHost);
+
+            WinGameIfAppropriate(game);
+        }
+
+        private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
+            placeCardAttempt.Card.PlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            targetRow.Add(placeCardAttempt.Card);
+            lane.LastCardPlayed = placeCardAttempt.Card;
+        }
+
+        public bool CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var cardIsLastOnPlayerSide = playerIsHost ?
+                placeCardAttempt.TargetRowIndex == 2 :
+                placeCardAttempt.TargetRowIndex == 4;
+
+            if (!cardIsLastOnPlayerSide)
+            {
+                return false;
+            }
+
+            var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
+
+            var noAdvantage = lane.LaneAdvantage == PlayerOrNone.None;
+            if (noAdvantage)
+            {
+                CaptureNoAdvantageLane(lane, placeCardAttempt, playerIsHost);
+                return true;
+            }
+
+            var opponentAdvantage = playerIsHost ?
+                lane.LaneAdvantage == PlayerOrNone.Guest :
+                lane.LaneAdvantage == PlayerOrNone.Host;
+            if (opponentAdvantage)
+            {
+                CaptureOpponentAdvantageLane(game, placeCardAttempt, playerIsHost);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var cardsFromLane = LanesService.GrabAllCardsAndClearLane(lane);
+
+            // Put last placed card at top of pile
+            cardsFromLane.Remove(placeCardAttempt.Card);
+            cardsFromLane.Add(placeCardAttempt.Card);
+
+            var middleRow = lane.Rows[3];
+            middleRow.AddRange(cardsFromLane);
+            lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+        }
+
+        private void CaptureOpponentAdvantageLane(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
+            List<Card> topCardsOfFirstThreeRows = GetTopCardsOfFirstThreeRows(lane, playerIsHost);
+
+            var remainingCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
+
+            var middleRow = lane.Rows[3];
+            middleRow.AddRange(topCardsOfFirstThreeRows);
+
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            player.Deck.Cards.AddRange(remainingCardsInLane);
+            CardService.ShuffleDeck(player.Deck);
+
+            lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+        }
+
+        private static List<Card> GetTopCardsOfFirstThreeRows(Lane lane, bool playerIsHost)
+        {
+            List<Card> topCardsOfFirstThreeRows = new();
+
+            if (playerIsHost)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var card = lane.Rows[i].Last();
+
+                    if (card is not null)
+                    {
+                        topCardsOfFirstThreeRows.Add(card);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 6; i > 3; i--)
+                {
+                    var card = lane.Rows[i].Last();
+
+                    if (card is not null)
+                    {
+                        topCardsOfFirstThreeRows.Add(card);
+                    }
+                }
+            }
+
+            return topCardsOfFirstThreeRows;
+        }
+
+        public bool TriggerAceRuleIfAppropriate(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var playerPlayedAnAce = placeCardAttempt.Card.Kind == Kind.Ace;
+            if (!playerPlayedAnAce)
+            {
+                return false;
+            }
+
+            // Move this fn from move checks service to lanes service? Def no move checks in this class.
+            var opponentAceOnTopOfAnyRow = OpponentAceOnTopOfAnyRow(lane, playerIsHost);
+            if (!opponentAceOnTopOfAnyRow)
+            {
+                return false;
+            }
+
+            _ = LanesService.GrabAllCardsAndClearLane(lane);
+            lane.LastCardPlayed = null;
+            lane.LaneAdvantage = PlayerOrNone.None;
+
+            return true;
+        }
+
+        public bool WinLaneIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        {
+            var placeCardInLastRow = playerIsHost ?
+                placeCardAttempt.TargetRowIndex == 6 :
+                placeCardAttempt.TargetRowIndex == 0;
+
+            if (!placeCardInLastRow)
+            {
+                return false;
+            }
+
+            var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
+
+            lane.WonBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var allCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            player.Deck.Cards.AddRange(allCardsInLane);
+            CardService.ShuffleDeck(player.Deck);
+
+            // Set first won lane to red joker, second to black joker.
+            if (game.RedJokerLaneIndex is null)
+            {
+                game.RedJokerLaneIndex = placeCardAttempt.TargetLaneIndex;
+            }
+            else
+            {
+                game.BlackJokerLaneIndex = placeCardAttempt.TargetLaneIndex;
+            }
+
+            return true;
+        }
+
+        public bool WinGameIfAppropriate(Game game)
+        {
+            var hostWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host).Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Host;
+                game.isRunning = false;
+                return true;
+            }
+
+            var guestWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest).Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Guest;
+                game.isRunning = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool OpponentAceOnTopOfAnyRow(Lane algoLane, bool playerIsHost)
+        {
+            foreach (var row in algoLane.Rows)
+            {
+                if (row.Count <= 0)
+                {
+                    continue;
+                }
+
+                var topCard = row.Last();
+
+                var topCardIsAce = topCard.Kind == Kind.Ace;
+                var topCardPlayedByOpponent = playerIsHost ?
+                    topCard.PlayedBy == PlayerOrNone.Guest :
+                    topCard.PlayedBy == PlayerOrNone.Host;
+                if (topCardIsAce && topCardPlayedByOpponent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

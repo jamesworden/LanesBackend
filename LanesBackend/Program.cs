@@ -1,18 +1,13 @@
 using LanesBackend.Caching;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
-using LanesBackend.Interfaces.GameEngine;
 using LanesBackend.Logic;
-using LanesBackend.Logic.GameEngine;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<IDeckService, DeckService>();
+builder.Services.AddScoped<IGameCodeService, GameCodeService>();
 builder.Services.AddScoped<ILanesService, LanesService>();
-builder.Services.AddScoped<IMoveChecksService, MoveChecksService>();
-builder.Services.AddScoped<IGameEngineService, GameEngineService>();
-builder.Services.AddScoped<IGameRuleService, GameRuleService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
@@ -26,7 +21,6 @@ app.MapHub<GameHub>("/game");
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -37,9 +31,9 @@ app.UseStaticFiles();
 app.UseCors(builder =>
 {
     builder.WithOrigins("http://localhost:4200", "https://localhost:4200", "http://chessofcards.com", "https://chessofcards.com")
-           .AllowAnyMethod()
-           .AllowAnyHeader()
-           .AllowCredentials();
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
 });
 
 app.UseRouting();

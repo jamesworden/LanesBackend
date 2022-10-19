@@ -13,28 +13,28 @@ namespace LanesBackend.Hubs
         private readonly IPendingGameCache PendingGameCache;
 
         private readonly IGameService GameService;
-        
-        private readonly IDeckService DeckService;
 
         private readonly ICardService CardService;
+
+        private readonly IGameCodeService GameCodeService;
 
         public GameHub(
             IGameCache gameCache, 
             IPendingGameCache pendingGameCache, 
             IGameService gameService, 
-            IDeckService deckService, 
-            ICardService cardService)
+            ICardService cardService,
+            IGameCodeService gameCodeService)
         { 
             GameCache = gameCache;
             PendingGameCache = pendingGameCache;
             GameService = gameService;
-            DeckService = deckService;
             CardService = cardService;
+            GameCodeService = gameCodeService;
         }
 
         public async Task CreateGame()
         {
-            string gameCode = GetUnusedGameCode();
+            string gameCode = GameCodeService.GenerateUniqueGameCode();
             string hostConnectionId = Context.ConnectionId;
 
             var pendingGame = new PendingGame(gameCode, hostConnectionId);
@@ -83,22 +83,8 @@ namespace LanesBackend.Hubs
             }
 
             var playerIsHost = game.HostConnectionId == connectionId;
-            var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
-            bool newHandHasSameCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
 
-            if (!newHandHasSameCards)
-            {
-                return;
-            }
-
-            if (playerIsHost)
-            {
-                game.HostPlayer.Hand.Cards = cards;
-            }
-            else
-            {
-                game.GuestPlayer.Hand.Cards = cards;
-            }
+            GameService.RearrangeHand(game, playerIsHost, cards);
         }
 
         public async Task MakeMove(string stringifiedMove)
@@ -119,13 +105,8 @@ namespace LanesBackend.Hubs
             }
 
             var playerIsHost = game.HostConnectionId == connectionId;
-            var moveWasValid = GameService.MakeMoveIfValid(game, move, playerIsHost);
 
-            if (!moveWasValid)
-            {
-                // TODO: Penalize client for invalid move.
-                return;
-            }
+            GameService.MakeMove(game, move, playerIsHost);
 
             await UpdatePlayerGameStates(game, "GameUpdated");
 
@@ -152,19 +133,9 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var playerIsHost = connectionId == game.HostConnectionId;
-            var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
-            var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
-            var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
+            var playerIsHost = game.HostConnectionId == connectionId;
 
-            if (!isPlayersTurn)
-            {
-                return;
-            }
-
-            GameService.DrawCardsUntilHandAtFive(game, playerIsHost);
-
-            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            GameService.PassMove(game, playerIsHost);
 
             await UpdatePlayerGameStates(game, "PassedMove");
         }
@@ -190,28 +161,6 @@ namespace LanesBackend.Hubs
 
                 await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected. You win!");
             }
-        }
-
-        private string GetUnusedGameCode()
-        {
-            var numRetries = 10;
-            var currentRetry = 0;
-
-            while (currentRetry < numRetries)
-            {
-                var gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
-                var gameCodeIsUnused = PendingGameCache.GetPendingGameByGameCode(gameCode) is null;
-
-                if (gameCodeIsUnused)
-                {
-                    return gameCode;
-                } else
-                {
-                    currentRetry++;
-                }
-            }
-
-            throw new Exception("Unable to generate an unused game code.");
         }
 
         private async Task UpdatePlayerGameStates(Game game, string messageType)

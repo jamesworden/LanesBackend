@@ -6,12 +6,10 @@ namespace LanesBackend.Interfaces
     {
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode);
 
-        public bool MakeMoveIfValid(Game game, Move move, bool playerIsHost);
+        public bool MakeMove(Game game, Move move, bool playerIsHost);
 
-        public int RemoveCardsFromHand(Game game, bool playerIsHost, Move move);
+        public void PassMove(Game game, bool playerIsHost);
 
-        public void DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw);
-
-        public void DrawCardsUntilHandAtFive(Game game, bool playerIsHost);
+        public void RearrangeHand(Game game, bool playerIsHost, List<Card> cards);
     }
 }
