@@ -173,8 +173,6 @@ namespace LanesBackend.Logic
             }
 
             WinLaneIfAppropriate(game, placeCardAttempt, playerIsHost);
-
-            WinGameIfAppropriate(game);
         }
 
         private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
@@ -315,12 +313,35 @@ namespace LanesBackend.Logic
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
 
             lane.WonBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+
+            // Don't clear lane if it's the one that won the game.
+
+            var lanesWonByHost = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host);
+            var hostWon = lanesWonByHost.Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Host;
+                game.isRunning = false;
+                return true;
+            }
+
+            var lanesWonByGuest = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest);
+            var guestWon = lanesWonByGuest.Count() == 2;
+            if (hostWon)
+            {
+                game.WonBy = PlayerOrNone.Guest;
+                game.isRunning = false;
+                return true;
+            }
+
+            // Game not won, clear lane and proceed.
+
             var allCardsInLane = LanesService.GrabAllCardsAndClearLane(lane);
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             player.Deck.Cards.AddRange(allCardsInLane);
             CardService.ShuffleDeck(player.Deck);
 
-            // Set first won lane to red joker, second to black joker.
+
             if (game.RedJokerLaneIndex is null)
             {
                 game.RedJokerLaneIndex = placeCardAttempt.TargetLaneIndex;
@@ -331,27 +352,6 @@ namespace LanesBackend.Logic
             }
 
             return true;
-        }
-
-        public bool WinGameIfAppropriate(Game game)
-        {
-            var hostWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Host).Count() == 2;
-            if (hostWon)
-            {
-                game.WonBy = PlayerOrNone.Host;
-                game.isRunning = false;
-                return true;
-            }
-
-            var guestWon = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest).Count() == 2;
-            if (hostWon)
-            {
-                game.WonBy = PlayerOrNone.Guest;
-                game.isRunning = false;
-                return true;
-            }
-
-            return false;
         }
 
         public bool OpponentAceOnTopOfAnyRow(Lane algoLane, bool playerIsHost)

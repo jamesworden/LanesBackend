@@ -14,21 +14,17 @@ namespace LanesBackend.Hubs
 
         private readonly IGameService GameService;
 
-        private readonly ICardService CardService;
-
         private readonly IGameCodeService GameCodeService;
 
         public GameHub(
             IGameCache gameCache, 
             IPendingGameCache pendingGameCache, 
             IGameService gameService, 
-            ICardService cardService,
             IGameCodeService gameCodeService)
         { 
             GameCache = gameCache;
             PendingGameCache = pendingGameCache;
             GameService = gameService;
-            CardService = cardService;
             GameCodeService = gameCodeService;
         }
 
