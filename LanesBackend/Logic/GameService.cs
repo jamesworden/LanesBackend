@@ -350,7 +350,7 @@ namespace LanesBackend.Logic
 
             var lanesWonByGuest = game.Lanes.Where(lane => lane.WonBy == PlayerOrNone.Guest);
             var guestWon = lanesWonByGuest.Count() == 2;
-            if (hostWon)
+            if (guestWon)
             {
                 game.WonBy = PlayerOrNone.Guest;
                 game.isRunning = false;
