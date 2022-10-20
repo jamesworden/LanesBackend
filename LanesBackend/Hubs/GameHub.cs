@@ -116,6 +116,8 @@ namespace LanesBackend.Hubs
 
             await Clients.Client(winnerConnId).SendAsync("GameOver", "You win.");
             await Clients.Client(loserConnId).SendAsync("GameOver", "You lose.");
+
+            GameCache.RemoveGameByConnectionId(connectionId);
         }
 
         public async Task PassMove()
