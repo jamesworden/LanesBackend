@@ -177,10 +177,17 @@ namespace LanesBackend.Logic
 
         private static void PlaceCard(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
+            var currentPlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
-            placeCardAttempt.Card.PlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var cardReinforced = targetRow.Count > 0 && targetRow.Last().PlayedBy == currentPlayedBy;
+
+            if (!cardReinforced)
+            {
+                lane.LastCardPlayed = placeCardAttempt.Card;
+            }
+
+            placeCardAttempt.Card.PlayedBy = currentPlayedBy;
             targetRow.Add(placeCardAttempt.Card);
-            lane.LastCardPlayed = placeCardAttempt.Card;
         }
 
         private bool CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
