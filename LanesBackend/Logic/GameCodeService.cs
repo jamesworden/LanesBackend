@@ -6,6 +6,10 @@ namespace LanesBackend.Logic
     {
         private readonly IPendingGameCache PendingGameCache;
 
+        private static readonly Random Random = new();
+
+        private static readonly string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
         public GameCodeService(IPendingGameCache pendingGameCache)
         {
             PendingGameCache = pendingGameCache;
@@ -18,7 +22,7 @@ namespace LanesBackend.Logic
 
             while (currentRetry < numRetries)
             {
-                var gameCode = Guid.NewGuid().ToString()[..4].ToUpper();
+                var gameCode = GenerateRandomLetterString(4).ToUpper();
                 var gameCodeIsUnused = PendingGameCache.GetPendingGameByGameCode(gameCode) is null;
 
                 if (gameCodeIsUnused)
@@ -32,6 +36,13 @@ namespace LanesBackend.Logic
             }
 
             throw new Exception("Unable to generate an unique game code.");
+        }
+
+        private static string GenerateRandomLetterString(int length)
+        {
+            var chars = Enumerable.Repeat(Alphabet, length).Select(s => s[Random.Next(s.Length)]);
+            var charArray = chars.ToArray();
+            return new string(charArray);
         }
     }
 }
