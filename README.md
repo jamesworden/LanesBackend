@@ -7,5 +7,5 @@
 - You can test that this artifact works locally with `dotnet run ./app/LanesBackend.dll`. If there's any strange behavior or errors, cleaning the contents of that `app` folder before rebuilding an artifact may help.
 - Now we must deploy this artifact; push this artifact to Github directly to master or in a new branch.
 - Open a new browser tab to login to the AWS Console. Go to the Code Deploy service.
-- Select applications, lanesbackend, anesbackend-dg (Deployment Group), and then click the `Create Deployment` button
+- Select `Applications`, `lanesbackend`, `lanesbackend-dg` (Deployment Group), and then click the `Create Deployment` button
 - Fill out the steps on this page using this repository (`jamesworden/LanesBackend`) and the latest commit id. Finishing this process should take the latest build that you just pushed via git and run it on the prod EC2 instance.
