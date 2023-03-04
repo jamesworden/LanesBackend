@@ -114,8 +114,8 @@ namespace LanesBackend.Hubs
             var winnerConnId = game.WonBy == PlayerOrNone.Host ? game.HostConnectionId : game.GuestConnectionId;
             var loserConnId = game.WonBy == PlayerOrNone.Host ? game.GuestConnectionId : game.HostConnectionId;
 
-            await Clients.Client(winnerConnId).SendAsync("GameOver", "You win.");
-            await Clients.Client(loserConnId).SendAsync("GameOver", "You lose.");
+            await Clients.Client(winnerConnId).SendAsync("GameOver", "You win!");
+            await Clients.Client(loserConnId).SendAsync("GameOver", "You lose!");
 
             GameCache.RemoveGameByConnectionId(connectionId);
         }
@@ -136,6 +136,36 @@ namespace LanesBackend.Hubs
             GameService.PassMove(game, playerIsHost);
 
             await UpdatePlayerGameStates(game, "PassedMove");
+        }
+
+        public async Task OfferDraw()
+        {
+            var connectionId = Context.ConnectionId;
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var opponentConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+
+            await Clients.Client(opponentConnectionId).SendAsync("DrawOffered");
+        }
+
+        public async Task AcceptDrawOffer()
+        {
+            var connectionId = Context.ConnectionId;
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "It's a draw.");
+            await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "It's a draw.");
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
