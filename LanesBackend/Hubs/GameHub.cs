@@ -168,6 +168,24 @@ namespace LanesBackend.Hubs
             await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "It's a draw.");
         }
 
+        public async Task ResignGame()
+        {
+            var connectionId = Context.ConnectionId;
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var winnerConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+            var loserConnectionId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
+
+            await Clients.Client(winnerConnectionId).SendAsync("GameOver", "Opponent resigned.");
+            await Clients.Client(loserConnectionId).SendAsync("GameOver", "Game resigned.");
+        }
+
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
