@@ -20,6 +20,8 @@
 
         public int? BlackJokerLaneIndex { get; set; }
 
+        public DateTime GameCreatedTimestampUTC { get; set; }
+
         public PlayerGameState(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
@@ -29,7 +31,8 @@
             bool isHost,
             bool isHostPlayersTurn,
             int? redJokerLaneIndex,
-            int? blackJokerLaneIndex)
+            int? blackJokerLaneIndex,
+            DateTime gameCreatedTimestampUTC)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -40,6 +43,7 @@
             IsHostPlayersTurn = isHostPlayersTurn;
             RedJokerLaneIndex = redJokerLaneIndex;
             BlackJokerLaneIndex = blackJokerLaneIndex;
+            GameCreatedTimestampUTC = gameCreatedTimestampUTC;
         }
     }
 }

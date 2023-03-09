@@ -24,13 +24,16 @@
 
         public int? BlackJokerLaneIndex { get; set; }
 
+        public DateTime GameCreatedTimestampUTC { get; set; }
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 
             string gameCode, 
             Player hostPlayer,
             Player guestPlayer,
-            Lane[] lanes)
+            Lane[] lanes,
+            DateTime gameCreatedTimestampUTC)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
@@ -38,6 +41,7 @@
             HostPlayer = hostPlayer;
             GuestPlayer = guestPlayer;
             Lanes = lanes;
+            GameCreatedTimestampUTC = gameCreatedTimestampUTC;
         }
     }
 }

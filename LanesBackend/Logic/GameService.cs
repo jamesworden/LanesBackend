@@ -36,7 +36,9 @@ namespace LanesBackend.Logic
 
             var lanes = LanesService.CreateEmptyLanes();
 
-            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostPlayer, guestPlayer, lanes);
+            var gameCreatedTimestampUTC = DateTime.UtcNow;
+
+            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostPlayer, guestPlayer, lanes, gameCreatedTimestampUTC);
 
             return game;
         }
