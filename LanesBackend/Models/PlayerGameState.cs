@@ -22,6 +22,8 @@
 
         public DateTime GameCreatedTimestampUTC { get; set; }
 
+        public List<MoveMade> MovesMade { get; set; }
+
         public PlayerGameState(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
@@ -32,7 +34,8 @@
             bool isHostPlayersTurn,
             int? redJokerLaneIndex,
             int? blackJokerLaneIndex,
-            DateTime gameCreatedTimestampUTC)
+            DateTime gameCreatedTimestampUTC,
+            List<MoveMade> movesMade)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -44,6 +47,7 @@
             RedJokerLaneIndex = redJokerLaneIndex;
             BlackJokerLaneIndex = blackJokerLaneIndex;
             GameCreatedTimestampUTC = gameCreatedTimestampUTC;
+            MovesMade = movesMade;
         }
     }
 }

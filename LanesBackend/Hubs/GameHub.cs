@@ -227,7 +227,8 @@ namespace LanesBackend.Hubs
                 game.IsHostPlayersTurn,
                 game.RedJokerLaneIndex,
                 game.BlackJokerLaneIndex,
-                game.GameCreatedTimestampUTC
+                game.GameCreatedTimestampUTC,
+                game.MovesMade
                 );
 
             var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
@@ -247,7 +248,8 @@ namespace LanesBackend.Hubs
                 game.IsHostPlayersTurn,
                 game.RedJokerLaneIndex,
                 game.BlackJokerLaneIndex,
-                game.GameCreatedTimestampUTC
+                game.GameCreatedTimestampUTC,
+                game.MovesMade
                 );
 
             var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());

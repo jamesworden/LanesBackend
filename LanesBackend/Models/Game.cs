@@ -26,6 +26,8 @@
 
         public DateTime GameCreatedTimestampUTC { get; set; }
 
+        public List<MoveMade> MovesMade = new();
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 

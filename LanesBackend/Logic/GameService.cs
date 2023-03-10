@@ -72,6 +72,12 @@ namespace LanesBackend.Logic
                 DrawCardsUntilHandAtFive(game, playerIsHost);
             }
 
+            var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var timeStampUTC = DateTime.UtcNow;
+            var moveMade = new MoveMade(playedBy, move, timeStampUTC);
+
+            game.MovesMade.Add(moveMade);
+
             return true;
         }
 
