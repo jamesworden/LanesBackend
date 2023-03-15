@@ -32,12 +32,14 @@ namespace LanesBackend.Hubs
         {
             string gameCode = GameCodeService.GenerateUniqueGameCode();
             string hostConnectionId = Context.ConnectionId;
-
             var pendingGame = new PendingGame(gameCode, hostConnectionId);
 
             PendingGameCache.AddPendingGame(pendingGame);
 
-            await Clients.Client(hostConnectionId).SendAsync("CreatedPendingGame", gameCode);
+            var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+            var serializedPendingGameView = JsonConvert.SerializeObject(pendingGameView, new StringEnumConverter());
+
+            await Clients.Client(hostConnectionId).SendAsync("CreatedPendingGame", serializedPendingGameView);
         }
 
         public async Task JoinGame(string gameCode)
@@ -184,6 +186,22 @@ namespace LanesBackend.Hubs
 
             await Clients.Client(winnerConnectionId).SendAsync("GameOver", "Opponent resigned.");
             await Clients.Client(loserConnectionId).SendAsync("GameOver", "Game resigned.");
+        }
+
+        public async Task SelectDurationOption(string stringifiedDurationOption)
+        {
+            var connectionId = Context.ConnectionId;
+            var pendingGame = PendingGameCache.GetPendingGameByConnectionId(connectionId);
+
+            if (pendingGame is null)
+            {
+                return;
+            }
+
+            var durationOption = Enum.Parse<DurationOption>(stringifiedDurationOption);
+            pendingGame.DurationOption = durationOption;
+            PendingGameCache.RemovePendingGame(pendingGame.GameCode);
+            PendingGameCache.AddPendingGame(pendingGame);
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
