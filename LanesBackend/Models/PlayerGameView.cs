@@ -1,6 +1,6 @@
 ﻿namespace LanesBackend.Models
 {
-    public class PlayerGameState
+    public class PlayerGameView
     {
         public int NumCardsInOpponentsHand { get; set; }
 
@@ -24,7 +24,9 @@
 
         public List<MoveMade> MovesMade { get; set; }
 
-        public PlayerGameState(
+        public DurationOption DurationOption { get; set; }
+
+        public PlayerGameView(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
             int numCardsInPlayersDeck,
@@ -35,7 +37,8 @@
             int? redJokerLaneIndex,
             int? blackJokerLaneIndex,
             DateTime gameCreatedTimestampUTC,
-            List<MoveMade> movesMade)
+            List<MoveMade> movesMade,
+            DurationOption durationOption)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -48,6 +51,7 @@
             BlackJokerLaneIndex = blackJokerLaneIndex;
             GameCreatedTimestampUTC = gameCreatedTimestampUTC;
             MovesMade = movesMade;
+            DurationOption = durationOption;
         }
     }
 }

@@ -28,6 +28,8 @@
 
         public List<MoveMade> MovesMade = new();
 
+        public DurationOption DurationOption { get; set; }
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 
@@ -35,7 +37,8 @@
             Player hostPlayer,
             Player guestPlayer,
             Lane[] lanes,
-            DateTime gameCreatedTimestampUTC)
+            DateTime gameCreatedTimestampUTC,
+            DurationOption durationOption)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
@@ -44,6 +47,7 @@
             GuestPlayer = guestPlayer;
             Lanes = lanes;
             GameCreatedTimestampUTC = gameCreatedTimestampUTC;
+            DurationOption = durationOption;
         }
     }
 }

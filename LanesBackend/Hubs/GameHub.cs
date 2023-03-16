@@ -54,12 +54,12 @@ namespace LanesBackend.Hubs
                 return;
             }
 
-            var game = GameService.CreateGame(pendingGame.HostConnectionId, guestConnectionId, gameCode);
+            var game = GameService.CreateGame(pendingGame.HostConnectionId, guestConnectionId, gameCode, pendingGame.DurationOption);
 
             GameCache.AddGame(game);
             PendingGameCache.RemovePendingGame(gameCode);
 
-            await UpdatePlayerGameStates(game, "GameStarted");
+            await UpdatePlayerGameViews(game, "GameStarted");
         }
 
         public void RearrangeHand(string stringifiedCards)
@@ -106,7 +106,7 @@ namespace LanesBackend.Hubs
 
             GameService.MakeMove(game, move, playerIsHost);
 
-            await UpdatePlayerGameStates(game, "GameUpdated");
+            await UpdatePlayerGameViews(game, "GameUpdated");
 
             if (game.WonBy == PlayerOrNone.None)
             {
@@ -137,7 +137,7 @@ namespace LanesBackend.Hubs
 
             GameService.PassMove(game, playerIsHost);
 
-            await UpdatePlayerGameStates(game, "PassedMove");
+            await UpdatePlayerGameViews(game, "PassedMove");
         }
 
         public async Task OfferDraw()
@@ -168,6 +168,8 @@ namespace LanesBackend.Hubs
 
             await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "It's a draw.");
             await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "It's a draw.");
+
+            GameCache.RemoveGameByConnectionId(connectionId);
         }
 
         public async Task ResignGame()
@@ -186,6 +188,8 @@ namespace LanesBackend.Hubs
 
             await Clients.Client(winnerConnectionId).SendAsync("GameOver", "Opponent resigned.");
             await Clients.Client(loserConnectionId).SendAsync("GameOver", "Game resigned.");
+
+            GameCache.RemoveGameByConnectionId(connectionId);
         }
 
         public async Task SelectDurationOption(string stringifiedDurationOption)
@@ -202,6 +206,46 @@ namespace LanesBackend.Hubs
             pendingGame.DurationOption = durationOption;
             PendingGameCache.RemovePendingGame(pendingGame.GameCode);
             PendingGameCache.AddPendingGame(pendingGame);
+            var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+            var serializedPendingGameView = JsonConvert.SerializeObject(pendingGameView, new StringEnumConverter());
+
+            await Clients.Client(connectionId).SendAsync("PendingGameUpdated", serializedPendingGameView);
+        }
+
+        public async Task CheckHostForEmptyTimer()
+        {
+            var connectionId = Context.ConnectionId;
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            // TODO [Security Hardening]: Actually check if host has an empty timer.
+
+            await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Your timer ran out. You lose.");
+            await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");si
+
+            GameCache.RemoveGameByConnectionId(connectionId);
+        }
+
+        public async Task CheckGuestForEmptyTimer()
+        {
+            var connectionId = Context.ConnectionId;
+            var game = GameCache.FindGameByConnectionId(connectionId);
+
+            if (game is null)
+            {
+                return;
+            }
+
+            // TODO [Security Hardening]: Actually check if guest has an empty timer.
+
+            await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your timer ran out. You lose.");
+            await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");
+
+            GameCache.RemoveGameByConnectionId(connectionId);
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)
@@ -227,15 +271,15 @@ namespace LanesBackend.Hubs
             }
         }
 
-        private async Task UpdatePlayerGameStates(Game game, string messageType)
+        private async Task UpdatePlayerGameViews(Game game, string messageType)
         {
-            await UpdateHostGameState(game, messageType);
-            await UpdateGuestGameState(game, messageType);
+            await UpdateHostGameView(game, messageType);
+            await UpdateGuestGameView(game, messageType);
         }
 
-        private async Task UpdateHostGameState(Game game, string messageType)
+        private async Task UpdateHostGameView(Game game, string messageType)
         {
-            var hostGameState = new PlayerGameState(
+            var hostGameView = new PlayerGameView(
                 game.GuestPlayer.Deck.Cards.Count,
                 game.GuestPlayer.Hand.Cards.Count,
                 game.HostPlayer.Deck.Cards.Count,
@@ -246,17 +290,18 @@ namespace LanesBackend.Hubs
                 game.RedJokerLaneIndex,
                 game.BlackJokerLaneIndex,
                 game.GameCreatedTimestampUTC,
-                game.MovesMade
+                game.MovesMade,
+                game.DurationOption
                 );
 
-            var serializedHostGameState = JsonConvert.SerializeObject(hostGameState, new StringEnumConverter());
+            var serializedHostGameState = JsonConvert.SerializeObject(hostGameView, new StringEnumConverter());
 
             await Clients.Client(game.HostConnectionId).SendAsync(messageType, serializedHostGameState);
         }
 
-        private async Task UpdateGuestGameState(Game game, string messageType)
+        private async Task UpdateGuestGameView(Game game, string messageType)
         {
-            var guestGameState = new PlayerGameState(
+            var guestGameView = new PlayerGameView(
                 game.HostPlayer.Deck.Cards.Count,
                 game.HostPlayer.Hand.Cards.Count,
                 game.GuestPlayer.Deck.Cards.Count,
@@ -267,10 +312,11 @@ namespace LanesBackend.Hubs
                 game.RedJokerLaneIndex,
                 game.BlackJokerLaneIndex,
                 game.GameCreatedTimestampUTC,
-                game.MovesMade
+                game.MovesMade,
+                game.DurationOption
                 );
 
-            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameState, new StringEnumConverter());
+            var serializedGuestGameState = JsonConvert.SerializeObject(guestGameView, new StringEnumConverter());
             
             await Clients.Client(game.GuestConnectionId).SendAsync(messageType, serializedGuestGameState);
         }

@@ -17,7 +17,7 @@ namespace LanesBackend.Logic
             CardService = cardService;
          }
 
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode)
+        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption)
         {
             var deck = CardService.CreateAndShuffleDeck();
             var playerDecks = CardService.SplitDeck(deck);
@@ -38,7 +38,15 @@ namespace LanesBackend.Logic
 
             var gameCreatedTimestampUTC = DateTime.UtcNow;
 
-            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostPlayer, guestPlayer, lanes, gameCreatedTimestampUTC);
+            Game game = new(
+                hostConnectionId, 
+                guestConnectionId, 
+                gameCode, 
+                hostPlayer, 
+                guestPlayer, 
+                lanes, 
+                gameCreatedTimestampUTC, 
+                durationOption);
 
             return game;
         }

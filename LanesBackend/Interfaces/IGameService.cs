@@ -4,7 +4,7 @@ namespace LanesBackend.Interfaces
 {
     public interface IGameService
     {
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode);
+        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption);
 
         public bool MakeMove(Game game, Move move, bool playerIsHost);
 
