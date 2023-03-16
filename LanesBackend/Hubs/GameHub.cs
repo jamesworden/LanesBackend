@@ -225,7 +225,7 @@ namespace LanesBackend.Hubs
             // TODO [Security Hardening]: Actually check if host has an empty timer.
 
             await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Your timer ran out. You lose.");
-            await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");si
+            await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");
 
             GameCache.RemoveGameByConnectionId(connectionId);
         }
