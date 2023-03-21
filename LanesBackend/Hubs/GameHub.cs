@@ -116,6 +116,8 @@ namespace LanesBackend.Hubs
             var winnerConnId = game.WonBy == PlayerOrNone.Host ? game.HostConnectionId : game.GuestConnectionId;
             var loserConnId = game.WonBy == PlayerOrNone.Host ? game.GuestConnectionId : game.HostConnectionId;
 
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+
             await Clients.Client(winnerConnId).SendAsync("GameOver", "You win!");
             await Clients.Client(loserConnId).SendAsync("GameOver", "You lose!");
 
@@ -166,6 +168,8 @@ namespace LanesBackend.Hubs
                 return;
             }
 
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+
             await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "It's a draw.");
             await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "It's a draw.");
 
@@ -185,6 +189,8 @@ namespace LanesBackend.Hubs
             var playerIsHost = game.HostConnectionId == connectionId;
             var winnerConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
             var loserConnectionId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
 
             await Clients.Client(winnerConnectionId).SendAsync("GameOver", "Opponent resigned.");
             await Clients.Client(loserConnectionId).SendAsync("GameOver", "Game resigned.");
@@ -224,6 +230,8 @@ namespace LanesBackend.Hubs
 
             // TODO [Security Hardening]: Actually check if host has an empty timer.
 
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+
             await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Your timer ran out. You lose.");
             await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");
 
@@ -241,6 +249,8 @@ namespace LanesBackend.Hubs
             }
 
             // TODO [Security Hardening]: Actually check if guest has an empty timer.
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
 
             await Clients.Client(game.GuestConnectionId).SendAsync("GameOver", "Your timer ran out. You lose.");
             await Clients.Client(game.HostConnectionId).SendAsync("GameOver", "Your opponent's timer ran out. You win!");
@@ -266,6 +276,7 @@ namespace LanesBackend.Hubs
             {
                 var hostDisconnected = connectionId == game.HostConnectionId;
                 var opponentConnectionId = hostDisconnected ? game.GuestConnectionId : game.HostConnectionId;
+                game.GameEndedTimestampUTC = DateTime.UtcNow;
 
                 await Clients.Client(opponentConnectionId).SendAsync("GameOver", "Opponent Disconnected. You win!");
             }
@@ -291,7 +302,8 @@ namespace LanesBackend.Hubs
                 game.BlackJokerLaneIndex,
                 game.GameCreatedTimestampUTC,
                 game.MovesMade,
-                game.DurationOption
+                game.DurationOption,
+                game.GameEndedTimestampUTC
                 );
 
             var serializedHostGameState = JsonConvert.SerializeObject(hostGameView, new StringEnumConverter());
@@ -313,7 +325,8 @@ namespace LanesBackend.Hubs
                 game.BlackJokerLaneIndex,
                 game.GameCreatedTimestampUTC,
                 game.MovesMade,
-                game.DurationOption
+                game.DurationOption,
+                game.GameEndedTimestampUTC
                 );
 
             var serializedGuestGameState = JsonConvert.SerializeObject(guestGameView, new StringEnumConverter());

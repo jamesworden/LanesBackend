@@ -30,6 +30,8 @@
 
         public DurationOption DurationOption { get; set; }
 
+        public DateTime? GameEndedTimestampUTC { get; set; }
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 
@@ -38,7 +40,8 @@
             Player guestPlayer,
             Lane[] lanes,
             DateTime gameCreatedTimestampUTC,
-            DurationOption durationOption)
+            DurationOption durationOption,
+            DateTime? gameEndedTimestampUTC = null)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
@@ -48,6 +51,7 @@
             Lanes = lanes;
             GameCreatedTimestampUTC = gameCreatedTimestampUTC;
             DurationOption = durationOption;
+            GameEndedTimestampUTC = gameEndedTimestampUTC;
         }
     }
 }
