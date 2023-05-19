@@ -5,28 +5,33 @@ using LanesBackend.Logic;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
+builder.Services.AddCors();
+
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IGameCodeService, GameCodeService>();
 builder.Services.AddScoped<ILanesService, LanesService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
-builder.Services.AddSignalR();
-builder.Services.AddCors();
 
 var app = builder.Build();
 
 app.MapHub<GameHub>("/game");
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 app.UseCors(builder =>
 {
@@ -38,6 +43,10 @@ app.UseCors(builder =>
 
 app.UseRouting();
 
+app.UseHttpsRedirection();
+
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

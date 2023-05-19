@@ -17,7 +17,7 @@ namespace LanesBackend.Logic
             CardService = cardService;
          }
 
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode)
+        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption)
         {
             var deck = CardService.CreateAndShuffleDeck();
             var playerDecks = CardService.SplitDeck(deck);
@@ -36,7 +36,17 @@ namespace LanesBackend.Logic
 
             var lanes = LanesService.CreateEmptyLanes();
 
-            Game game = new(hostConnectionId, guestConnectionId, gameCode, hostPlayer, guestPlayer, lanes);
+            var gameCreatedTimestampUTC = DateTime.UtcNow;
+
+            Game game = new(
+                hostConnectionId, 
+                guestConnectionId, 
+                gameCode, 
+                hostPlayer, 
+                guestPlayer, 
+                lanes, 
+                gameCreatedTimestampUTC, 
+                durationOption);
 
             return game;
         }
@@ -69,6 +79,12 @@ namespace LanesBackend.Logic
             {
                 DrawCardsUntilHandAtFive(game, playerIsHost);
             }
+
+            var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var timeStampUTC = DateTime.UtcNow;
+            var moveMade = new MoveMade(playedBy, move, timeStampUTC);
+
+            game.MovesMade.Add(moveMade);
 
             return true;
         }

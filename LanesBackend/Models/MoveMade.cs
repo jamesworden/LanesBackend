@@ -1,0 +1,18 @@
+﻿namespace LanesBackend.Models
+{
+    public class MoveMade
+    {
+        public PlayerOrNone PlayedBy { get; set; }
+
+        public Move Move { get; set; }
+
+        public DateTime TimestampUTC { get; set; }
+
+        public MoveMade(PlayerOrNone playedBy, Move move, DateTime timestampUTC)
+        {
+            PlayedBy = playedBy;
+            Move = move;
+            TimestampUTC = timestampUTC;
+        }
+    }
+}

@@ -24,13 +24,24 @@
 
         public int? BlackJokerLaneIndex { get; set; }
 
+        public DateTime GameCreatedTimestampUTC { get; set; }
+
+        public List<MoveMade> MovesMade = new();
+
+        public DurationOption DurationOption { get; set; }
+
+        public DateTime? GameEndedTimestampUTC { get; set; }
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 
             string gameCode, 
             Player hostPlayer,
             Player guestPlayer,
-            Lane[] lanes)
+            Lane[] lanes,
+            DateTime gameCreatedTimestampUTC,
+            DurationOption durationOption,
+            DateTime? gameEndedTimestampUTC = null)
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;
@@ -38,6 +49,9 @@
             HostPlayer = hostPlayer;
             GuestPlayer = guestPlayer;
             Lanes = lanes;
+            GameCreatedTimestampUTC = gameCreatedTimestampUTC;
+            DurationOption = durationOption;
+            GameEndedTimestampUTC = gameEndedTimestampUTC;
         }
     }
 }

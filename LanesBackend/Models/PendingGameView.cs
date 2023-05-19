@@ -1,17 +1,15 @@
 ﻿namespace LanesBackend.Models
 {
-    public class PendingGame
+    public class PendingGameView
     {
         public string GameCode { get; set; }
 
-        public string HostConnectionId { get; set; }
-
         public DurationOption DurationOption { get; set; }
 
-        public PendingGame(string gameCode, string hostConnectionId)
+        public PendingGameView(string gameCode, DurationOption durationOption)
         {
             GameCode = gameCode;
-            HostConnectionId = hostConnectionId;
+            DurationOption = durationOption;
         }
     }
 }
