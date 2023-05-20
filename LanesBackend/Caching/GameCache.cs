@@ -38,5 +38,10 @@ namespace LanesBackend.Caching
 
             return game;
         }
+
+        public Game? FindGameByGameCode(string gameCode)
+        {
+            return Games.FirstOrDefault(game => game.GameCode == gameCode);
+        }
     }
 }

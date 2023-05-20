@@ -2,6 +2,6 @@
 {
     public class TestingGameData
     {
-        public Lane[] Lanes = new Lane[5];
+        public Lane[] Lanes { get; set; } = new Lane[5];
     }
 }

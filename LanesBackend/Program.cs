@@ -1,7 +1,9 @@
+using LanesBackend.Broadcasters;
 using LanesBackend.Caching;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Logic;
+using LanesBackend.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ builder.Services.AddScoped<ILanesService, LanesService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
+builder.Services.AddScoped<IPlayerGameViewMapper, PlayerGameViewMapper>();
+builder.Services.AddScoped<IGameBroadcaster, GameBroadcaster>();
 
 var app = builder.Build();
 
