@@ -3,7 +3,7 @@
     public class Deck
     {
 
-        public List<Card> Cards;
+        public List<Card> Cards { get; set; }
 
         public Deck(List<Card> cards)
         {

@@ -9,5 +9,7 @@ namespace LanesBackend.Interfaces
         public Game? FindGameByConnectionId(string connectionId);
 
         public Game? RemoveGameByConnectionId(string connectionId);
+
+        public Game? FindGameByGameCode(string gameCode);
     }
 }
