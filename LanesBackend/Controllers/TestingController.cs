@@ -41,10 +41,15 @@ namespace LanesBackend.Controllers
                 return NotFound();
             }
 
-            // TODO: Add other game properties necessary for testing.
             game.Lanes = testingGameData.Lanes;
+            game.HostPlayer.Hand = testingGameData.HostHand;
+            game.GuestPlayer.Hand = testingGameData.GuestHand;
+            game.HostPlayer.Deck = testingGameData.HostDeck;
+            game.HostPlayer.Deck = testingGameData.GuestDeck;
+            game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
+            game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
+            game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
 
-            // TODO: Ensure the game that is stored in the cache actually gets updated.
             await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
             return Ok();

@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace LanesBackend.Models
+﻿namespace LanesBackend.Models
 {
     public class Hand
     {

@@ -2,16 +2,17 @@
 {
     public class Card
     {
-        public readonly Kind Kind;
+        public Kind Kind { get; set; }
 
-        public readonly Suit Suit;
+        public Suit Suit { get; set; }
 
-        public PlayerOrNone PlayedBy = PlayerOrNone.None;
+        public PlayerOrNone PlayedBy { get; set; }
 
-        public Card(Kind kind, Suit suit)
+    public Card(Kind kind, Suit suit, PlayerOrNone playedBy = PlayerOrNone.None)
         {
             Kind = kind;
             Suit = suit;
+            PlayedBy = playedBy;
         }
     }
 }
