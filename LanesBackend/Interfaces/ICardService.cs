@@ -4,7 +4,10 @@ namespace LanesBackend.Interfaces
 {
     public interface ICardService
     {
-        public bool RemoveCardWithMatchingKindAndSuit(List<Card> cardList, Card card);
+        /// <summary>
+        /// Returns the index of the card in the hand if removed, otherwise returns null.
+        /// </summary>
+        public int? RemoveCardWithMatchingKindAndSuit(List<Card> cardList, Card card);
 
         public Deck CreateAndShuffleDeck();
 

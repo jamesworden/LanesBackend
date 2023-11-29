@@ -5,7 +5,7 @@ namespace LanesBackend.Logic
 {
     public class CardService : ICardService
     {
-        public bool RemoveCardWithMatchingKindAndSuit(List<Card> cardList, Card card)
+        public int? RemoveCardWithMatchingKindAndSuit(List<Card> cardList, Card card)
         {
             for (int i = 0; i < cardList.Count; i++)
             {
@@ -16,19 +16,17 @@ namespace LanesBackend.Logic
                 if (sameSuit && sameKind)
                 {
                     cardList.RemoveAt(i);
-                    return true;
+                    return i;
                 }
             }
 
-            return false;
+            return null;
         }
 
         public Deck CreateAndShuffleDeck()
         {
             var deck = CreateDeck();
-            deck = ShuffleDeck(deck);
-
-            return deck;
+            return ShuffleDeck(deck);
         }
 
         public Tuple<Deck, Deck> SplitDeck(Deck deck)
@@ -41,9 +39,7 @@ namespace LanesBackend.Logic
             var secondDeckCards = DrawRemainingCards(deck);
             var secondDeck = new Deck(secondDeckCards);
 
-            var decks = new Tuple<Deck, Deck>(firstDeck, secondDeck);
-
-            return decks;
+            return new Tuple<Deck, Deck>(firstDeck, secondDeck);
         }
 
         public List<Card> DrawCards(Deck deck, int numberOfCards)

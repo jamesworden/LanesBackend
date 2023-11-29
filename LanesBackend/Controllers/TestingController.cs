@@ -13,6 +13,7 @@ namespace LanesBackend.Controllers
 
         private readonly IGameBroadcaster GameBroadcaster;
 
+        // TODO: Remove from commit history.
         const string TESTING_API_KEY = "ThisIsASecretAPIKey123!Beans";
 
         public TestingController(IGameCache gameCache, IGameBroadcaster gameBroadcaster)

@@ -21,21 +21,24 @@ namespace LanesBackend.Logic
             return lanes;
         }
 
-        public List<Card> GrabAllCardsAndClearLane(Lane lane)
+        /// <returns>Cards alongside their row indexes ordered from the bottom to the top of the row's stack of cards.</returns>
+        public List<(Card, int)> GrabAllCardsFromLane(Lane lane)
         {
-            List<Card> cards = new();
+            List<(Card, int) > cardsAndRowIndexes = new();
 
-            foreach (var row in lane.Rows)
+            for (var rowIndex = 0; rowIndex < lane.Rows.Length; rowIndex++) 
             {
+                var row = lane.Rows[rowIndex];
+
                 foreach (var card in row)
                 {
-                    cards.Add(card);
+                    cardsAndRowIndexes.Add((card, rowIndex));
                 }
             }
 
             lane.Rows = CreateEmptyRows();
 
-            return cards;
+            return cardsAndRowIndexes;
         }
 
         private Lane CreateEmptyLane()

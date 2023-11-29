@@ -28,6 +28,7 @@
 
         public DateTime? GameEndedTimestampUTC { get; set; }
 
+
         public PlayerGameView(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
