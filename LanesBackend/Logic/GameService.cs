@@ -64,6 +64,7 @@ namespace LanesBackend.Logic
                 ? DrawCardsFromDeck(game, playerIsHost, 1)
                 : DrawCardsUntil(game, playerIsHost, 5);
             cardMovements.AddRange(drawnCardMovements);
+
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var timeStampUTC = DateTime.UtcNow;
             var moveMade = new MoveMade(playedBy, move, timeStampUTC, cardMovements);
@@ -112,30 +113,16 @@ namespace LanesBackend.Logic
             }
         }
 
-        private List<CardMovement> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
+        private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
         {
             return placeCardAttempts
                 .SelectMany(placeCardAttempt => PlaceCardAndApplyGameRules(game, placeCardAttempt, playerIsHost))
                 .ToList();
         }
 
-        private int RemoveCardsFromHand(Game game, bool playerIsHost, Move move)
+        private List<List<CardMovement>> DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
         {
-            var numCardsRemoved = 0;
-            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            
-            foreach(var placeCardAttempt in move.PlaceCardAttempts)
-            {
-                CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, placeCardAttempt.Card);
-                numCardsRemoved++;
-            }
-
-            return numCardsRemoved;
-        }
-
-        private List<CardMovement> DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
-        {
-            var cardMovements = new List<CardMovement>();
+            var cardMovements = new List<List<CardMovement>>();
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
 
             for(int i = 0; i < numCardsToDraw; i++)
@@ -162,7 +149,8 @@ namespace LanesBackend.Logic
                 };
 
                 var cardMovement = new CardMovement(from, to, cardFromDeck);
-                cardMovements.Add(cardMovement);
+                var cardMovementList = new List<CardMovement>() { cardMovement };
+                cardMovements.Add(cardMovementList);
 
                 player.Hand.AddCard(cardFromDeck);
             }
@@ -170,7 +158,7 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private List<CardMovement> DrawCardsUntil(Game game, bool playerIsHost, int maxNumCards)
+        private List<List<CardMovement>> DrawCardsUntil(Game game, bool playerIsHost, int maxNumCards)
         {
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             var numCardsInPlayersHand = player.Hand.Cards.Count;
@@ -178,26 +166,34 @@ namespace LanesBackend.Logic
 
             return numCardsNeeded > 0
                 ? DrawCardsFromDeck(game, playerIsHost, numCardsNeeded)
-                : new List<CardMovement>();
+                : new List<List<CardMovement>>();
         }
 
-        private List<CardMovement> PlaceCardAndApplyGameRules(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> PlaceCardAndApplyGameRules(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
+            var initialCardMovements = new List<CardMovement> { PlaceCard(game, placeCardAttempt, playerIsHost) };
+            var cardMovements = new List<List<CardMovement>> { initialCardMovements };
+
             var aceRuleCardMovements = TriggerAceRuleIfAppropriate(game, placeCardAttempt, playerIsHost);
             if (aceRuleCardMovements.Any())
             {
-                return aceRuleCardMovements;
+                cardMovements.Add(aceRuleCardMovements);
+                return cardMovements;
             }
-
-            var cardMovements = new List<CardMovement> { PlaceCard(game, placeCardAttempt, playerIsHost) };
+            
             var capturedMiddleCardMovements = CaptureMiddleIfAppropriate(game, placeCardAttempt, playerIsHost);
             if (capturedMiddleCardMovements.Any())
             {
-                cardMovements.AddRange(capturedMiddleCardMovements);
+                cardMovements.Add(capturedMiddleCardMovements);
                 return cardMovements;
             }
 
-            cardMovements.AddRange(WinLaneAndOrGameIfAppropriate(game, placeCardAttempt, playerIsHost));
+            var laneWonCardMovements = WinLaneAndOrGameIfAppropriate(game, placeCardAttempt, playerIsHost);
+            if (laneWonCardMovements.Any())
+            {
+                cardMovements.Add(laneWonCardMovements);
+            }
+
             return cardMovements;
         }
 
@@ -271,14 +267,14 @@ namespace LanesBackend.Logic
 
         private List<CardMovement> CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
-            // Filter and add the place card attempt to ensure it is the top card in the row.
-            var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane)
-                .Where((cardAndRowIndex) => {
-                    var suitMatches = placeCardAttempt.Card.Suit == cardAndRowIndex.Item1.Suit;
-                    var kindMatches = placeCardAttempt.Card.Kind == cardAndRowIndex.Item1.Kind;
-                    return !suitMatches && !kindMatches;
-                }).ToList();
-            laneCardsAndRowIndexes.Add((placeCardAttempt.Card, placeCardAttempt.TargetRowIndex));
+            var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane);
+
+            // Ensure that the place card attempt capturing the middle remains on top.
+            if (laneCardsAndRowIndexes[0].Item2 != placeCardAttempt.TargetRowIndex)
+            {
+                laneCardsAndRowIndexes.Reverse();
+            }
+
             var laneCards = laneCardsAndRowIndexes.Select(cardAndRowIndex => cardAndRowIndex.Item1);
             var middleRow = lane.Rows[3];
             middleRow.AddRange(laneCards);

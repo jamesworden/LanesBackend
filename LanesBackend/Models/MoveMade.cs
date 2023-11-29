@@ -8,9 +8,9 @@
 
         public DateTime TimestampUTC { get; set; }
 
-        public List<CardMovement> CardMovements { get; set; }
+        public List<List<CardMovement>> CardMovements { get; set; }
 
-    public MoveMade(PlayerOrNone playedBy, Move move, DateTime timestampUTC, List<CardMovement> cardMovements)
+    public MoveMade(PlayerOrNone playedBy, Move move, DateTime timestampUTC, List<List<CardMovement>> cardMovements)
         {
             PlayedBy = playedBy;
             Move = move;
