@@ -269,11 +269,10 @@ namespace LanesBackend.Logic
         {
             var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane);
 
-            // Ensure that the place card attempt capturing the middle remains on top.
-            if (laneCardsAndRowIndexes[0].Item2 != placeCardAttempt.TargetRowIndex)
+            if (!playerIsHost)
             {
                 laneCardsAndRowIndexes.Reverse();
-            }
+            };
 
             var laneCards = laneCardsAndRowIndexes.Select(cardAndRowIndex => cardAndRowIndex.Item1);
             var middleRow = lane.Rows[3];
@@ -403,7 +402,7 @@ namespace LanesBackend.Logic
 
             lane.LastCardPlayed = null;
             lane.LaneAdvantage = PlayerOrNone.None;
-            var destroyedCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane).ToList();
+            var destroyedCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane);
 
             return GetCardMovementsFromDestroyedCards(destroyedCardsAndRowIndexes, laneIndex);
         }
@@ -519,7 +518,10 @@ namespace LanesBackend.Logic
         {
             foreach (var row in lane.Rows)
             {
-                return OpponentAceOnTopOfRow(row, playerIsHost);
+                if (OpponentAceOnTopOfRow(row, playerIsHost))
+                {
+                    return true;
+                }
             }
 
             return false;
