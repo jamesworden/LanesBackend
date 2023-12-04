@@ -290,7 +290,7 @@ namespace LanesBackend.Logic
             {
                 var to = new CardStore
                 {
-                    CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, placeCardAttempt.TargetRowIndex)
+                    CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, 3)
                 };
 
                 var from = new CardStore
