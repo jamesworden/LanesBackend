@@ -6,9 +6,9 @@
 
         public CardStore To { get; set; }
 
-        public Card Card { get; set; }
+        public Card? Card { get; set; }
 
-        public CardMovement(CardStore from, CardStore to, Card card)
+        public CardMovement(CardStore from, CardStore to, Card? card)
         {
             From = from;
             To = to;
