@@ -12,10 +12,10 @@
 
         public MoveMade(PlayerOrNone playedBy, Move move, DateTime timestampUTC, List<List<CardMovement>> cardMovements)
         {
-        PlayedBy = playedBy;
-        Move = move;
-        TimestampUTC = timestampUTC;
-        CardMovements = cardMovements;
+            PlayedBy = playedBy;
+            Move = move;
+            TimestampUTC = timestampUTC;
+            CardMovements = cardMovements;
         }
     }
 }

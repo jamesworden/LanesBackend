@@ -267,12 +267,11 @@ namespace LanesBackend.Logic
 
         private List<CardMovement> CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
-            var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane);
-
-            if (!playerIsHost)
-            {
-                laneCardsAndRowIndexes.Reverse();
-            };
+            var advantagePlayer = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane)
+                .OrderBy(cardAndRowIndex => cardAndRowIndex.Item1.PlayedBy == advantagePlayer)
+                .ThenBy(cardAndRowIndex => playerIsHost ? cardAndRowIndex.Item2 : -cardAndRowIndex.Item2)
+                .ToList();
 
             var laneCards = laneCardsAndRowIndexes.Select(cardAndRowIndex => cardAndRowIndex.Item1);
             var middleRow = lane.Rows[3];

@@ -46,7 +46,7 @@ namespace LanesBackend.Controllers
             game.HostPlayer.Hand = testingGameData.HostHand;
             game.GuestPlayer.Hand = testingGameData.GuestHand;
             game.HostPlayer.Deck = testingGameData.HostDeck;
-            game.HostPlayer.Deck = testingGameData.GuestDeck;
+            game.GuestPlayer.Deck = testingGameData.GuestDeck;
             game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
             game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
             game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
