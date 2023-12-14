@@ -313,17 +313,35 @@ namespace LanesBackend.Logic
             var remainingCardsInLaneWithRowIndexes = LanesService.GrabAllCardsFromLane(lane);
             var remainingCardsInLane = remainingCardsInLaneWithRowIndexes
                 .Select(x => x.Item1)
+                .Where(card => !topCards.Any(topCard => topCard.Suit == card.Suit && topCard.Kind == card.Kind))
                 .ToList();
             var middleRow = lane.Rows[3];
             middleRow.AddRange(topCards);
 
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             player.Deck.Cards.AddRange(remainingCardsInLane);
+
+            var cardMovements = remainingCardsInLane.Select(card =>
+            {
+                var from = new CardStore()
+                {
+                    CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, 3)
+                };
+
+                var to = new CardStore()
+                {
+                    HostDeck = true
+                };
+
+                return new CardMovement(from, to, card);
+            }).ToList();
+
             CardService.ShuffleDeck(player.Deck);
             lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
 
-            var cardMovements = GetCardMovementsFromCapturedMiddleCards(topCardsWithRowIndexes, placeCardAttempt);
+            cardMovements.AddRange(GetCardMovementsFromCapturedMiddleCards(topCardsWithRowIndexes, placeCardAttempt));
             cardMovements.AddRange(GetCardMovementsFromCapturingCards(remainingCardsInLaneWithRowIndexes, placeCardAttempt, playerIsHost));
+            
             return cardMovements;
         }
 
