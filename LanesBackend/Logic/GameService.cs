@@ -184,7 +184,7 @@ namespace LanesBackend.Logic
             var capturedMiddleCardMovements = CaptureMiddleIfAppropriate(game, placeCardAttempt, playerIsHost);
             if (capturedMiddleCardMovements.Any())
             {
-                cardMovements.Add(capturedMiddleCardMovements);
+                cardMovements.AddRange(capturedMiddleCardMovements);
                 return cardMovements;
             }
 
@@ -235,7 +235,7 @@ namespace LanesBackend.Logic
             return new CardMovement(from, to, placeCardAttempt.Card);
         }
 
-        private List<CardMovement> CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var cardIsLastOnPlayerSide = playerIsHost ?
                 placeCardAttempt.TargetRowIndex == 2 :
@@ -243,7 +243,7 @@ namespace LanesBackend.Logic
 
             if (!cardIsLastOnPlayerSide)
             {
-                return new List<CardMovement>();
+                return new List<List<CardMovement>>();
             }
 
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
@@ -251,7 +251,10 @@ namespace LanesBackend.Logic
             var noAdvantage = lane.LaneAdvantage == PlayerOrNone.None;
             if (noAdvantage)
             {
-                return CaptureNoAdvantageLane(lane, placeCardAttempt, playerIsHost);
+                return new List<List<CardMovement>>
+                {
+                    CaptureNoAdvantageLane(lane, placeCardAttempt, playerIsHost)
+                };
             }
 
             var opponentAdvantage = playerIsHost ?
@@ -262,7 +265,7 @@ namespace LanesBackend.Logic
                 return CaptureOpponentAdvantageLane(game, placeCardAttempt, playerIsHost);
             }
 
-            return new List<CardMovement>();
+            return new List<List<CardMovement>>();
         }
 
         private List<CardMovement> CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
@@ -278,10 +281,10 @@ namespace LanesBackend.Logic
             middleRow.AddRange(laneCards);
             lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
 
-            return GetCardMovementsFromCapturedMiddleCards(laneCardsAndRowIndexes, placeCardAttempt);
+            return GetCardMovementsGoingToTheMiddle(laneCardsAndRowIndexes, placeCardAttempt);
         }
 
-        private List<CardMovement> GetCardMovementsFromCapturedMiddleCards(List<(Card, int)> cardsAndRowIndexes, PlaceCardAttempt placeCardAttempt)
+        private List<CardMovement> GetCardMovementsGoingToTheMiddle(List<(Card, int)> cardsAndRowIndexes, PlaceCardAttempt placeCardAttempt)
         {
             var cardMovements = new List<CardMovement>();
 
@@ -303,49 +306,35 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private List<CardMovement> CaptureOpponentAdvantageLane(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> CaptureOpponentAdvantageLane(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
-            var topCardsWithRowIndexes = GetTopCardsOfFirstThreeRows(lane, playerIsHost);
+            var topCardsWithRowIndexes = GrabTopCardsOfFirstThreeRows(lane, playerIsHost);
             var topCards = topCardsWithRowIndexes
                 .Select(cardsWithRowIndexes => cardsWithRowIndexes.Item1)
                 .ToList();
             var remainingCardsInLaneWithRowIndexes = LanesService.GrabAllCardsFromLane(lane);
             var remainingCardsInLane = remainingCardsInLaneWithRowIndexes
                 .Select(x => x.Item1)
-                .Where(card => !topCards.Any(topCard => topCard.Suit == card.Suit && topCard.Kind == card.Kind))
                 .ToList();
+
             var middleRow = lane.Rows[3];
             middleRow.AddRange(topCards);
 
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            player.Deck.Cards.AddRange(remainingCardsInLane);
-
-            var cardMovements = remainingCardsInLane.Select(card =>
-            {
-                var from = new CardStore()
-                {
-                    CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, 3)
-                };
-
-                var to = new CardStore()
-                {
-                    HostDeck = true
-                };
-
-                return new CardMovement(from, to, card);
-            }).ToList();
-
             CardService.ShuffleDeck(player.Deck);
             lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
 
-            cardMovements.AddRange(GetCardMovementsFromCapturedMiddleCards(topCardsWithRowIndexes, placeCardAttempt));
-            cardMovements.AddRange(GetCardMovementsFromCapturingCards(remainingCardsInLaneWithRowIndexes, placeCardAttempt, playerIsHost));
-            
-            return cardMovements;
+            var cardMovements = GetCardMovementsGoingToTheMiddle(topCardsWithRowIndexes, placeCardAttempt);
+            cardMovements.AddRange(GetCapturedCardMovementsGoingToTheDeck(remainingCardsInLaneWithRowIndexes, placeCardAttempt, playerIsHost));
+
+            return new List<List<CardMovement>>
+            {
+                cardMovements
+            };
         }
 
-        private List<CardMovement> GetCardMovementsFromCapturingCards(List<(Card, int)> cardsWithRowIndexes, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> GetCapturedCardMovementsGoingToTheDeck(List<(Card, int)> cardsWithRowIndexes, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
             var cardMovements = new List<CardMovement>();
 
@@ -369,37 +358,30 @@ namespace LanesBackend.Logic
         }
 
         /// <returns>Cards alongside their row indexes.</returns>
-        private static List<(Card, int)> GetTopCardsOfFirstThreeRows(Lane lane, bool playerIsHost)
+        private static List<(Card, int)> GrabTopCardsOfFirstThreeRows(Lane lane, bool playerIsHost)
         {
             List<(Card, int)> topCardsOfFirstThreeRows = new();
 
-            if (playerIsHost)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    var card = lane.Rows[i].Last();
+            int startRow = playerIsHost ? 0 : 6;
+            int endRow = playerIsHost ? 3 : 4;
+            int step = playerIsHost ? 1 : -1;
 
-                    if (card is not null)
-                    {
-                        topCardsOfFirstThreeRows.Add((card, i));
-                    }
-                }
-            }
-            else
+            for (int i = startRow; playerIsHost ? i < endRow : i >= endRow; i += step)
             {
-                for (int i = 6; i > 3; i--)
-                {
-                    var card = lane.Rows[i].Last();
+                var row = lane.Rows[i];
 
-                    if (card is not null)
-                    {
-                        topCardsOfFirstThreeRows.Add((card, i));
-                    }
+                if (row.Count > 0)
+                {
+                    var card = row.Last();
+                    row.RemoveAt(row.Count - 1);
+
+                    topCardsOfFirstThreeRows.Add((card, i));
                 }
             }
 
             return topCardsOfFirstThreeRows;
         }
+
 
         private List<CardMovement> TriggerAceRuleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
