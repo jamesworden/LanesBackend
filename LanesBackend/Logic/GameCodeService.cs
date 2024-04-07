@@ -8,7 +8,7 @@ namespace LanesBackend.Logic
 
         private static readonly Random Random = new();
 
-        private static readonly string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private static readonly string Consonants = "BCDFGHJKLMNPQRSTVWXZ";
 
         public GameCodeService(IPendingGameCache pendingGameCache)
         {
@@ -40,7 +40,8 @@ namespace LanesBackend.Logic
 
         private static string GenerateRandomLetterString(int length)
         {
-            var chars = Enumerable.Repeat(Alphabet, length).Select(s => s[Random.Next(s.Length)]);
+            // No bad words can be formed without vowels.
+            var chars = Enumerable.Repeat(Consonants, length).Select(s => s[Random.Next(s.Length)]);
             var charArray = chars.ToArray();
             return new string(charArray);
         }
