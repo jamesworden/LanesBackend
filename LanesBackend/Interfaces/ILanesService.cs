@@ -6,6 +6,6 @@ namespace LanesBackend.Interfaces
     {
         public Lane[] CreateEmptyLanes();
 
-        public List<Card> GrabAllCardsAndClearLane(Lane lane);
+        public List<(Card, int)> GrabAllCardsFromLane(Lane lane);
     }
 }
