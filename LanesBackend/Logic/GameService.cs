@@ -96,24 +96,31 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public void PassMove(Game game, bool playerIsHost)
+        public Game PassMove(string connectionId)
         {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
             var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
             var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
             var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
-
             if (!isPlayersTurn)
             {
-                return;
+                throw new NotPlayersTurnException();
             }
             
             var cardMovements = DrawCardsUntil(game, playerIsHost, 5);
             var move = new Move(new List<PlaceCardAttempt>());
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var timeStampUTC = DateTime.UtcNow;
-
             game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements));
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
+            return game;
         }
 
         public Hand RearrangeHand(string connectionId, List<Card> cards)
@@ -146,6 +153,43 @@ namespace LanesBackend.Logic
             {
                 game.GameEndedTimestampUTC = DateTime.UtcNow;
             }
+            return game;
+        }
+
+        public Game? FindGame(string connectionId)
+        {
+            return GameCache.FindGameByConnectionId(connectionId);
+        }
+
+        public Game AcceptDrawOffer(string connectionId)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            // [Security Hardening]: Actually verify that the opponent offererd a draw to begin with.
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+            GameCache.RemoveGameByConnectionId(connectionId);
+            return game;
+        }
+
+        public Game ResignGame(string connectionId)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+            game.WonBy = playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host;
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+
+            GameCache.RemoveGameByConnectionId(connectionId);
+
             return game;
         }
 
