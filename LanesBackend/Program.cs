@@ -21,6 +21,7 @@ builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
 builder.Services.AddScoped<IPlayerGameViewMapper, PlayerGameViewMapper>();
 builder.Services.AddScoped<IGameBroadcaster, GameBroadcaster>();
+builder.Services.AddScoped<IPendingGameService, PendingGameService>();
 
 var app = builder.Build();
 

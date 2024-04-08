@@ -1,5 +1,6 @@
 ﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Exceptions;
 
 namespace LanesBackend.Logic
 {
@@ -9,13 +10,17 @@ namespace LanesBackend.Logic
 
         private readonly ICardService CardService;
 
+        private readonly IGameCache GameCache;
+
         public GameService(
             ILanesService lanesService,
-            ICardService cardService)
+            ICardService cardService,
+            IGameCache gameCache)
         {
             LanesService = lanesService;
             CardService = cardService;
-         }
+            GameCache = gameCache;
+        }
 
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption)
         {
@@ -48,11 +53,21 @@ namespace LanesBackend.Logic
                 gameCreatedTimestampUTC, 
                 durationOption);
 
+            GameCache.AddGame(game);
+
             return game;
         }
 
-        public bool MakeMove(Game game, Move move, bool playerIsHost)
+        public Game MakeMove(string connectionId, Move move)
         {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
             if (!placedMultipleCards)
             {
@@ -70,47 +85,112 @@ namespace LanesBackend.Logic
             var moveMade = new MoveMade(playedBy, move, timeStampUTC, cardMovements);
             game.MovesMade.Add(moveMade);
 
-            return true;
+            if (game.WonBy == PlayerOrNone.None)
+            {
+                return game;
+            }
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+            GameCache.RemoveGameByConnectionId(connectionId);
+
+            return game;
         }
 
-        public void PassMove(Game game, bool playerIsHost)
+        public Game PassMove(string connectionId)
         {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
             var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
             var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
             var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
-
             if (!isPlayersTurn)
             {
-                return;
+                throw new NotPlayersTurnException();
             }
             
             var cardMovements = DrawCardsUntil(game, playerIsHost, 5);
             var move = new Move(new List<PlaceCardAttempt>());
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var timeStampUTC = DateTime.UtcNow;
-
             game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements));
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
+            return game;
         }
 
-        public void RearrangeHand(Game game, bool playerIsHost, List<Card> cards)
+        public Hand RearrangeHand(string connectionId, List<Card> cards)
         {
-            var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
-            bool newHandHasSameCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+            var game = GameCache.FindGameByConnectionId(connectionId);
 
-            if (!newHandHasSameCards)
+            if (game is null)
             {
-                return;
+                throw new GameNotExistsException();
             }
 
-            if (playerIsHost)
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var existingHand = playerIsHost ? game.HostPlayer.Hand : game.GuestPlayer.Hand;
+            var existingCards = existingHand.Cards;
+            bool containsDifferentCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+
+            if (containsDifferentCards)
             {
-                game.HostPlayer.Hand.Cards = cards;
+                throw new ContainsDifferentCardsException();
             }
-            else
+
+            existingHand.Cards = cards;
+            return existingHand;
+        }
+
+        public Game? RemoveGame(string connectionId)
+        {
+            var game = GameCache.RemoveGameByConnectionId(connectionId);
+            if (game is not null)
             {
-                game.GuestPlayer.Hand.Cards = cards;
+                game.GameEndedTimestampUTC = DateTime.UtcNow;
             }
+            return game;
+        }
+
+        public Game? FindGame(string connectionId)
+        {
+            return GameCache.FindGameByConnectionId(connectionId);
+        }
+
+        public Game AcceptDrawOffer(string connectionId)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            // [Security Hardening]: Actually verify that the opponent offererd a draw to begin with.
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+            GameCache.RemoveGameByConnectionId(connectionId);
+            return game;
+        }
+
+        public Game ResignGame(string connectionId)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+            game.WonBy = playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host;
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+
+            GameCache.RemoveGameByConnectionId(connectionId);
+
+            return game;
         }
 
         private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
