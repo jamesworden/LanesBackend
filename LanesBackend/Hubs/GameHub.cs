@@ -80,7 +80,8 @@ namespace LanesBackend.Hubs
             }
             catch (GameNotExistsException)
             {
-            } catch (Exception)
+            }
+            catch (Exception)
             {
 
             }
