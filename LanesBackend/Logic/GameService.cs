@@ -1,5 +1,6 @@
 ﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Exceptions;
 
 namespace LanesBackend.Logic
 {
@@ -9,13 +10,17 @@ namespace LanesBackend.Logic
 
         private readonly ICardService CardService;
 
+        private readonly IGameCache GameCache;
+
         public GameService(
             ILanesService lanesService,
-            ICardService cardService)
+            ICardService cardService,
+            IGameCache gameCache)
         {
             LanesService = lanesService;
             CardService = cardService;
-         }
+            GameCache = gameCache;
+        }
 
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption)
         {
@@ -48,11 +53,21 @@ namespace LanesBackend.Logic
                 gameCreatedTimestampUTC, 
                 durationOption);
 
+            GameCache.AddGame(game);
+
             return game;
         }
 
-        public bool MakeMove(Game game, Move move, bool playerIsHost)
+        public Game MakeMove(string connectionId, Move move)
         {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var playerIsHost = game.HostConnectionId == connectionId;
+
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
             if (!placedMultipleCards)
             {
@@ -70,7 +85,15 @@ namespace LanesBackend.Logic
             var moveMade = new MoveMade(playedBy, move, timeStampUTC, cardMovements);
             game.MovesMade.Add(moveMade);
 
-            return true;
+            if (game.WonBy == PlayerOrNone.None)
+            {
+                return game;
+            }
+
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+            GameCache.RemoveGameByConnectionId(connectionId);
+
+            return game;
         }
 
         public void PassMove(Game game, bool playerIsHost)
@@ -93,24 +116,37 @@ namespace LanesBackend.Logic
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
         }
 
-        public void RearrangeHand(Game game, bool playerIsHost, List<Card> cards)
+        public Hand RearrangeHand(string connectionId, List<Card> cards)
         {
-            var existingCards = playerIsHost ? game.HostPlayer.Hand.Cards : game.GuestPlayer.Hand.Cards;
-            bool newHandHasSameCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+            var game = GameCache.FindGameByConnectionId(connectionId);
 
-            if (!newHandHasSameCards)
+            if (game is null)
             {
-                return;
+                throw new GameNotExistsException();
             }
 
-            if (playerIsHost)
+            var playerIsHost = game.HostConnectionId == connectionId;
+            var existingHand = playerIsHost ? game.HostPlayer.Hand : game.GuestPlayer.Hand;
+            var existingCards = existingHand.Cards;
+            bool containsDifferentCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+
+            if (containsDifferentCards)
             {
-                game.HostPlayer.Hand.Cards = cards;
+                throw new ContainsDifferentCardsException();
             }
-            else
+
+            existingHand.Cards = cards;
+            return existingHand;
+        }
+
+        public Game? RemoveGame(string connectionId)
+        {
+            var game = GameCache.RemoveGameByConnectionId(connectionId);
+            if (game is not null)
             {
-                game.GuestPlayer.Hand.Cards = cards;
+                game.GameEndedTimestampUTC = DateTime.UtcNow;
             }
+            return game;
         }
 
         private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
