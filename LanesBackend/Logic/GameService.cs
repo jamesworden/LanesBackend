@@ -193,6 +193,18 @@ namespace LanesBackend.Logic
             return game;
         }
 
+        public Game EndGame(string connectionId)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+            game.GameEndedTimestampUTC = DateTime.UtcNow;
+            GameCache.RemoveGameByConnectionId(connectionId);
+            return game;
+        }
+
         private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
         {
             return placeCardAttempts

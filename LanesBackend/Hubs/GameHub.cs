@@ -225,41 +225,37 @@ namespace LanesBackend.Hubs
         public async Task CheckHostForEmptyTimer()
         {
             var connectionId = Context.ConnectionId;
-            var game = GameCache.FindGameByConnectionId(connectionId);
 
-            if (game is null)
+            try
             {
-                return;
+                var game = GameService.EndGame(connectionId);
+                await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
+                await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
             }
-
-            // TODO [Security Hardening]: Actually check if host has an empty timer.
-
-            game.GameEndedTimestampUTC = DateTime.UtcNow;
-
-            await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-            await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
-
-            GameCache.RemoveGameByConnectionId(connectionId);
+            catch (GameNotExistsException)
+            {
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public async Task CheckGuestForEmptyTimer()
         {
             var connectionId = Context.ConnectionId;
-            var game = GameCache.FindGameByConnectionId(connectionId);
 
-            if (game is null)
+            try
             {
-                return;
+                var game = GameService.EndGame(connectionId);
+                await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
+                await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
             }
-
-            // [Security Hardening]: Actually check if guest has an empty timer.
-
-            game.GameEndedTimestampUTC = DateTime.UtcNow;
-
-            await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-            await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
-
-            GameCache.RemoveGameByConnectionId(connectionId);
+            catch (GameNotExistsException)
+            {
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public async override Task OnDisconnectedAsync(Exception? _)

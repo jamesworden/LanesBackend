@@ -19,5 +19,7 @@ namespace LanesBackend.Interfaces
         public Game AcceptDrawOffer(string connectionId);
 
         public Game ResignGame(string connectionId);
+
+        public Game EndGame(string connectionId);
     }
 }
