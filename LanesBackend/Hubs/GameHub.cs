@@ -87,11 +87,14 @@ namespace LanesBackend.Hubs
             }
         }
 
-        public async Task MakeMove(string stringifiedMove)
+        public async Task MakeMove(string stringifiedMove, string? stringifiedRearrangedCardsInHand)
         {
             var move = JsonConvert.DeserializeObject<Move>(stringifiedMove);
+            var rearrangedCardsInHand = stringifiedRearrangedCardsInHand is null 
+                ? null 
+                : JsonConvert.DeserializeObject<List<Card>>(stringifiedRearrangedCardsInHand);
 
-            if (move is null)
+             if (move is null)
             {
                 return;
             }
@@ -100,7 +103,7 @@ namespace LanesBackend.Hubs
 
             try
             {
-                var game = GameService.MakeMove(connectionId, move);
+                var game = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
                 if (game.WonBy == PlayerOrNone.None)

@@ -6,7 +6,7 @@ namespace LanesBackend.Interfaces
     {
         public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption);
 
-        public Game MakeMove(string connectionId, Move move);
+        public Game MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand);
 
         public Game PassMove(string connectionId);
 

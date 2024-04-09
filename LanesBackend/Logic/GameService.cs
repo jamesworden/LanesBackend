@@ -58,7 +58,7 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public Game MakeMove(string connectionId, Move move)
+        public Game MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand)
         {
             var game = GameCache.FindGameByConnectionId(connectionId);
             if (game is null)
@@ -67,7 +67,6 @@ namespace LanesBackend.Logic
             }
 
             var playerIsHost = game.HostConnectionId == connectionId;
-
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
             if (!placedMultipleCards)
             {
@@ -75,6 +74,11 @@ namespace LanesBackend.Logic
             }
 
             var cardMovements = PlaceCardsAndApplyGameRules(game, move.PlaceCardAttempts, playerIsHost);
+            if (rearrangedCardsInHand is not null)
+            {
+                RearrangeHand(connectionId, rearrangedCardsInHand);
+            }
+
             var drawnCardMovements = placedMultipleCards
                 ? DrawCardsFromDeck(game, playerIsHost, 1)
                 : DrawCardsUntil(game, playerIsHost, 5);
@@ -126,7 +130,6 @@ namespace LanesBackend.Logic
         public Hand RearrangeHand(string connectionId, List<Card> cards)
         {
             var game = GameCache.FindGameByConnectionId(connectionId);
-
             if (game is null)
             {
                 throw new GameNotExistsException();
@@ -135,7 +138,7 @@ namespace LanesBackend.Logic
             var playerIsHost = game.HostConnectionId == connectionId;
             var existingHand = playerIsHost ? game.HostPlayer.Hand : game.GuestPlayer.Hand;
             var existingCards = existingHand.Cards;
-            bool containsDifferentCards = existingCards.Except(cards).Any() && cards.Except(existingCards).Any();
+            bool containsDifferentCards = ContainsDifferentCards(existingCards, cards);
 
             if (containsDifferentCards)
             {
@@ -210,6 +213,40 @@ namespace LanesBackend.Logic
             return placeCardAttempts
                 .SelectMany(placeCardAttempt => PlaceCardAndApplyGameRules(game, placeCardAttempt, playerIsHost))
                 .ToList();
+        }
+
+        private static bool ContainsDifferentCards(List<Card> list1, List<Card> list2)
+        {
+            if (list1.Count != list2.Count)
+            {
+                return true;
+            }
+
+            for (var i = 0; i < list1.Count; i++)
+            {
+                var card1 = list1[i];
+                var hasCard = false;
+                
+                for (var j = 0; j < list2.Count; j++)
+                {
+                    var card2 = list2[j];
+
+                    var kindMatches = card1.Kind == card2.Kind;
+                    var suitMatches = card1.Suit == card2.Suit;
+                    
+                    if (kindMatches && suitMatches)
+                    {
+                        hasCard = true;
+                        break;
+                    }
+                }
+
+                if (!hasCard)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private List<List<CardMovement>> DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
