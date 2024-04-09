@@ -28,6 +28,7 @@
 
         public DateTime? GameEndedTimestampUTC { get; set; }
 
+        public string GameCode { get; set; }
 
         public PlayerGameView(
             int numCardsInOpponentsDeck,
@@ -42,7 +43,8 @@
             DateTime gameCreatedTimestampUTC,
             List<MoveMade> movesMade,
             DurationOption durationOption,
-            DateTime? gameEndedTimestampUTC)
+            DateTime? gameEndedTimestampUTC,
+            string gameCode)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -57,6 +59,7 @@
             MovesMade = movesMade;
             DurationOption = durationOption;
             GameEndedTimestampUTC = gameEndedTimestampUTC;
+            GameCode = gameCode;
         }
     }
 }
