@@ -126,6 +126,8 @@ namespace LanesBackend.Logic
             game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements));
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
 
+            ApplyCandidateMoves(game, !playerIsHost);
+
             return game;
         }
 
@@ -731,8 +733,8 @@ namespace LanesBackend.Logic
             var candidateMoves = new List<CandidateMove>();
 
             var candidateCardsInHand = cardsInHand.Where(cardInHand => 
-                GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand) && 
-                !GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand)).ToList();
+                GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand) && 
+                !GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand)).ToList();
 
             List<List<Card>> candidateCardPermutationSubsets = PermutationsUtil.GetSubsetsPermutations(candidateCardsInHand);
 
