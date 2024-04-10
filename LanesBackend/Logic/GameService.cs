@@ -91,7 +91,7 @@ namespace LanesBackend.Logic
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
             }
 
-            ApplyCandidateMoves(game, !playerIsHost);
+            ApplyCandidateMoves(game, game.IsHostPlayersTurn);
 
             if (game.WonBy != PlayerOrNone.None)
             {
@@ -745,9 +745,10 @@ namespace LanesBackend.Logic
 
                 for (var i = 0; i < candidateCards.Count; i++)
                 {
-                    // The initial place card attempt has a rowIndex of 0. Continue adding place card attempts
-                    // starting at row index 1.
-                    var rowIndex = i + 1;
+                    var rowIndex = playerIsHost
+                        ? initialPlaceCardAttempt.TargetRowIndex + 1 + i
+                        : initialPlaceCardAttempt.TargetRowIndex - 1 - i;
+
                     var card = candidateCards[i];
                     if (card is not null)
                     {

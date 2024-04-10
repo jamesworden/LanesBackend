@@ -113,12 +113,12 @@ namespace LanesBackend.Util
 
         public static bool ContainsConsecutivePlaceCardAttempts(List<PlaceCardAttempt> placeCardAttempts)
         {
-            var targetLaneIndexes = placeCardAttempts.Select(placeCardAttempt => placeCardAttempt.TargetLaneIndex).ToList();
-            targetLaneIndexes.Sort();
+            var targetRowIndexes = placeCardAttempts.Select(placeCardAttempt => placeCardAttempt.TargetRowIndex).ToList();
+            targetRowIndexes.Sort();
 
-            for (int i = 0; i < targetLaneIndexes.Count - 1; i++)
+            for (int i = 0; i < targetRowIndexes.Count - 1; i++)
             {
-                if (targetLaneIndexes[i + 1] - targetLaneIndexes[i] != 1)
+                if (targetRowIndexes[i + 1] - targetRowIndexes[i] != 1)
                 {
                     return false;
                 }
@@ -129,10 +129,15 @@ namespace LanesBackend.Util
 
         public static bool TriedToCaptureDistantRow(Game game, Move move, bool playerIsHost)
         {
-            var firstPlaceCardAttempt = move.PlaceCardAttempts.FirstOrDefault();
+            var firstPlaceCardAttempt = GetInitialPlaceCardAttempt(move, playerIsHost);
             if (firstPlaceCardAttempt is null)
             {
                 return false;
+            }
+
+            if (move.PlaceCardAttempts.Count > 1 && playerIsHost)
+            {
+                var x = 2 + 2;
             }
 
             if (playerIsHost)
@@ -171,11 +176,19 @@ namespace LanesBackend.Util
                 : firstPlaceCardAttempt.TargetRowIndex < 3;
         }
 
+        /// <summary>
+        /// Return true if there were no previous rows to capture
+        /// </summary>
         public static bool CapturedAllPreviousRows(Game game, PlaceCardAttempt placeCardAttempt, int startIndex, bool playerIsHost)
         {
             var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
             var lane = game.Lanes[targetLaneIndex];
+
+            if (placeCardAttempt.TargetRowIndex == startIndex)
+            {
+                return true;
+            }
 
             for (int i = startIndex; i < targetRowIndex; i++)
             {
@@ -201,11 +214,19 @@ namespace LanesBackend.Util
             return true;
         }
 
+        /// <summary>
+        /// Return true if there were no following rows to capture
+        /// </summary>
         public static bool CapturedAllFollowingRows(Game game, PlaceCardAttempt placeCardAttempt, int endIndex, bool playerIsHost)
         {
             var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
             var lane = game.Lanes[targetLaneIndex];
+
+            if (placeCardAttempt.TargetRowIndex == endIndex)
+            {
+                return true;
+            }
 
             for (int i = endIndex; i > targetRowIndex; i--)
             {
