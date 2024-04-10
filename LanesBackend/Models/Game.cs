@@ -32,6 +32,8 @@
 
         public DateTime? GameEndedTimestampUTC { get; set; }
 
+        public List<List<CandidateMove>> CandidateMoves { get; set; } = new();
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 

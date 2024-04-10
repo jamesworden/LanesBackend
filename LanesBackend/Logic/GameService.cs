@@ -1,6 +1,7 @@
 ﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using LanesBackend.Exceptions;
+using LanesBackend.Util;
 
 namespace LanesBackend.Logic
 {
@@ -22,7 +23,7 @@ namespace LanesBackend.Logic
             GameCache = gameCache;
         }
 
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption)
+        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption, bool playerIsHost)
         {
             var deck = CardService.CreateAndShuffleDeck();
             var playerDecks = CardService.SplitDeck(deck);
@@ -53,6 +54,8 @@ namespace LanesBackend.Logic
                 gameCreatedTimestampUTC, 
                 durationOption);
 
+            ApplyCandidateMoves(game, !playerIsHost);
+
             GameCache.AddGame(game);
 
             return game;
@@ -68,11 +71,6 @@ namespace LanesBackend.Logic
 
             var playerIsHost = game.HostConnectionId == connectionId;
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
-            if (!placedMultipleCards)
-            {
-                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
-            }
-
             var cardMovements = PlaceCardsAndApplyGameRules(game, move.PlaceCardAttempts, playerIsHost);
             if (rearrangedCardsInHand is not null)
             {
@@ -85,17 +83,21 @@ namespace LanesBackend.Logic
             cardMovements.AddRange(drawnCardMovements);
 
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
-            var timeStampUTC = DateTime.UtcNow;
-            var moveMade = new MoveMade(playedBy, move, timeStampUTC, cardMovements);
+            var moveMade = new MoveMade(playedBy, move, DateTime.UtcNow, cardMovements);
             game.MovesMade.Add(moveMade);
 
-            if (game.WonBy == PlayerOrNone.None)
+            if (!placedMultipleCards)
             {
-                return game;
+                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
             }
 
-            game.GameEndedTimestampUTC = DateTime.UtcNow;
-            GameCache.RemoveGameByConnectionId(connectionId);
+            ApplyCandidateMoves(game, !playerIsHost);
+
+            if (game.WonBy != PlayerOrNone.None)
+            {
+                game.GameEndedTimestampUTC = DateTime.UtcNow;
+                GameCache.RemoveGameByConnectionId(connectionId);
+            }
 
             return game;
         }
@@ -669,6 +671,96 @@ namespace LanesBackend.Logic
                 topCard.PlayedBy == PlayerOrNone.Host;
 
             return topCardIsAce && topCardPlayedByOpponent;
+        }
+
+        private static void ApplyCandidateMoves(Game game, bool playerIsHost)
+        {
+            var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            var candidateMoves = new List<CandidateMove>();
+
+            foreach(var card in player.Hand.Cards)
+            {
+                var cardCandidateMoves = GetCandidateMoves(game, card, playerIsHost);
+                candidateMoves.AddRange(cardCandidateMoves);
+            }
+
+            game.CandidateMoves.Add(candidateMoves);
+        }
+
+        private static List<CandidateMove> GetCandidateMoves(Game game, Card card, bool playerIsHost)
+        {
+            var candidateMoves = new List<CandidateMove>();
+
+            for (var rowIndex = 0; rowIndex < 7; rowIndex++)
+            {
+                for (var laneIndex = 0; laneIndex < 5; laneIndex++)
+                {
+                    var placeCardAttempt = new PlaceCardAttempt(card, laneIndex, rowIndex);
+                    var placeCardAttempts = new List<PlaceCardAttempt> { placeCardAttempt };
+                    var move = new Move(placeCardAttempts);
+                    var candidateMove = GetCandidateMove(move, game, playerIsHost);
+                    candidateMoves.Add(candidateMove);
+
+                    if (GameUtil.IsDefensive(placeCardAttempt, playerIsHost))
+                    {
+                        var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+                        var cardsInHand = player.Hand.Cards;
+                        var placeMultipleCandidateMoves = GetPlaceMultipleCandidateMoves(placeCardAttempt, cardsInHand, game, playerIsHost);
+                        candidateMoves.AddRange(placeMultipleCandidateMoves);
+                    }
+                }
+            }
+
+            return candidateMoves;
+        }
+
+        private static CandidateMove GetCandidateMove(Move move, Game game, bool playerIsHost)
+        {
+            var invalidReason = GameUtil.GetReasonIfMoveInvalid(move, game, playerIsHost);
+            var isValid = invalidReason is null;
+            var candidateMove = new CandidateMove(move, isValid, invalidReason);
+            return candidateMove;
+        }
+
+        private static List<CandidateMove> GetPlaceMultipleCandidateMoves(
+            PlaceCardAttempt initialPlaceCardAttempt, 
+            List<Card> cardsInHand,
+            Game game,
+            bool playerIsHost)
+        {
+            var candidateMoves = new List<CandidateMove>();
+
+            var candidateCardsInHand = cardsInHand.Where(cardInHand => 
+                GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand) && 
+                !GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand)).ToList();
+
+            List<List<Card>> candidateCardPermutationSubsets = PermutationsUtil.GetSubsetsPermutations(candidateCardsInHand);
+
+            foreach (var candidateCards in candidateCardPermutationSubsets)
+            {
+                var totalCandidatePlaceCardAttempts = new List<PlaceCardAttempt> { initialPlaceCardAttempt };
+                var candidatePlaceCardAttempts = new List<PlaceCardAttempt>();
+
+                for (var i = 0; i < candidateCards.Count; i++)
+                {
+                    // The initial place card attempt has a rowIndex of 0. Continue adding place card attempts
+                    // starting at row index 1.
+                    var rowIndex = i + 1;
+                    var card = candidateCards[i];
+                    if (card is not null)
+                    {
+                        var attempt = new PlaceCardAttempt(card, initialPlaceCardAttempt.TargetLaneIndex, rowIndex);
+                        candidatePlaceCardAttempts.Add(attempt);
+                    }
+                }
+
+                totalCandidatePlaceCardAttempts.AddRange(candidatePlaceCardAttempts);
+                var move = new Move(totalCandidatePlaceCardAttempts);
+                var candidateMove = GetCandidateMove(move, game, playerIsHost);
+                candidateMoves.Add(candidateMove);
+            }
+
+            return candidateMoves;
         }
     }
 }

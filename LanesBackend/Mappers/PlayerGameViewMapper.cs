@@ -23,7 +23,8 @@ namespace LanesBackend.Mappers
                 HideOpponentsDrawnCards(game.MovesMade, isHost),
                 game.DurationOption,
                 game.GameEndedTimestampUTC,
-                game.GameCode
+                game.GameCode,
+                game.CandidateMoves
                 );
         }
 
@@ -45,7 +46,8 @@ namespace LanesBackend.Mappers
                 HideOpponentsDrawnCards(game.MovesMade, isHost),
                 game.DurationOption,
                 game.GameEndedTimestampUTC,
-                game.GameCode
+                game.GameCode,
+                game.CandidateMoves
                 );
         }
 
