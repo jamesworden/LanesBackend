@@ -10,8 +10,6 @@ namespace LanesBackend.Controllers
     [Route("api/[controller]")]
     public class TestingController : ControllerBase
     {
-        private readonly IGameCache GameCache;
-
         private readonly IGameService GameService;
 
         private readonly IGameBroadcaster GameBroadcaster;
