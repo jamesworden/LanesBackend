@@ -106,7 +106,7 @@ namespace LanesBackend.Hubs
                 var game = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
-                if (game.GameEndedTimestampUTC is null)
+                if (!game.HasEnded)
                 {
                     return;
                 }
