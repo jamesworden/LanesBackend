@@ -32,6 +32,8 @@
 
         public List<CandidateMove>? CandidateMoves { get; set; }
 
+        public bool HasEnded { get; set; }
+
         public PlayerGameView(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
@@ -47,7 +49,8 @@
             DurationOption durationOption,
             DateTime? gameEndedTimestampUTC,
             string gameCode,
-            List<CandidateMove>? candidateMoves)
+            List<CandidateMove>? candidateMoves,
+            bool hasEnded)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -64,6 +67,7 @@
             GameEndedTimestampUTC = gameEndedTimestampUTC;
             GameCode = gameCode;
             CandidateMoves = candidateMoves;
+            HasEnded = hasEnded;
         }
     }
 }

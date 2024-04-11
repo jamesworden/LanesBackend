@@ -106,8 +106,16 @@ namespace LanesBackend.Hubs
                 var game = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
+                if (game.GameEndedTimestampUTC is null)
+                {
+                    return;
+                }
+
                 if (game.WonBy == PlayerOrNone.None)
                 {
+                    // TODO: Could have draw by three repeated passes or by no moves for anyone; add dynamic message.
+                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
+                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
                     return;
                 }
 
