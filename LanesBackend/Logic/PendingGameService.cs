@@ -73,6 +73,7 @@ namespace LanesBackend.Logic
             if (pendingGame is not null)
             {
                 PendingGameCache.RemovePendingGame(pendingGame.GameCode);
+                return pendingGame;
             }
             return pendingGame;
         }

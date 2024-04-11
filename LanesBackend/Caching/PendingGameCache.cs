@@ -21,8 +21,8 @@ namespace LanesBackend.Caching
 
         public PendingGame? GetPendingGameByConnectionId(string hostConnectionId)
         {
-            var pendingGameCode = PendingGameCodeToHostConnectionId.FirstOrDefault(row => row.Value.HostConnectionId == hostConnectionId).Key;
-
+            var pendingGameCode = PendingGameCodeToHostConnectionId
+                .FirstOrDefault(row => row.Value is not null && row.Value.HostConnectionId == hostConnectionId).Key;
             if (pendingGameCode is null)
             {
                 return null;
