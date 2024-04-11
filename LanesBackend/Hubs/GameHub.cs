@@ -144,7 +144,7 @@ namespace LanesBackend.Hubs
                 if (game.HasEnded)
                 {
                     await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw by repetition!");
-                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a drawby repetition!");
+                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw by repetition!");
                 }
             } catch (NotPlayersTurnException)
             {
