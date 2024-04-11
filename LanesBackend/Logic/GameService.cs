@@ -131,11 +131,20 @@ namespace LanesBackend.Logic
             var move = new Move(new List<PlaceCardAttempt>());
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var timeStampUTC = DateTime.UtcNow;
-            game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements));
+            game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements, true));
             game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
 
-            var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
-            game.CandidateMoves.Add(candidateMoves);
+            if (HasThreeBackToBackPasses(game))
+            {
+                game.HasEnded = true;
+                game.GameEndedTimestampUTC = timeStampUTC;
+                GameCache.RemoveGameByConnectionId(connectionId);
+            }
+            else
+            {
+                var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
+                game.CandidateMoves.Add(candidateMoves);
+            }
 
             return game;
         }
@@ -226,6 +235,25 @@ namespace LanesBackend.Logic
             GameCache.RemoveGameByConnectionId(connectionId);
 
             return game;
+        }
+
+        private static bool HasThreeBackToBackPasses(Game game)
+        {
+            if (game.MovesMade.Count < 6)
+            {
+                return false;
+            }
+
+            for (var i = game.MovesMade.Count - 1; i >= game.MovesMade.Count - 6; i--)
+            {
+                var moveMade = game.MovesMade[i];
+                if (!moveMade.PassedMove)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)

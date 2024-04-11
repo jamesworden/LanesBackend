@@ -113,9 +113,8 @@ namespace LanesBackend.Hubs
 
                 if (game.WonBy == PlayerOrNone.None)
                 {
-                    // TODO: Could have draw by three repeated passes or by no moves for anyone; add dynamic message.
-                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
-                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
+                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
+                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
                     return;
                 }
 
@@ -141,6 +140,12 @@ namespace LanesBackend.Hubs
             {
                 var game = GameService.PassMove(connectionId);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.PassedMove);
+
+                if (game.HasEnded)
+                {
+                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw by repetition!");
+                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a drawby repetition!");
+                }
             } catch (NotPlayersTurnException)
             {
             }
