@@ -18,11 +18,9 @@ namespace LanesBackend.Controllers
         const string TESTING_API_KEY = "ThisIsASecretAPIKey123!Beans";
 
         public TestingController(
-            IGameCache gameCache, 
             IGameBroadcaster gameBroadcaster, 
             IGameService gameService)
         { 
-            GameCache = gameCache;
             GameBroadcaster = gameBroadcaster;
             GameService = gameService;
         }
