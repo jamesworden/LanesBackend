@@ -23,5 +23,7 @@ namespace LanesBackend.Interfaces
         public Game EndGame(string connectionId);
 
         public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer);
+
+        public Game UpdateGame(TestingGameData testingGameData, string gameCode);
     }
 }

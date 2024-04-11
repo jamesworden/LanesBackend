@@ -1,4 +1,5 @@
-﻿using LanesBackend.Interfaces;
+﻿using LanesBackend.Exceptions;
+using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -40,27 +41,20 @@ namespace LanesBackend.Controllers
                 return Unauthorized();
             }
 
-            var game = GameCache.FindGameByGameCode(gameCode);
-            if (game is null)
+            try
+            {
+                var game = GameService.UpdateGame(testingGameData, gameCode);
+                await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
+
+                return Ok();
+            } catch (GameNotExistsException)
             {
                 return NotFound();
             }
-
-            game.Lanes = testingGameData.Lanes;
-            game.HostPlayer.Hand = testingGameData.HostHand;
-            game.GuestPlayer.Hand = testingGameData.GuestHand;
-            game.HostPlayer.Deck = testingGameData.HostDeck;
-            game.GuestPlayer.Deck = testingGameData.GuestDeck;
-            game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
-            game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
-            game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
-
-            var candidateMoves = GameService.GetCandidateMoves(game, game.IsHostPlayersTurn);
-            game.CandidateMoves.Add(candidateMoves);
-
-            await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
-
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(500, "Error updating game data.");
+            }
         }
     }
 }

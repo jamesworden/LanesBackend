@@ -237,6 +237,29 @@ namespace LanesBackend.Logic
             return game;
         }
 
+        public Game UpdateGame(TestingGameData testingGameData, string gameCode)
+        {
+            var game = GameCache.FindGameByGameCode(gameCode);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            game.Lanes = testingGameData.Lanes;
+            game.HostPlayer.Hand = testingGameData.HostHand;
+            game.GuestPlayer.Hand = testingGameData.GuestHand;
+            game.HostPlayer.Deck = testingGameData.HostDeck;
+            game.GuestPlayer.Deck = testingGameData.GuestDeck;
+            game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
+            game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
+            game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
+
+            var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
+            game.CandidateMoves.Add(candidateMoves);
+
+            return game;
+        }
+
         private static bool HasThreeBackToBackPasses(Game game)
         {
             if (game.MovesMade.Count < 6)
