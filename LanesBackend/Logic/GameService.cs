@@ -244,11 +244,11 @@ namespace LanesBackend.Logic
                 var allOpponentCandidateMovesInvalid = opponentCandidateMoves.All(move => !move.IsValid);
                 if (!opponentCandidateMoves.Any() || allOpponentCandidateMovesInvalid)
                 {
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         private static bool ContainsDifferentCards(List<Card> list1, List<Card> list2)
