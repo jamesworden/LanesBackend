@@ -21,5 +21,7 @@ namespace LanesBackend.Interfaces
         public Game ResignGame(string connectionId);
 
         public Game EndGame(string connectionId);
+
+        public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer);
     }
 }

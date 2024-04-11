@@ -263,7 +263,7 @@ namespace LanesBackend.Logic
                 .ToList();
         }
 
-        private static bool BothPlayersHaveMoves(List<CandidateMove> playerCandidateMoves, Game game)
+        private bool BothPlayersHaveMoves(List<CandidateMove> playerCandidateMoves, Game game)
         {
             var allCandidateMovesInvalid = playerCandidateMoves.All(move => !move.IsValid);
             if (!playerCandidateMoves.Any() || allCandidateMovesInvalid)
@@ -735,7 +735,7 @@ namespace LanesBackend.Logic
             return topCardIsAce && topCardPlayedByOpponent;
         }
 
-        private static List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer)
+        public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer)
         {
             var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
             var candidateMoves = new List<CandidateMove>();

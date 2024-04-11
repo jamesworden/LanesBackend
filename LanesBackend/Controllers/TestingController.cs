@@ -11,15 +11,21 @@ namespace LanesBackend.Controllers
     {
         private readonly IGameCache GameCache;
 
+        private readonly IGameService GameService;
+
         private readonly IGameBroadcaster GameBroadcaster;
 
         // TODO: Remove from commit history.
         const string TESTING_API_KEY = "ThisIsASecretAPIKey123!Beans";
 
-        public TestingController(IGameCache gameCache, IGameBroadcaster gameBroadcaster)
+        public TestingController(
+            IGameCache gameCache, 
+            IGameBroadcaster gameBroadcaster, 
+            IGameService gameService)
         { 
             GameCache = gameCache;
             GameBroadcaster = gameBroadcaster;
+            GameService = gameService;
         }
 
         [HttpPost(Name = "UpdateGameWithTestData")]
@@ -29,14 +35,12 @@ namespace LanesBackend.Controllers
             [FromQuery] [Required] string apiKey)
         {
             var incorrectApiKey = !apiKey.Equals(TESTING_API_KEY);
-
             if (incorrectApiKey)
             {
                 return Unauthorized();
             }
 
             var game = GameCache.FindGameByGameCode(gameCode);
-
             if (game is null)
             {
                 return NotFound();
@@ -50,6 +54,9 @@ namespace LanesBackend.Controllers
             game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
             game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
             game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
+
+            var candidateMoves = GameService.GetCandidateMoves(game, game.IsHostPlayersTurn);
+            game.CandidateMoves.Add(candidateMoves);
 
             await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
