@@ -75,19 +75,19 @@ namespace LanesBackend.Util
 
         public static bool IsOffensive(PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
-            return (placeCardAttempt.TargetLaneIndex > 3 && playerIsHost)
-                || (placeCardAttempt.TargetLaneIndex < 3 && !playerIsHost);
+            return (placeCardAttempt.TargetRowIndex > 3 && playerIsHost)
+                || (placeCardAttempt.TargetRowIndex < 3 && !playerIsHost);
         }
 
         public static bool IsToMiddle(PlaceCardAttempt placeCardAttempt)
         {
-            return placeCardAttempt.TargetLaneIndex == 3;
+            return placeCardAttempt.TargetRowIndex == 3;
         }
 
         public static bool IsDefensive(PlaceCardAttempt placeCardAttempt, bool playerIsHost)
         {
-            return (placeCardAttempt.TargetLaneIndex < 3 && playerIsHost)
-                || (placeCardAttempt.TargetLaneIndex > 3 && !playerIsHost);
+            return (placeCardAttempt.TargetRowIndex < 3 && playerIsHost)
+                || (placeCardAttempt.TargetRowIndex > 3 && !playerIsHost);
         }
 
         public static bool IsPlayersTurn(Game game, bool playerIsHost)
