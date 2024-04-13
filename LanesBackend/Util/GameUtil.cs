@@ -114,7 +114,11 @@ namespace LanesBackend.Util
 
             for (int i = 0; i < targetRowIndexes.Count - 1; i++)
             {
-                if (targetRowIndexes[i + 1] - targetRowIndexes[i] != 1)
+                var upperIndex = targetRowIndexes[i + 1];
+                var lowerIndex = targetRowIndexes[i];
+                var indexesSurroundMiddle = upperIndex > 3 && lowerIndex < 3;
+                var rowIndexesSeperate = upperIndex - lowerIndex != 1;
+                if (rowIndexesSeperate && !indexesSurroundMiddle)
                 {
                     return false;
                 }

@@ -832,6 +832,18 @@ namespace LanesBackend.Logic
                         ? initialPlaceCardAttempt.TargetRowIndex + 1 + i
                         : initialPlaceCardAttempt.TargetRowIndex - 1 - i;
 
+                    // When placing multiple cards beyond the middle of the lane, the target row index of 3 
+                    // is skipped. For example, the host might play one move from row indexes 1, 2, and 4,
+                    // while the guest might play one move from row indexes 5, 4, 2.
+                    if (forHostPlayer && rowIndex >= 3)
+                    {
+                        rowIndex++;
+                    }
+                    else if (!forHostPlayer && rowIndex <= 3)
+                    {
+                        rowIndex--;
+                    }
+
                     var card = candidateCards[i];
                     if (card is not null)
                     {
