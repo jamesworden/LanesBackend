@@ -88,15 +88,18 @@ namespace LanesBackend.Logic
             var moveMade = new MoveMade(playedBy, move, DateTime.UtcNow, cardMovements);
             game.MovesMade.Add(moveMade);
 
-            if (!placedMultipleCards)
+            var opponentCandidateMoves = GetOpponentCandidateMoves(game);
+            var anyValidOpponentCandidateMoves = opponentCandidateMoves.Any(move => move.IsValid);
+            var playerCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
+            game.CandidateMoves.Add(playerCandidateMoves);
+            var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
+
+            if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
             {
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
             }
 
-            var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
-            game.CandidateMoves.Add(candidateMoves);
-            var bothPlayersHaveMoves = BothPlayersHaveMoves(candidateMoves, game);
-            if (!bothPlayersHaveMoves)
+            if (!anyValidPlayerCandidateMoves && !anyValidOpponentCandidateMoves)
             {
                 game.HasEnded = true;
             }
@@ -291,7 +294,10 @@ namespace LanesBackend.Logic
             var allCandidateMovesInvalid = playerCandidateMoves.All(move => !move.IsValid);
             if (!playerCandidateMoves.Any() || allCandidateMovesInvalid)
             {
-                var opponentCandidateMoves = GetCandidateMoves(game, !game.IsHostPlayersTurn);
+                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+                var opponentCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
+                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
                 var allOpponentCandidateMovesInvalid = opponentCandidateMoves.All(move => !move.IsValid);
                 if (!opponentCandidateMoves.Any() || allOpponentCandidateMovesInvalid)
                 {
@@ -797,6 +803,15 @@ namespace LanesBackend.Logic
             }
 
             return candidateMoves;
+        }
+
+        private List<CandidateMove> GetOpponentCandidateMoves(Game game)
+        {
+            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            var opponentCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
+            game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
+            return opponentCandidateMoves;
         }
 
         private static CandidateMove GetCandidateMove(Move move, Game game,bool forHostPlayer)
