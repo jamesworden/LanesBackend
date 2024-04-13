@@ -4,23 +4,30 @@
     {
         public static List<List<T>> GetSubsetsPermutations<T>(List<T> list)
         {
-            var permutations = new List<List<T>>();
-            GenerateSubsetsPermutations(list, 0, permutations);
-            return permutations;
+            var subsets = new List<List<T>>();
+            GenerateSubsetsPermutations(list, 0, new List<T>(), subsets);
+            return subsets;
         }
 
-        static void GenerateSubsetsPermutations<T>(List<T> list, int startIndex, List<List<T>> result)
+        static void GenerateSubsetsPermutations<T>(List<T> list, int index, List<T> subset, List<List<T>> subsets)
         {
-            if (startIndex == list.Count)
+            if (index == list.Count)
             {
-                return;
+                if (subset.Count > 0)
+                {
+                    subsets.Add(new List<T>(subset));
+                    permutationsOfSubset(subset, subsets);
+                }
             }
-
-            for (int i = startIndex; i < list.Count; i++)
+            else
             {
-                var subset = list.GetRange(startIndex, i - startIndex + 1);
-                permutationsOfSubset(subset, result);
-                GenerateSubsetsPermutations(list, i + 1, result);
+                // Include current element
+                subset.Add(list[index]);
+                GenerateSubsetsPermutations(list, index + 1, subset, subsets);
+
+                // Exclude current element
+                subset.RemoveAt(subset.Count - 1);
+                GenerateSubsetsPermutations(list, index + 1, subset, subsets);
             }
         }
 
@@ -35,7 +42,7 @@
         {
             if (startIndex == endIndex)
             {
-                result.Add(new List<T> { list[startIndex] });
+                result.Add(new List<T>(list));
             }
             else
             {

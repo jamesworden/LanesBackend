@@ -18,10 +18,6 @@ namespace LanesBackend.Util
             {
                 return "You placed too many cards!";
             }
-            if (move.PlaceCardAttempts.Any(attempt => attempt.TargetRowIndex == 3))
-            {
-                return "You can't place a card in the middle!";
-            }
             if (move.PlaceCardAttempts.Select(attempt => attempt.TargetLaneIndex).Distinct().Count() > 1)
             {
                 return "You can't place cards on different lanes!";
@@ -133,11 +129,6 @@ namespace LanesBackend.Util
             if (firstPlaceCardAttempt is null)
             {
                 return false;
-            }
-
-            if (move.PlaceCardAttempts.Count > 1 && playerIsHost)
-            {
-                var x = 2 + 2;
             }
 
             if (playerIsHost)
