@@ -277,8 +277,9 @@ namespace LanesBackend.Util
             var targetCard = targetRow[targetRow.Count - 1];
             var suitsMatch = targetCard.Suit == card.Suit;
             var targetCardIsGreater = !CardTrumpsCard(card, targetCard);
+            var playerPlayedCard = targetCard.PlayedBy == (playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest);
 
-            return suitsMatch && targetCardIsGreater;
+            return suitsMatch && targetCardIsGreater && !playerPlayedCard;
         }
 
         public static PlaceCardAttempt GetInitialPlaceCardAttempt(Move move, bool playerIsHost)
@@ -362,7 +363,7 @@ namespace LanesBackend.Util
 
             return playerPlayedTargetCard 
                 && SuitMatches(targetCard, firstAttempt.Card) 
-                && !CardTrumpsCard(targetCard, firstAttempt.Card);
+                && CardTrumpsCard(targetCard, firstAttempt.Card);
         }
     }
 }

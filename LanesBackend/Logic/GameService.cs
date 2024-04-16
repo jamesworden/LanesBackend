@@ -544,6 +544,7 @@ namespace LanesBackend.Logic
             middleRow.AddRange(topCards);
 
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
+            player.Deck.Cards.AddRange(remainingCardsInLane);
             CardService.ShuffleDeck(player.Deck);
             lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
 
