@@ -26,6 +26,10 @@ namespace LanesBackend.Util
             {
                 return "You can't place cards on the same position!";
             }
+            if (move.PlaceCardAttempts.Any(placeCardAttempt => placeCardAttempt.TargetRowIndex == 3))
+            {
+                return "You can't place a card in the middle!";
+            }
             if (!ContainsConsecutivePlaceCardAttempts(move.PlaceCardAttempts))
             {
                 return "You can't place cards that are separate from one another!";
