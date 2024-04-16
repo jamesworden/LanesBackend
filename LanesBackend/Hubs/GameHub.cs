@@ -113,7 +113,7 @@ namespace LanesBackend.Hubs
                         await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
                     } else if (moveMadeResults.Contains(MoveMadeResult.GuestTurnSkippedNoMoves))
                     {
-                        await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
+                        await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
                     }
 
                     return;
