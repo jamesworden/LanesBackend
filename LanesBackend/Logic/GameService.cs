@@ -62,7 +62,7 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public Game MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand)
+        public (Game, IEnumerable<MoveMadeResult>) MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand)
         {
             var game = GameCache.FindGameByConnectionId(connectionId);
             if (game is null)
@@ -93,10 +93,19 @@ namespace LanesBackend.Logic
             var playerCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
             game.CandidateMoves.Add(playerCandidateMoves);
             var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
+            var moveMadeResults = new List<MoveMadeResult>();
 
             if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
             {
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+            }
+
+            if (!anyValidOpponentCandidateMoves)
+            {
+                var moveMadeResult = game.IsHostPlayersTurn
+                    ? MoveMadeResult.GuestTurnSkippedNoMoves
+                    : MoveMadeResult.HostTurnSkippedNoMoves;
+                moveMadeResults.Add(moveMadeResult);
             }
 
             if (!anyValidPlayerCandidateMoves && !anyValidOpponentCandidateMoves)
@@ -110,7 +119,7 @@ namespace LanesBackend.Logic
                 GameCache.RemoveGameByConnectionId(connectionId);
             }
 
-            return game;
+            return (game, moveMadeResults);
         }
 
         public Game PassMove(string connectionId)

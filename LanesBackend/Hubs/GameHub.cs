@@ -103,11 +103,19 @@ namespace LanesBackend.Hubs
 
             try
             {
-                var game = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
+                var (game, moveMadeResults) = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
                 if (!game.HasEnded)
                 {
+                    if (moveMadeResults.Contains(MoveMadeResult.HostTurnSkippedNoMoves))
+                    {
+                        await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
+                    } else if (moveMadeResults.Contains(MoveMadeResult.GuestTurnSkippedNoMoves))
+                    {
+                        await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
+                    }
+
                     return;
                 }
 

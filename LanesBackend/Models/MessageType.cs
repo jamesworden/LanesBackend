@@ -17,5 +17,7 @@
         public static readonly string DrawOffered = "DrawOffered";
 
         public static readonly string PendingGameUpdated = "PendingGameUpdated";
+
+        public static readonly string TurnSkippedNoMoves = "TurnSkippedNoMoves";
     }
 }
