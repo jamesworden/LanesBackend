@@ -135,6 +135,9 @@ namespace LanesBackend.Hubs
             catch (GameNotExistsException)
             {
             }
+            catch(InvalidMoveException)
+            {
+            }
             catch
             {
             }

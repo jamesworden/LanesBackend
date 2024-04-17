@@ -70,6 +70,13 @@ namespace LanesBackend.Logic
                 throw new GameNotExistsException();
             }
 
+            var lastCandidateMoves = game.CandidateMoves.LastOrDefault();
+            var moveIsOneOfLastCandidates = lastCandidateMoves?.Any(candidateMove => MovesMatch(candidateMove.Move, move)) ?? false;
+            if (lastCandidateMoves is not null && !moveIsOneOfLastCandidates)
+            {
+                throw new InvalidMoveException();
+            }
+
             var playerIsHost = game.HostConnectionId == connectionId;
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
             var cardMovements = PlaceCardsAndApplyGameRules(game, move.PlaceCardAttempts, playerIsHost);
@@ -91,13 +98,16 @@ namespace LanesBackend.Logic
             var opponentCandidateMoves = GetOpponentCandidateMoves(game);
             var anyValidOpponentCandidateMoves = opponentCandidateMoves.Any(move => move.IsValid);
             var playerCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
-            game.CandidateMoves.Add(playerCandidateMoves);
             var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
             var moveMadeResults = new List<MoveMadeResult>();
 
             if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
             {
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+                game.CandidateMoves.Add(opponentCandidateMoves);
+            } else
+            {
+                game.CandidateMoves.Add(playerCandidateMoves);
             }
 
             if (!anyValidOpponentCandidateMoves)
@@ -902,6 +912,33 @@ namespace LanesBackend.Logic
             }
 
             return candidateMoves;
+        }
+
+        private static bool MovesMatch(Move move1, Move move2)
+        {
+            if (move1.PlaceCardAttempts.Count != move2.PlaceCardAttempts.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < move1.PlaceCardAttempts.Count; i++)
+            {
+                var attempt1 = move1.PlaceCardAttempts[i];
+                var attempt2 = move2.PlaceCardAttempts[i];
+
+                if (attempt1.TargetLaneIndex != attempt2.TargetLaneIndex)
+                {
+                    return false;
+                } else if (attempt1.TargetRowIndex != attempt2.TargetRowIndex)
+                {
+                    return false;
+                } else if (!GameUtil.SuitAndKindMatches(attempt1.Card, attempt2.Card))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
