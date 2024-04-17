@@ -298,25 +298,6 @@ namespace LanesBackend.Logic
                 .ToList();
         }
 
-        private bool BothPlayersHaveMoves(List<CandidateMove> playerCandidateMoves, Game game)
-        {
-            var allCandidateMovesInvalid = playerCandidateMoves.All(move => !move.IsValid);
-            if (!playerCandidateMoves.Any() || allCandidateMovesInvalid)
-            {
-                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
-                var opponentCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
-                game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
-
-                var allOpponentCandidateMovesInvalid = opponentCandidateMoves.All(move => !move.IsValid);
-                if (!opponentCandidateMoves.Any() || allOpponentCandidateMovesInvalid)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private static bool ContainsDifferentCards(List<Card> list1, List<Card> list2)
         {
             if (list1.Count != list2.Count)
@@ -625,8 +606,9 @@ namespace LanesBackend.Logic
 
             var laneIndex = placeCardAttempt.TargetLaneIndex;
             var lane = game.Lanes[laneIndex];
-            var opponentAceOnTopOfAnyRow = OpponentAceOnTopOfAnyRow(lane, playerIsHost);
-            if (!opponentAceOnTopOfAnyRow)
+            var playerAceIsFacingOpponentAce = IsPlayerAceFacingOpponentAce(lane, playerIsHost);
+
+            if (!playerAceIsFacingOpponentAce)
             {
                 return new List<CardMovement>();
             }
@@ -745,11 +727,35 @@ namespace LanesBackend.Logic
             return false;
         }
 
-        private static bool OpponentAceOnTopOfAnyRow(Lane lane, bool playerIsHost)
+        private static bool IsPlayerAceFacingOpponentAce(Lane lane, bool playerIsHost)
+        {
+            var playersMostOffensiveCard = GetMostOffensiveCard(lane, playerIsHost);
+            var opponentsMostOffensiveCard = GetMostOffensiveCard(lane, !playerIsHost);
+            var cardsAreAces = playersMostOffensiveCard is not null
+                && playersMostOffensiveCard.Kind == Kind.Ace
+                && opponentsMostOffensiveCard is not null
+                && opponentsMostOffensiveCard.Kind == Kind.Ace;
+
+            return cardsAreAces || TopTwoCardsInLaneAreOpposingAces(lane);
+        }
+
+        private static bool TopTwoCardsInLaneAreOpposingAces(Lane lane)
         {
             foreach (var row in lane.Rows)
             {
-                if (OpponentAceOnTopOfRow(row, playerIsHost))
+                if (row.Count < 2)
+                {
+                    continue;
+                }
+
+                var topCard = row[row.Count - 1];
+                var secondTopCard = row[row.Count - 2];
+                if (topCard is null || secondTopCard is null)
+                {
+                    continue;
+                }
+
+               if (topCard.Kind == Kind.Ace && secondTopCard.Kind == Kind.Ace)
                 {
                     return true;
                 }
@@ -758,20 +764,32 @@ namespace LanesBackend.Logic
             return false;
         }
 
-        private static bool OpponentAceOnTopOfRow(List<Card> row, bool playerIsHost)
+        private static Card? GetMostOffensiveCard(Lane lane, bool forHostPlayer)
         {
-            if (row.Count <= 0)
+            var mostToLeastOffensive = forHostPlayer
+                ? lane.Rows.Reverse()
+                : lane.Rows;
+
+            foreach (var row in mostToLeastOffensive)
             {
-                return false;
+                if (row is null)
+                {
+                    continue;
+                }
+
+                var topCard = row.LastOrDefault();
+                if (topCard is null)
+                {
+                    continue;
+                }
+
+                if (topCard.PlayedBy == (forHostPlayer ? PlayerOrNone.Host : PlayerOrNone.Guest))
+                {
+                    return topCard;
+                }
             }
 
-            var topCard = row.Last();
-            var topCardIsAce = topCard.Kind == Kind.Ace;
-            var topCardPlayedByOpponent = playerIsHost ?
-                topCard.PlayedBy == PlayerOrNone.Guest :
-                topCard.PlayedBy == PlayerOrNone.Host;
-
-            return topCardIsAce && topCardPlayedByOpponent;
+            return null;
         }
 
         public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer)
