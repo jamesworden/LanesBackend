@@ -431,14 +431,9 @@ namespace LanesBackend.Logic
                 && topCard is not null
                 && GameUtil.SuitAndKindMatches(mostOffensiveCard, topCard);
 
-            if (isCardMostOffensive)
-            {
-                lane.LastCardPlayed = placeCardAttempt.Card;
-            }
-            else if (cardReinforced)
-            {
-                lane.LastCardPlayed = mostOffensiveCard;
-            }
+            lane.LastCardPlayed = !isCardMostOffensive && cardReinforced
+                    ? mostOffensiveCard
+                    : placeCardAttempt.Card;
 
             placeCardAttempt.Card.PlayedBy = currentPlayedBy;
             targetRow.Add(placeCardAttempt.Card);
