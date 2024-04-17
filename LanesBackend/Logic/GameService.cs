@@ -424,12 +424,20 @@ namespace LanesBackend.Logic
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
             var currentPlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var targetRow = lane.Rows[placeCardAttempt.TargetRowIndex];
-            var cardReinforced = targetRow.Count > 0 && targetRow.Last().PlayedBy == currentPlayedBy;
+            var topCard = targetRow.LastOrDefault();
+            var cardReinforced = topCard is not null && topCard.PlayedBy == currentPlayedBy;
+            var mostOffensiveCard = GetMostOffensiveCard(lane, playerIsHost);
+            var isCardMostOffensive = mostOffensiveCard is not null 
+                && topCard is not null
+                && GameUtil.SuitAndKindMatches(mostOffensiveCard, topCard);
 
-            // This could cause issues with not being able to play the same kind of card as a reinforcement.
-            if (!cardReinforced)
+            if (isCardMostOffensive)
             {
                 lane.LastCardPlayed = placeCardAttempt.Card;
+            }
+            else if (cardReinforced)
+            {
+                lane.LastCardPlayed = mostOffensiveCard;
             }
 
             placeCardAttempt.Card.PlayedBy = currentPlayedBy;
