@@ -39,11 +39,14 @@ namespace LanesBackend.Logic
                 throw new PendingGameNotExistsException();
             }
 
+            var playerIsHost = false;
+
             var game = GameService.CreateGame(
                 pendingGame.HostConnectionId, 
                 guestConnectionId, 
                 gameCode, 
-                pendingGame.DurationOption);
+                pendingGame.DurationOption,
+                playerIsHost);
 
             PendingGameCache.RemovePendingGame(gameCode);
 
@@ -70,6 +73,7 @@ namespace LanesBackend.Logic
             if (pendingGame is not null)
             {
                 PendingGameCache.RemovePendingGame(pendingGame.GameCode);
+                return pendingGame;
             }
             return pendingGame;
         }

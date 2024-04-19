@@ -8,6 +8,9 @@ namespace LanesBackend.Mappers
         public PlayerGameView MapToHostPlayerGameView(Game game)
         {
             var isHost = true;
+            var candidateMoves = (game.IsHostPlayersTurn && game.CandidateMoves.Any()) 
+                ? game.CandidateMoves.LastOrDefault() 
+                : new List<CandidateMove>();
 
             return new PlayerGameView(
                 game.GuestPlayer.Deck.Cards.Count,
@@ -22,13 +25,19 @@ namespace LanesBackend.Mappers
                 game.GameCreatedTimestampUTC,
                 HideOpponentsDrawnCards(game.MovesMade, isHost),
                 game.DurationOption,
-                game.GameEndedTimestampUTC
+                game.GameEndedTimestampUTC,
+                game.GameCode,
+                candidateMoves,
+                game.HasEnded
                 );
         }
 
         public PlayerGameView MapToGuestPlayerGameView(Game game)
         {
             var isHost = false;
+            var candidateMoves = (!game.IsHostPlayersTurn && game.CandidateMoves.Any())
+                ? game.CandidateMoves.LastOrDefault()
+                : new List<CandidateMove>();
 
             return new PlayerGameView(
                 game.HostPlayer.Deck.Cards.Count,
@@ -43,7 +52,10 @@ namespace LanesBackend.Mappers
                 game.GameCreatedTimestampUTC,
                 HideOpponentsDrawnCards(game.MovesMade, isHost),
                 game.DurationOption,
-                game.GameEndedTimestampUTC
+                game.GameEndedTimestampUTC,
+                game.GameCode,
+                candidateMoves,
+                game.HasEnded
                 );
         }
 

@@ -2,8 +2,6 @@
 {
     public class Game
     {
-        public bool isRunning = true;
-
         public PlayerOrNone WonBy = PlayerOrNone.None;
 
         public bool IsHostPlayersTurn = true;
@@ -31,6 +29,10 @@
         public DurationOption DurationOption { get; set; }
 
         public DateTime? GameEndedTimestampUTC { get; set; }
+
+        public List<List<CandidateMove>> CandidateMoves { get; set; } = new();
+
+        public bool HasEnded = false;
 
         public Game(
             string hostConnectionId, 

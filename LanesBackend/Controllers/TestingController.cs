@@ -1,4 +1,5 @@
-﻿using LanesBackend.Interfaces;
+﻿using LanesBackend.Exceptions;
+using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -9,17 +10,19 @@ namespace LanesBackend.Controllers
     [Route("api/[controller]")]
     public class TestingController : ControllerBase
     {
-        private readonly IGameCache GameCache;
+        private readonly IGameService GameService;
 
         private readonly IGameBroadcaster GameBroadcaster;
 
         // TODO: Remove from commit history.
         const string TESTING_API_KEY = "ThisIsASecretAPIKey123!Beans";
 
-        public TestingController(IGameCache gameCache, IGameBroadcaster gameBroadcaster)
+        public TestingController(
+            IGameBroadcaster gameBroadcaster, 
+            IGameService gameService)
         { 
-            GameCache = gameCache;
             GameBroadcaster = gameBroadcaster;
+            GameService = gameService;
         }
 
         [HttpPost(Name = "UpdateGameWithTestData")]
@@ -29,31 +32,25 @@ namespace LanesBackend.Controllers
             [FromQuery] [Required] string apiKey)
         {
             var incorrectApiKey = !apiKey.Equals(TESTING_API_KEY);
-
             if (incorrectApiKey)
             {
                 return Unauthorized();
             }
 
-            var game = GameCache.FindGameByGameCode(gameCode);
+            try
+            {
+                var game = GameService.UpdateGame(testingGameData, gameCode);
+                await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
-            if (game is null)
+                return Ok();
+            } catch (GameNotExistsException)
             {
                 return NotFound();
             }
-
-            game.Lanes = testingGameData.Lanes;
-            game.HostPlayer.Hand = testingGameData.HostHand;
-            game.GuestPlayer.Hand = testingGameData.GuestHand;
-            game.HostPlayer.Deck = testingGameData.HostDeck;
-            game.GuestPlayer.Deck = testingGameData.GuestDeck;
-            game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
-            game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
-            game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
-
-            await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
-
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(500, "Error updating game data.");
+            }
         }
     }
 }

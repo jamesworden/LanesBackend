@@ -4,9 +4,9 @@ namespace LanesBackend.Interfaces
 {
     public interface IGameService
     {
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption);
+        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption, bool playerIsHost);
 
-        public Game MakeMove(string connectionId, Move move);
+        public (Game, IEnumerable<MoveMadeResult>) MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand);
 
         public Game PassMove(string connectionId);
 
@@ -19,5 +19,11 @@ namespace LanesBackend.Interfaces
         public Game AcceptDrawOffer(string connectionId);
 
         public Game ResignGame(string connectionId);
+
+        public Game EndGame(string connectionId);
+
+        public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer);
+
+        public Game UpdateGame(TestingGameData testingGameData, string gameCode);
     }
 }
