@@ -73,7 +73,11 @@ namespace LanesBackend.Mappers
                             var fromGuestDeckAndIsHost = (cardMovement.From.GuestDeck && isHost);
                             var isOpponentDrawnCardMovement = fromHostDeckAndIsGuest || fromGuestDeckAndIsHost;
 
-                            var newCardMovement = new CardMovement(cardMovement.From, cardMovement.To, isOpponentDrawnCardMovement ? null : cardMovement.Card);
+                            var newCardMovement = new CardMovement(
+                                cardMovement.From, 
+                                cardMovement.To, 
+                                isOpponentDrawnCardMovement ? null : cardMovement.Card, 
+                                cardMovement.Notation);
 
                             return newCardMovement;
                         }).ToList();
