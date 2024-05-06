@@ -952,14 +952,14 @@ namespace LanesBackend.Logic
             var kindLetter = GetKindNotationLetter(placeCardAttempt.Card.Kind);
             var suitLetter = GetSuitNotationLetter(placeCardAttempt.Card.Suit);
             var laneLetter = GetLaneNotationLetter(placeCardAttempt.TargetLaneIndex);
-            return $"{kindLetter}{suitLetter}{laneLetter}{placeCardAttempt.TargetRowIndex}";
+            return $"{kindLetter}{suitLetter}{laneLetter}{placeCardAttempt.TargetRowIndex + 1}";
         }
 
         private static string GetKindNotationLetter(Kind kind)
         {
             return kind switch
             {
-                Kind.Ace => "a",
+                Kind.Ace => "A",
                 Kind.Two => "2",
                 Kind.Three => "3",
                 Kind.Four => "4",
@@ -968,10 +968,10 @@ namespace LanesBackend.Logic
                 Kind.Seven => "7",
                 Kind.Eight => "8",
                 Kind.Nine => "9",
-                Kind.Ten => "t",
-                Kind.Jack => "j",
-                Kind.Queen => "q",
-                Kind.King => "k",
+                Kind.Ten => "T",
+                Kind.Jack => "J",
+                Kind.Queen => "Q",
+                Kind.King => "K",
                 _ => "",
             };
         }
@@ -980,10 +980,10 @@ namespace LanesBackend.Logic
         {
             return suit switch
             {
-                Suit.Clubs => "c",
-                Suit.Diamonds => "d",
-                Suit.Hearts => "h",
-                Suit.Spades => "s",
+                Suit.Clubs => "C",
+                Suit.Diamonds => "D",
+                Suit.Hearts => "H",
+                Suit.Spades => "S",
                 _ => "",
             };
         }
