@@ -26,6 +26,10 @@ namespace LanesBackend.Util
             {
                 return "You can't place cards on the same position!";
             }
+            if (TargetLaneHasBeenWon(game, move))
+            {
+                return "This lane was won already!";
+            }
             if (move.PlaceCardAttempts.Any(placeCardAttempt => placeCardAttempt.TargetRowIndex == 3))
             {
                 return "You can't place a card in the middle!";
@@ -41,10 +45,6 @@ namespace LanesBackend.Util
             if (TriedToCaptureDistantRow(game, move, playerIsHost))
             {
                 return "You can't capture this position yet!";
-            }
-            if (TargetLaneHasBeenWon(game, move))
-            {
-                return "This lane was won already!";
             }
             if (TriedToCaptureGreaterCard(game, move, playerIsHost))
             {
