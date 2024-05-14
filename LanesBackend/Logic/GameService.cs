@@ -457,7 +457,10 @@ namespace LanesBackend.Logic
                 CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, placeCardAttempt.TargetRowIndex)
             };
 
-            return new CardMovement(from, to, placeCardAttempt.Card);
+
+            var notation = GetCardMovementNotation(placeCardAttempt);
+
+            return new CardMovement(from, to, placeCardAttempt.Card, notation);
         }
 
         private List<List<CardMovement>> CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
@@ -942,6 +945,60 @@ namespace LanesBackend.Logic
             }
 
             return true;
+        }
+
+        private static string GetCardMovementNotation(PlaceCardAttempt placeCardAttempt)
+        {
+            var kindLetter = GetKindNotationLetter(placeCardAttempt.Card.Kind);
+            var suitLetter = GetSuitNotationLetter(placeCardAttempt.Card.Suit);
+            var laneLetter = GetLaneNotationLetter(placeCardAttempt.TargetLaneIndex);
+            return $"{kindLetter}{suitLetter}{laneLetter}{placeCardAttempt.TargetRowIndex + 1}";
+        }
+
+        private static string GetKindNotationLetter(Kind kind)
+        {
+            return kind switch
+            {
+                Kind.Ace => "A",
+                Kind.Two => "2",
+                Kind.Three => "3",
+                Kind.Four => "4",
+                Kind.Five => "5",
+                Kind.Six => "6",
+                Kind.Seven => "7",
+                Kind.Eight => "8",
+                Kind.Nine => "9",
+                Kind.Ten => "T",
+                Kind.Jack => "J",
+                Kind.Queen => "Q",
+                Kind.King => "K",
+                _ => "",
+            };
+        }
+
+        private static string GetSuitNotationLetter(Suit suit)
+        {
+            return suit switch
+            {
+                Suit.Clubs => "C",
+                Suit.Diamonds => "D",
+                Suit.Hearts => "H",
+                Suit.Spades => "S",
+                _ => "",
+            };
+        }
+
+        private static string GetLaneNotationLetter(int laneIndex)
+        {
+            return laneIndex switch
+            {
+                0 => "a",
+                1 => "b",
+                2 => "c",
+                3 => "d",
+                4 => "e",
+                _ => "",
+            };
         }
     }
 }

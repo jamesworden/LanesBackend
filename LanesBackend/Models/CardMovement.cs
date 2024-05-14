@@ -8,11 +8,21 @@
 
         public Card? Card { get; set; }
 
+        public string? Notation { get; set; }
+
         public CardMovement(CardStore from, CardStore to, Card? card)
         {
             From = from;
             To = to;
             Card = card;
+        }
+
+        public CardMovement(CardStore from, CardStore to, Card? card, string? notation)
+        {
+            From = from;
+            To = to;
+            Card = card;
+            Notation = notation;
         }
     }
 }
