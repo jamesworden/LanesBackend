@@ -19,5 +19,7 @@
         public static readonly string PendingGameUpdated = "PendingGameUpdated";
 
         public static readonly string TurnSkippedNoMoves = "TurnSkippedNoMoves";
+
+        public static readonly string NewChatMessage = "NewChatMessage";
     }
 }

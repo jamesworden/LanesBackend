@@ -28,7 +28,8 @@ namespace LanesBackend.Mappers
                 game.GameEndedTimestampUTC,
                 game.GameCode,
                 candidateMoves,
-                game.HasEnded
+                game.HasEnded,
+                game.ChatMessageViews
                 );
         }
 
@@ -55,7 +56,8 @@ namespace LanesBackend.Mappers
                 game.GameEndedTimestampUTC,
                 game.GameCode,
                 candidateMoves,
-                game.HasEnded
+                game.HasEnded,
+                game.ChatMessageViews
                 );
         }
 

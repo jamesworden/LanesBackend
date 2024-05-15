@@ -34,6 +34,10 @@
 
         public bool HasEnded = false;
 
+        public List<ChatMessage> ChatMessages { get; set; } = new();
+
+        public List<ChatMessageView> ChatMessageViews { get; set; } = new();
+
         public Game(
             string hostConnectionId, 
             string guestConnectionId, 
