@@ -25,5 +25,7 @@ namespace LanesBackend.Interfaces
         public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer);
 
         public Game UpdateGame(TestingGameData testingGameData, string gameCode);
+
+        public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage);
     }
 }

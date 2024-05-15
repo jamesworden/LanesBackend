@@ -285,6 +285,32 @@ namespace LanesBackend.Hubs
             }
         }
 
+        public async Task SendChatMessage(string rawMessage)
+        {
+            var connectionId = Context.ConnectionId;
+
+            try
+            {
+                if (rawMessage.Trim().Length == 0)
+                {
+                    return;
+                }
+
+                var (game, chatMessage) = GameService.AddChatMessageToGame(connectionId, rawMessage);
+                var playerIsHost = game.HostConnectionId == connectionId;
+                var playerId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
+                var opponentId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+
+                await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.NewChatMessage);
+            }
+            catch (GameNotExistsException)
+            {
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         public async override Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;

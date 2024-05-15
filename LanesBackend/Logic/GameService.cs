@@ -282,6 +282,35 @@ namespace LanesBackend.Logic
             return game;
         }
 
+        public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage)
+        {
+            var game = GameCache.FindGameByConnectionId(connectionId);
+            if (game is null)
+            {
+                throw new GameNotExistsException();
+            }
+
+            var sensoredMessage = ReplaceBadWordsWithAsterisks(rawMessage);
+            var sentBy = connectionId == game.HostConnectionId ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var sentAt = DateTime.UtcNow;
+            var chatMessage = new ChatMessage(rawMessage, sensoredMessage, sentAt, sentBy);
+            var chatMessageView = new ChatMessageView(sensoredMessage, sentBy, sentAt);
+            game.ChatMessages.Add(chatMessage);
+            game.ChatMessageViews.Add(chatMessageView);
+
+            return (game, chatMessageView);
+        }
+
+        private static string ReplaceBadWordsWithAsterisks(string str)
+        {
+            foreach (string badWord in WordConstants.BadWords)
+            {
+                str = str.Replace(badWord, new string('*', badWord.Length));
+            }
+            return str;
+        }
+
+
         private static bool HasThreeBackToBackPasses(Game game)
         {
             if (game.MovesMade.Count < 6)

@@ -34,6 +34,8 @@
 
         public bool HasEnded { get; set; }
 
+        public List<ChatMessageView> ChatMessages { get; set; }
+
         public PlayerGameView(
             int numCardsInOpponentsDeck,
             int numCardsInOpponentsHand,
@@ -50,7 +52,8 @@
             DateTime? gameEndedTimestampUTC,
             string gameCode,
             List<CandidateMove>? candidateMoves,
-            bool hasEnded)
+            bool hasEnded,
+            List<ChatMessageView> chatMessages)
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;
@@ -68,6 +71,7 @@
             GameCode = gameCode;
             CandidateMoves = candidateMoves;
             HasEnded = hasEnded;
+            ChatMessages = chatMessages;
         }
     }
 }
