@@ -2,6 +2,7 @@
 using LanesBackend.Models;
 using LanesBackend.Exceptions;
 using LanesBackend.Util;
+using System.Text.RegularExpressions;
 
 namespace LanesBackend.Logic
 {
@@ -303,12 +304,14 @@ namespace LanesBackend.Logic
 
         private static string ReplaceBadWordsWithAsterisks(string str)
         {
-            foreach (string badWord in WordConstants.BadWords)
+            foreach (string badWord in WordConstants.LowerCaseBadWords)
             {
-                str = str.Replace(badWord, new string('*', badWord.Length));
+                string asterisks = new('*', badWord.Length);
+                str = Regex.Replace(str, @"\b" + Regex.Escape(badWord) + @"\b", asterisks, RegexOptions.IgnoreCase);
             }
             return str;
         }
+
 
 
         private static bool HasThreeBackToBackPasses(Game game)
