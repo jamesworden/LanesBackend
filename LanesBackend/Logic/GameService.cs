@@ -984,7 +984,7 @@ namespace LanesBackend.Logic
             var kindLetter = GetKindNotationLetter(placeCardAttempt.Card.Kind);
             var suitLetter = GetSuitNotationLetter(placeCardAttempt.Card.Suit);
             var laneLetter = GetLaneNotationLetter(placeCardAttempt.TargetLaneIndex);
-            return $"{kindLetter}{suitLetter} {laneLetter}{placeCardAttempt.TargetRowIndex + 1}";
+            return $"{kindLetter}{suitLetter}{laneLetter}{placeCardAttempt.TargetRowIndex + 1}";
         }
 
         private static string GetKindNotationLetter(Kind kind)
