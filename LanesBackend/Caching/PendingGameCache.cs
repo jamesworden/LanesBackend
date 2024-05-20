@@ -5,7 +5,8 @@ namespace LanesBackend.Caching
 {
     public class PendingGameCache : IPendingGameCache
     {
-        private static readonly Dictionary<string, PendingGame> PendingGameCodeToHostConnectionId = new();
+        private static readonly Dictionary<string, PendingGame> PendingGameCodeToHostConnectionId =
+            new();
 
         public void AddPendingGame(PendingGame pendingGame)
         {
@@ -22,7 +23,10 @@ namespace LanesBackend.Caching
         public PendingGame? GetPendingGameByConnectionId(string hostConnectionId)
         {
             var pendingGameCode = PendingGameCodeToHostConnectionId
-                .FirstOrDefault(row => row.Value is not null && row.Value.HostConnectionId == hostConnectionId).Key;
+                .FirstOrDefault(row =>
+                    row.Value is not null && row.Value.HostConnectionId == hostConnectionId
+                )
+                .Key;
             if (pendingGameCode is null)
             {
                 return null;

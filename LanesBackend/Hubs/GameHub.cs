@@ -1,9 +1,9 @@
-﻿using LanesBackend.Interfaces;
+﻿using LanesBackend.Exceptions;
+using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using LanesBackend.Exceptions;
 
 namespace LanesBackend.Hubs
 {
@@ -18,11 +18,12 @@ namespace LanesBackend.Hubs
         private readonly IGameBroadcaster GameBroadcaster;
 
         public GameHub(
-            IGameCache gameCache, 
-            IGameService gameService, 
+            IGameCache gameCache,
+            IGameService gameService,
             IGameBroadcaster gameBroadcaster,
-            IPendingGameService pendingGameService)
-        { 
+            IPendingGameService pendingGameService
+        )
+        {
             GameCache = gameCache;
             GameService = gameService;
             PendingGameService = pendingGameService;
@@ -36,12 +37,19 @@ namespace LanesBackend.Hubs
             try
             {
                 var pendingGame = PendingGameService.CreatePendingGame(hostConnectionId);
-                var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
-                var serializedPendingGameView = JsonConvert.SerializeObject(pendingGameView, new StringEnumConverter());
-                await Clients.Client(hostConnectionId).SendAsync(MessageType.CreatedPendingGame, serializedPendingGameView);
-            } catch (Exception)
-            { 
+                var pendingGameView = new PendingGameView(
+                    pendingGame.GameCode,
+                    pendingGame.DurationOption
+                );
+                var serializedPendingGameView = JsonConvert.SerializeObject(
+                    pendingGameView,
+                    new StringEnumConverter()
+                );
+                await Clients
+                    .Client(hostConnectionId)
+                    .SendAsync(MessageType.CreatedPendingGame, serializedPendingGameView);
             }
+            catch (Exception) { }
         }
 
         public async Task JoinGame(string gameCode)
@@ -52,13 +60,12 @@ namespace LanesBackend.Hubs
             {
                 var game = PendingGameService.JoinPendingGame(gameCode, guestConnectionId);
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
-            } catch (PendingGameNotExistsException)
+            }
+            catch (PendingGameNotExistsException)
             {
                 await Clients.Client(guestConnectionId).SendAsync(MessageType.InvalidGameCode);
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
         }
 
         public void RearrangeHand(string stringifiedCards)
@@ -74,27 +81,20 @@ namespace LanesBackend.Hubs
             try
             {
                 GameService.RearrangeHand(connectionId, cards);
-            } 
-            catch (ContainsDifferentCardsException)
-            { 
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-
-            }
+            catch (ContainsDifferentCardsException) { }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task MakeMove(string stringifiedMove, string? stringifiedRearrangedCardsInHand)
         {
             var move = JsonConvert.DeserializeObject<Move>(stringifiedMove);
-            var rearrangedCardsInHand = stringifiedRearrangedCardsInHand is null 
-                ? null 
+            var rearrangedCardsInHand = stringifiedRearrangedCardsInHand is null
+                ? null
                 : JsonConvert.DeserializeObject<List<Card>>(stringifiedRearrangedCardsInHand);
 
-             if (move is null)
+            if (move is null)
             {
                 return;
             }
@@ -103,17 +103,26 @@ namespace LanesBackend.Hubs
 
             try
             {
-                var (game, moveMadeResults) = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
+                var (game, moveMadeResults) = GameService.MakeMove(
+                    connectionId,
+                    move,
+                    rearrangedCardsInHand
+                );
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
                 if (!game.HasEnded)
                 {
                     if (moveMadeResults.Contains(MoveMadeResult.HostTurnSkippedNoMoves))
                     {
-                        await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
-                    } else if (moveMadeResults.Contains(MoveMadeResult.GuestTurnSkippedNoMoves))
+                        await Clients
+                            .Client(game.HostConnectionId)
+                            .SendAsync(MessageType.TurnSkippedNoMoves);
+                    }
+                    else if (moveMadeResults.Contains(MoveMadeResult.GuestTurnSkippedNoMoves))
                     {
-                        await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
+                        await Clients
+                            .Client(game.GuestConnectionId)
+                            .SendAsync(MessageType.TurnSkippedNoMoves);
                     }
 
                     return;
@@ -121,26 +130,30 @@ namespace LanesBackend.Hubs
 
                 if (game.WonBy == PlayerOrNone.None)
                 {
-                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
-                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
+                    await Clients
+                        .Client(game.HostConnectionId)
+                        .SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
+                    await Clients
+                        .Client(game.GuestConnectionId)
+                        .SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
                     return;
                 }
 
-                var winnerConnId = game.WonBy == PlayerOrNone.Host ? game.HostConnectionId : game.GuestConnectionId;
-                var loserConnId = game.WonBy == PlayerOrNone.Host ? game.GuestConnectionId : game.HostConnectionId;
+                var winnerConnId =
+                    game.WonBy == PlayerOrNone.Host
+                        ? game.HostConnectionId
+                        : game.GuestConnectionId;
+                var loserConnId =
+                    game.WonBy == PlayerOrNone.Host
+                        ? game.GuestConnectionId
+                        : game.HostConnectionId;
 
                 await Clients.Client(winnerConnId).SendAsync(MessageType.GameOver, "You win!");
                 await Clients.Client(loserConnId).SendAsync(MessageType.GameOver, "You lose!");
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch(InvalidMoveException)
-            {
-            }
-            catch
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (InvalidMoveException) { }
+            catch { }
         }
 
         public async Task PassMove()
@@ -154,15 +167,16 @@ namespace LanesBackend.Hubs
 
                 if (game.HasEnded)
                 {
-                    await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw by repetition!");
-                    await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw by repetition!");
+                    await Clients
+                        .Client(game.HostConnectionId)
+                        .SendAsync(MessageType.GameOver, "It's a draw by repetition!");
+                    await Clients
+                        .Client(game.GuestConnectionId)
+                        .SendAsync(MessageType.GameOver, "It's a draw by repetition!");
                 }
-            } catch (NotPlayersTurnException)
-            {
             }
-            catch (Exception)
-            {
-            }
+            catch (NotPlayersTurnException) { }
+            catch (Exception) { }
         }
 
         public async Task OfferDraw()
@@ -177,15 +191,13 @@ namespace LanesBackend.Hubs
                     throw new GameNotExistsException();
                 }
                 var playerIsHost = game.HostConnectionId == connectionId;
-                var opponentConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+                var opponentConnectionId = playerIsHost
+                    ? game.GuestConnectionId
+                    : game.HostConnectionId;
                 await Clients.Client(opponentConnectionId).SendAsync(MessageType.DrawOffered);
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch { }
         }
 
         public async Task AcceptDrawOffer()
@@ -195,15 +207,15 @@ namespace LanesBackend.Hubs
             try
             {
                 var game = GameService.AcceptDrawOffer(connectionId);
-                await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
-                await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
+                await Clients
+                    .Client(game.HostConnectionId)
+                    .SendAsync(MessageType.GameOver, "It's a draw.");
+                await Clients
+                    .Client(game.GuestConnectionId)
+                    .SendAsync(MessageType.GameOver, "It's a draw.");
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task ResignGame()
@@ -215,18 +227,22 @@ namespace LanesBackend.Hubs
                 var game = GameService.ResignGame(connectionId);
 
                 var playerIsHost = game.HostConnectionId == connectionId;
-                var winnerConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
-                var loserConnectionId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
+                var winnerConnectionId = playerIsHost
+                    ? game.GuestConnectionId
+                    : game.HostConnectionId;
+                var loserConnectionId = playerIsHost
+                    ? game.HostConnectionId
+                    : game.GuestConnectionId;
 
-                await Clients.Client(winnerConnectionId).SendAsync(MessageType.GameOver, "Opponent resigned.");
-                await Clients.Client(loserConnectionId).SendAsync(MessageType.GameOver, "Game resigned.");
+                await Clients
+                    .Client(winnerConnectionId)
+                    .SendAsync(MessageType.GameOver, "Opponent resigned.");
+                await Clients
+                    .Client(loserConnectionId)
+                    .SendAsync(MessageType.GameOver, "Game resigned.");
             }
-            catch(GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task SelectDurationOption(string stringifiedDurationOption)
@@ -236,17 +252,24 @@ namespace LanesBackend.Hubs
 
             try
             {
-                var pendingGame = PendingGameService.SelectDurationOption(connectionId, durationOption);
-                var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
-                var serializedPendingGameView = JsonConvert.SerializeObject(pendingGameView, new StringEnumConverter());
-                await Clients.Client(connectionId).SendAsync(MessageType.PendingGameUpdated, serializedPendingGameView);
+                var pendingGame = PendingGameService.SelectDurationOption(
+                    connectionId,
+                    durationOption
+                );
+                var pendingGameView = new PendingGameView(
+                    pendingGame.GameCode,
+                    pendingGame.DurationOption
+                );
+                var serializedPendingGameView = JsonConvert.SerializeObject(
+                    pendingGameView,
+                    new StringEnumConverter()
+                );
+                await Clients
+                    .Client(connectionId)
+                    .SendAsync(MessageType.PendingGameUpdated, serializedPendingGameView);
             }
-            catch (PendingGameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (PendingGameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task CheckHostForEmptyTimer()
@@ -256,15 +279,15 @@ namespace LanesBackend.Hubs
             try
             {
                 var game = GameService.EndGame(connectionId);
-                await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-                await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
+                await Clients
+                    .Client(game.HostConnectionId)
+                    .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
+                await Clients
+                    .Client(game.GuestConnectionId)
+                    .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task CheckGuestForEmptyTimer()
@@ -274,15 +297,15 @@ namespace LanesBackend.Hubs
             try
             {
                 var game = GameService.EndGame(connectionId);
-                await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-                await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
+                await Clients
+                    .Client(game.GuestConnectionId)
+                    .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
+                await Clients
+                    .Client(game.HostConnectionId)
+                    .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
         public async Task SendChatMessage(string rawMessage)
@@ -296,22 +319,21 @@ namespace LanesBackend.Hubs
                     return;
                 }
 
-                var (game, chatMessage) = GameService.AddChatMessageToGame(connectionId, rawMessage);
+                var (game, chatMessage) = GameService.AddChatMessageToGame(
+                    connectionId,
+                    rawMessage
+                );
                 var playerIsHost = game.HostConnectionId == connectionId;
                 var playerId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
                 var opponentId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
 
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.NewChatMessage);
             }
-            catch (GameNotExistsException)
-            {
-            }
-            catch (Exception)
-            {
-            }
+            catch (GameNotExistsException) { }
+            catch (Exception) { }
         }
 
-        public async override Task OnDisconnectedAsync(Exception? _)
+        public override async Task OnDisconnectedAsync(Exception? _)
         {
             var connectionId = Context.ConnectionId;
 
@@ -325,8 +347,12 @@ namespace LanesBackend.Hubs
             if (game is not null)
             {
                 var hostDisconnected = connectionId == game.HostConnectionId;
-                var opponentConnectionId = hostDisconnected ? game.GuestConnectionId : game.HostConnectionId;
-                await Clients.Client(opponentConnectionId).SendAsync(MessageType.GameOver, "Opponent Disconnected. You win!");
+                var opponentConnectionId = hostDisconnected
+                    ? game.GuestConnectionId
+                    : game.HostConnectionId;
+                await Clients
+                    .Client(opponentConnectionId)
+                    .SendAsync(MessageType.GameOver, "Opponent Disconnected. You win!");
             }
         }
     }

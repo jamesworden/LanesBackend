@@ -10,7 +10,12 @@
 
         public PlayerOrNone SentBy { get; set; }
 
-        public ChatMessage(string rawMessage, string sensoredMessage, DateTime sentAtUTC, PlayerOrNone sentBy)
+        public ChatMessage(
+            string rawMessage,
+            string sensoredMessage,
+            DateTime sentAtUTC,
+            PlayerOrNone sentBy
+        )
         {
             RawMessage = rawMessage;
             SensoredMessage = sensoredMessage;

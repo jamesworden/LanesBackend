@@ -1,8 +1,8 @@
-﻿using LanesBackend.Interfaces;
-using LanesBackend.Models;
+﻿using System.Text.RegularExpressions;
 using LanesBackend.Exceptions;
+using LanesBackend.Interfaces;
+using LanesBackend.Models;
 using LanesBackend.Util;
-using System.Text.RegularExpressions;
 
 namespace LanesBackend.Logic
 {
@@ -17,14 +17,21 @@ namespace LanesBackend.Logic
         public GameService(
             ILanesService lanesService,
             ICardService cardService,
-            IGameCache gameCache)
+            IGameCache gameCache
+        )
         {
             LanesService = lanesService;
             CardService = cardService;
             GameCache = gameCache;
         }
 
-        public Game CreateGame(string hostConnectionId, string guestConnectionId, string gameCode, DurationOption durationOption, bool playerIsHost)
+        public Game CreateGame(
+            string hostConnectionId,
+            string guestConnectionId,
+            string gameCode,
+            DurationOption durationOption,
+            bool playerIsHost
+        )
         {
             var deck = CardService.CreateAndShuffleDeck();
             var playerDecks = CardService.SplitDeck(deck);
@@ -45,15 +52,17 @@ namespace LanesBackend.Logic
 
             var gameCreatedTimestampUTC = DateTime.UtcNow;
 
-            Game game = new(
-                hostConnectionId, 
-                guestConnectionId, 
-                gameCode, 
-                hostPlayer, 
-                guestPlayer, 
-                lanes, 
-                gameCreatedTimestampUTC, 
-                durationOption);
+            Game game =
+                new(
+                    hostConnectionId,
+                    guestConnectionId,
+                    gameCode,
+                    hostPlayer,
+                    guestPlayer,
+                    lanes,
+                    gameCreatedTimestampUTC,
+                    durationOption
+                );
 
             var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
             game.CandidateMoves.Add(candidateMoves);
@@ -63,7 +72,11 @@ namespace LanesBackend.Logic
             return game;
         }
 
-        public (Game, IEnumerable<MoveMadeResult>) MakeMove(string connectionId, Move move, List<Card>? rearrangedCardsInHand)
+        public (Game, IEnumerable<MoveMadeResult>) MakeMove(
+            string connectionId,
+            Move move,
+            List<Card>? rearrangedCardsInHand
+        )
         {
             var game = GameCache.FindGameByConnectionId(connectionId);
             if (game is null)
@@ -72,7 +85,9 @@ namespace LanesBackend.Logic
             }
 
             var lastCandidateMoves = game.CandidateMoves.LastOrDefault();
-            var moveIsOneOfLastCandidates = lastCandidateMoves?.Any(candidateMove => MovesMatch(candidateMove.Move, move)) ?? false;
+            var moveIsOneOfLastCandidates =
+                lastCandidateMoves?.Any(candidateMove => MovesMatch(candidateMove.Move, move))
+                ?? false;
             if (lastCandidateMoves is not null && !moveIsOneOfLastCandidates)
             {
                 throw new InvalidMoveException();
@@ -80,7 +95,11 @@ namespace LanesBackend.Logic
 
             var playerIsHost = game.HostConnectionId == connectionId;
             var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
-            var cardMovements = PlaceCardsAndApplyGameRules(game, move.PlaceCardAttempts, playerIsHost);
+            var cardMovements = PlaceCardsAndApplyGameRules(
+                game,
+                move.PlaceCardAttempts,
+                playerIsHost
+            );
 
             if (rearrangedCardsInHand is not null)
             {
@@ -102,11 +121,15 @@ namespace LanesBackend.Logic
             var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
             var moveMadeResults = new List<MoveMadeResult>();
 
-            if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
+            if (
+                (!placedMultipleCards && anyValidOpponentCandidateMoves)
+                || !anyValidPlayerCandidateMoves
+            )
             {
                 game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
                 game.CandidateMoves.Add(opponentCandidateMoves);
-            } else
+            }
+            else
             {
                 game.CandidateMoves.Add(playerCandidateMoves);
             }
@@ -149,7 +172,7 @@ namespace LanesBackend.Logic
             {
                 throw new NotPlayersTurnException();
             }
-            
+
             var cardMovements = DrawCardsUntil(game, playerIsHost, 5);
             var move = new Move(new List<PlaceCardAttempt>());
             var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
@@ -292,7 +315,8 @@ namespace LanesBackend.Logic
             }
 
             var sensoredMessage = ReplaceBadWordsWithAsterisks(rawMessage);
-            var sentBy = connectionId == game.HostConnectionId ? PlayerOrNone.Host : PlayerOrNone.Guest;
+            var sentBy =
+                connectionId == game.HostConnectionId ? PlayerOrNone.Host : PlayerOrNone.Guest;
             var sentAt = DateTime.UtcNow;
             var chatMessage = new ChatMessage(rawMessage, sensoredMessage, sentAt, sentBy);
             var chatMessageView = new ChatMessageView(sensoredMessage, sentBy, sentAt);
@@ -307,12 +331,15 @@ namespace LanesBackend.Logic
             foreach (string badWord in WordConstants.LowerCaseBadWords)
             {
                 string asterisks = new('*', badWord.Length);
-                str = Regex.Replace(str, @"\b" + Regex.Escape(badWord) + @"\b", asterisks, RegexOptions.IgnoreCase);
+                str = Regex.Replace(
+                    str,
+                    @"\b" + Regex.Escape(badWord) + @"\b",
+                    asterisks,
+                    RegexOptions.IgnoreCase
+                );
             }
             return str;
         }
-
-
 
         private static bool HasThreeBackToBackPasses(Game game)
         {
@@ -333,10 +360,16 @@ namespace LanesBackend.Logic
             return true;
         }
 
-        private List<List<CardMovement>> PlaceCardsAndApplyGameRules(Game game, List<PlaceCardAttempt> placeCardAttempts, bool playerIsHost)
+        private List<List<CardMovement>> PlaceCardsAndApplyGameRules(
+            Game game,
+            List<PlaceCardAttempt> placeCardAttempts,
+            bool playerIsHost
+        )
         {
             return placeCardAttempts
-                .SelectMany(placeCardAttempt => PlaceCardAndApplyGameRules(game, placeCardAttempt, playerIsHost))
+                .SelectMany(placeCardAttempt =>
+                    PlaceCardAndApplyGameRules(game, placeCardAttempt, playerIsHost)
+                )
                 .ToList();
         }
 
@@ -351,14 +384,14 @@ namespace LanesBackend.Logic
             {
                 var card1 = list1[i];
                 var hasCard = false;
-                
+
                 for (var j = 0; j < list2.Count; j++)
                 {
                     var card2 = list2[j];
 
                     var kindMatches = card1.Kind == card2.Kind;
                     var suitMatches = card1.Suit == card2.Suit;
-                    
+
                     if (kindMatches && suitMatches)
                     {
                         hasCard = true;
@@ -374,12 +407,16 @@ namespace LanesBackend.Logic
             return false;
         }
 
-        private List<List<CardMovement>> DrawCardsFromDeck(Game game, bool playerIsHost, int numCardsToDraw)
+        private List<List<CardMovement>> DrawCardsFromDeck(
+            Game game,
+            bool playerIsHost,
+            int numCardsToDraw
+        )
         {
             var cardMovements = new List<List<CardMovement>>();
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
 
-            for(int i = 0; i < numCardsToDraw; i++)
+            for (int i = 0; i < numCardsToDraw; i++)
             {
                 var cardFromDeck = CardService.DrawCard(player.Deck);
 
@@ -390,11 +427,7 @@ namespace LanesBackend.Logic
 
                 var index = player.Hand.Cards.Count;
 
-                var from = new CardStore()
-                {
-                    HostDeck = playerIsHost,
-                    GuestDeck = !playerIsHost
-                };
+                var from = new CardStore() { HostDeck = playerIsHost, GuestDeck = !playerIsHost };
 
                 var to = new CardStore()
                 {
@@ -412,7 +445,11 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private List<List<CardMovement>> DrawCardsUntil(Game game, bool playerIsHost, int maxNumCards)
+        private List<List<CardMovement>> DrawCardsUntil(
+            Game game,
+            bool playerIsHost,
+            int maxNumCards
+        )
         {
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
             var numCardsInPlayersHand = player.Hand.Cards.Count;
@@ -423,26 +460,45 @@ namespace LanesBackend.Logic
                 : new List<List<CardMovement>>();
         }
 
-        private List<List<CardMovement>> PlaceCardAndApplyGameRules(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> PlaceCardAndApplyGameRules(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
-            var initialCardMovements = new List<CardMovement> { PlaceCard(game, placeCardAttempt, playerIsHost) };
+            var initialCardMovements = new List<CardMovement>
+            {
+                PlaceCard(game, placeCardAttempt, playerIsHost)
+            };
             var cardMovements = new List<List<CardMovement>> { initialCardMovements };
 
-            var aceRuleCardMovements = TriggerAceRuleIfAppropriate(game, placeCardAttempt, playerIsHost);
+            var aceRuleCardMovements = TriggerAceRuleIfAppropriate(
+                game,
+                placeCardAttempt,
+                playerIsHost
+            );
             if (aceRuleCardMovements.Any())
             {
                 cardMovements.Add(aceRuleCardMovements);
                 return cardMovements;
             }
-            
-            var capturedMiddleCardMovements = CaptureMiddleIfAppropriate(game, placeCardAttempt, playerIsHost);
+
+            var capturedMiddleCardMovements = CaptureMiddleIfAppropriate(
+                game,
+                placeCardAttempt,
+                playerIsHost
+            );
             if (capturedMiddleCardMovements.Any())
             {
                 cardMovements.AddRange(capturedMiddleCardMovements);
                 return cardMovements;
             }
 
-            var laneWonCardMovements = WinLaneAndOrGameIfAppropriate(game, placeCardAttempt, playerIsHost);
+            var laneWonCardMovements = WinLaneAndOrGameIfAppropriate(
+                game,
+                placeCardAttempt,
+                playerIsHost
+            );
             if (laneWonCardMovements.Any())
             {
                 cardMovements.Add(laneWonCardMovements);
@@ -451,7 +507,11 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private CardMovement PlaceCard(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private CardMovement PlaceCard(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
             var currentPlayedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
@@ -459,19 +519,22 @@ namespace LanesBackend.Logic
             var topCard = targetRow.LastOrDefault();
             var cardReinforced = topCard is not null && topCard.PlayedBy == currentPlayedBy;
             var mostOffensiveCard = GetMostOffensiveCard(lane, playerIsHost);
-            var isCardMostOffensive = mostOffensiveCard is not null 
+            var isCardMostOffensive =
+                mostOffensiveCard is not null
                 && topCard is not null
                 && GameUtil.SuitAndKindMatches(mostOffensiveCard, topCard);
 
-            lane.LastCardPlayed = !isCardMostOffensive && cardReinforced
-                    ? mostOffensiveCard
-                    : placeCardAttempt.Card;
+            lane.LastCardPlayed =
+                !isCardMostOffensive && cardReinforced ? mostOffensiveCard : placeCardAttempt.Card;
 
             placeCardAttempt.Card.PlayedBy = currentPlayedBy;
             targetRow.Add(placeCardAttempt.Card);
 
             var player = playerIsHost ? game.HostPlayer : game.GuestPlayer;
-            var indexInHand = CardService.RemoveCardWithMatchingKindAndSuit(player.Hand.Cards, placeCardAttempt.Card);
+            var indexInHand = CardService.RemoveCardWithMatchingKindAndSuit(
+                player.Hand.Cards,
+                placeCardAttempt.Card
+            );
 
             if (indexInHand is null)
             {
@@ -486,20 +549,26 @@ namespace LanesBackend.Logic
 
             var to = new CardStore
             {
-                CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, placeCardAttempt.TargetRowIndex)
+                CardPosition = new CardPosition(
+                    placeCardAttempt.TargetLaneIndex,
+                    placeCardAttempt.TargetRowIndex
+                )
             };
-
 
             var notation = GetCardMovementNotation(placeCardAttempt);
 
             return new CardMovement(from, to, placeCardAttempt.Card, notation);
         }
 
-        private List<List<CardMovement>> CaptureMiddleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> CaptureMiddleIfAppropriate(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
-            var cardIsLastOnPlayerSide = playerIsHost ?
-                placeCardAttempt.TargetRowIndex == 2 :
-                placeCardAttempt.TargetRowIndex == 4;
+            var cardIsLastOnPlayerSide = playerIsHost
+                ? placeCardAttempt.TargetRowIndex == 2
+                : placeCardAttempt.TargetRowIndex == 4;
 
             if (!cardIsLastOnPlayerSide)
             {
@@ -517,9 +586,9 @@ namespace LanesBackend.Logic
                 };
             }
 
-            var opponentAdvantage = playerIsHost ?
-                lane.LaneAdvantage == PlayerOrNone.Guest :
-                lane.LaneAdvantage == PlayerOrNone.Host;
+            var opponentAdvantage = playerIsHost
+                ? lane.LaneAdvantage == PlayerOrNone.Guest
+                : lane.LaneAdvantage == PlayerOrNone.Host;
             if (opponentAdvantage)
             {
                 return CaptureOpponentAdvantageLane(game, placeCardAttempt, playerIsHost);
@@ -528,12 +597,19 @@ namespace LanesBackend.Logic
             return new List<List<CardMovement>>();
         }
 
-        private List<CardMovement> CaptureNoAdvantageLane(Lane lane, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> CaptureNoAdvantageLane(
+            Lane lane,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var advantagePlayer = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
-            var laneCardsAndRowIndexes = LanesService.GrabAllCardsFromLane(lane)
+            var laneCardsAndRowIndexes = LanesService
+                .GrabAllCardsFromLane(lane)
                 .OrderBy(cardAndRowIndex => cardAndRowIndex.Item1.PlayedBy == advantagePlayer)
-                .ThenBy(cardAndRowIndex => playerIsHost ? cardAndRowIndex.Item2 : -cardAndRowIndex.Item2)
+                .ThenBy(cardAndRowIndex =>
+                    playerIsHost ? cardAndRowIndex.Item2 : -cardAndRowIndex.Item2
+                )
                 .ToList();
 
             var laneCards = laneCardsAndRowIndexes.Select(cardAndRowIndex => cardAndRowIndex.Item1);
@@ -544,7 +620,10 @@ namespace LanesBackend.Logic
             return GetCardMovementsGoingToTheMiddle(laneCardsAndRowIndexes, placeCardAttempt);
         }
 
-        private List<CardMovement> GetCardMovementsGoingToTheMiddle(List<(Card, int)> cardsAndRowIndexes, PlaceCardAttempt placeCardAttempt)
+        private List<CardMovement> GetCardMovementsGoingToTheMiddle(
+            List<(Card, int)> cardsAndRowIndexes,
+            PlaceCardAttempt placeCardAttempt
+        )
         {
             var cardMovements = new List<CardMovement>();
 
@@ -566,7 +645,11 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private List<List<CardMovement>> CaptureOpponentAdvantageLane(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<List<CardMovement>> CaptureOpponentAdvantageLane(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
             var topCardsWithRowIndexes = GrabTopCardsOfFirstThreeRows(lane, playerIsHost);
@@ -586,16 +669,26 @@ namespace LanesBackend.Logic
             CardService.ShuffleDeck(player.Deck);
             lane.LaneAdvantage = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
 
-            var cardMovements = GetCardMovementsGoingToTheMiddle(topCardsWithRowIndexes, placeCardAttempt);
-            cardMovements.AddRange(GetCapturedCardMovementsGoingToTheDeck(remainingCardsInLaneWithRowIndexes, placeCardAttempt, playerIsHost));
+            var cardMovements = GetCardMovementsGoingToTheMiddle(
+                topCardsWithRowIndexes,
+                placeCardAttempt
+            );
+            cardMovements.AddRange(
+                GetCapturedCardMovementsGoingToTheDeck(
+                    remainingCardsInLaneWithRowIndexes,
+                    placeCardAttempt,
+                    playerIsHost
+                )
+            );
 
-            return new List<List<CardMovement>>
-            {
-                cardMovements
-            };
+            return new List<List<CardMovement>> { cardMovements };
         }
 
-        private List<CardMovement> GetCapturedCardMovementsGoingToTheDeck(List<(Card, int)> cardsWithRowIndexes, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> GetCapturedCardMovementsGoingToTheDeck(
+            List<(Card, int)> cardsWithRowIndexes,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var cardMovements = new List<CardMovement>();
 
@@ -606,11 +699,7 @@ namespace LanesBackend.Logic
                     CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, rowIndex)
                 };
 
-                var to = new CardStore()
-                {
-                    HostDeck = playerIsHost,
-                    GuestDeck = !playerIsHost
-                };
+                var to = new CardStore() { HostDeck = playerIsHost, GuestDeck = !playerIsHost };
 
                 cardMovements.Add(new CardMovement(from, to, card));
             }
@@ -643,8 +732,11 @@ namespace LanesBackend.Logic
             return topCardsOfFirstThreeRows;
         }
 
-
-        private List<CardMovement> TriggerAceRuleIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> TriggerAceRuleIfAppropriate(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var playerPlayedAnAce = placeCardAttempt.Card.Kind == Kind.Ace;
             if (!playerPlayedAnAce)
@@ -668,21 +760,18 @@ namespace LanesBackend.Logic
             return GetCardMovementsFromDestroyedCards(destroyedCardsAndRowIndexes, laneIndex);
         }
 
-        private static List<CardMovement> GetCardMovementsFromDestroyedCards(List<(Card, int)> destroyedCardsAndRowIndexes, int laneIndex)
+        private static List<CardMovement> GetCardMovementsFromDestroyedCards(
+            List<(Card, int)> destroyedCardsAndRowIndexes,
+            int laneIndex
+        )
         {
             var cardMovements = new List<CardMovement>();
 
             foreach (var (destroyedCard, rowIndex) in destroyedCardsAndRowIndexes)
             {
-                var from = new CardStore
-                {
-                    CardPosition = new CardPosition(laneIndex, rowIndex)
-                };
+                var from = new CardStore { CardPosition = new CardPosition(laneIndex, rowIndex) };
 
-                var to = new CardStore
-                {
-                    Destroyed = true
-                };
+                var to = new CardStore { Destroyed = true };
 
                 cardMovements.Add(new CardMovement(from, to, destroyedCard));
             }
@@ -690,19 +779,23 @@ namespace LanesBackend.Logic
             return cardMovements;
         }
 
-        private List<CardMovement> WinLaneAndOrGameIfAppropriate(Game game, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> WinLaneAndOrGameIfAppropriate(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
-            var placeCardInLastRow = playerIsHost ?
-                placeCardAttempt.TargetRowIndex == 6 :
-                placeCardAttempt.TargetRowIndex == 0;
+            var placeCardInLastRow = playerIsHost
+                ? placeCardAttempt.TargetRowIndex == 6
+                : placeCardAttempt.TargetRowIndex == 0;
 
             if (!placeCardInLastRow)
             {
                 return new List<CardMovement>();
             }
 
-            game.Lanes[placeCardAttempt.TargetLaneIndex].WonBy = playerIsHost 
-                ? PlayerOrNone.Host 
+            game.Lanes[placeCardAttempt.TargetLaneIndex].WonBy = playerIsHost
+                ? PlayerOrNone.Host
                 : PlayerOrNone.Guest;
 
             var lane = game.Lanes[placeCardAttempt.TargetLaneIndex];
@@ -726,25 +819,29 @@ namespace LanesBackend.Logic
 
             WinGameIfAppropriate(game);
 
-            return GetCardMovementsFromWonCards(allCardsInLaneWithRowIndexes, placeCardAttempt, playerIsHost);
+            return GetCardMovementsFromWonCards(
+                allCardsInLaneWithRowIndexes,
+                placeCardAttempt,
+                playerIsHost
+            );
         }
 
-        private List<CardMovement> GetCardMovementsFromWonCards(List<(Card, int)> cardsWithRowIndexes, PlaceCardAttempt placeCardAttempt, bool playerIsHost)
+        private List<CardMovement> GetCardMovementsFromWonCards(
+            List<(Card, int)> cardsWithRowIndexes,
+            PlaceCardAttempt placeCardAttempt,
+            bool playerIsHost
+        )
         {
             var cardMovements = new List<CardMovement>();
 
-            foreach(var (card, rowIndex) in cardsWithRowIndexes)
+            foreach (var (card, rowIndex) in cardsWithRowIndexes)
             {
                 var from = new CardStore()
                 {
                     CardPosition = new CardPosition(placeCardAttempt.TargetLaneIndex, rowIndex)
                 };
 
-                var to = new CardStore()
-                {
-                    HostDeck = playerIsHost,
-                    GuestDeck = !playerIsHost
-                };
+                var to = new CardStore() { HostDeck = playerIsHost, GuestDeck = !playerIsHost };
 
                 cardMovements.Add(new CardMovement(from, to, card));
             }
@@ -779,7 +876,8 @@ namespace LanesBackend.Logic
         {
             var playersMostOffensiveCard = GetMostOffensiveCard(lane, playerIsHost);
             var opponentsMostOffensiveCard = GetMostOffensiveCard(lane, !playerIsHost);
-            var cardsAreAces = playersMostOffensiveCard is not null
+            var cardsAreAces =
+                playersMostOffensiveCard is not null
                 && playersMostOffensiveCard.Kind == Kind.Ace
                 && opponentsMostOffensiveCard is not null
                 && opponentsMostOffensiveCard.Kind == Kind.Ace;
@@ -803,7 +901,7 @@ namespace LanesBackend.Logic
                     continue;
                 }
 
-               if (topCard.Kind == Kind.Ace && secondTopCard.Kind == Kind.Ace)
+                if (topCard.Kind == Kind.Ace && secondTopCard.Kind == Kind.Ace)
                 {
                     return true;
                 }
@@ -814,9 +912,7 @@ namespace LanesBackend.Logic
 
         private static Card? GetMostOffensiveCard(Lane lane, bool forHostPlayer)
         {
-            var mostToLeastOffensive = forHostPlayer
-                ? lane.Rows.Reverse()
-                : lane.Rows;
+            var mostToLeastOffensive = forHostPlayer ? lane.Rows.Reverse() : lane.Rows;
 
             foreach (var row in mostToLeastOffensive)
             {
@@ -845,7 +941,7 @@ namespace LanesBackend.Logic
             var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
             var candidateMoves = new List<CandidateMove>();
 
-            foreach(var cardInHand in player.Hand.Cards)
+            foreach (var cardInHand in player.Hand.Cards)
             {
                 var cardCandidateMoves = GetCandidateMoves(game, cardInHand, forHostPlayer);
                 candidateMoves.AddRange(cardCandidateMoves);
@@ -854,7 +950,11 @@ namespace LanesBackend.Logic
             return candidateMoves;
         }
 
-        private static List<CandidateMove> GetCandidateMoves(Game game, Card card, bool forHostPlayer)
+        private static List<CandidateMove> GetCandidateMoves(
+            Game game,
+            Card card,
+            bool forHostPlayer
+        )
         {
             var candidateMoves = new List<CandidateMove>();
 
@@ -872,7 +972,12 @@ namespace LanesBackend.Logic
                     {
                         var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
                         var cardsInHand = player.Hand.Cards;
-                        var placeMultipleCandidateMoves = GetPlaceMultipleCandidateMoves(placeCardAttempt, cardsInHand, game, forHostPlayer);
+                        var placeMultipleCandidateMoves = GetPlaceMultipleCandidateMoves(
+                            placeCardAttempt,
+                            cardsInHand,
+                            game,
+                            forHostPlayer
+                        );
                         candidateMoves.AddRange(placeMultipleCandidateMoves);
                     }
                 }
@@ -890,7 +995,7 @@ namespace LanesBackend.Logic
             return opponentCandidateMoves;
         }
 
-        private static CandidateMove GetCandidateMove(Move move, Game game,bool forHostPlayer)
+        private static CandidateMove GetCandidateMove(Move move, Game game, bool forHostPlayer)
         {
             var invalidReason = GameUtil.GetReasonIfMoveInvalid(move, game, forHostPlayer);
             var isValid = invalidReason is null;
@@ -899,22 +1004,30 @@ namespace LanesBackend.Logic
         }
 
         private static List<CandidateMove> GetPlaceMultipleCandidateMoves(
-            PlaceCardAttempt initialPlaceCardAttempt, 
+            PlaceCardAttempt initialPlaceCardAttempt,
             List<Card> cardsInHand,
             Game game,
-            bool forHostPlayer)
+            bool forHostPlayer
+        )
         {
             var candidateMoves = new List<CandidateMove>();
 
-            var candidateCardsInHand = cardsInHand.Where(cardInHand => 
-                GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand) && 
-                !GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand)).ToList();
+            var candidateCardsInHand = cardsInHand
+                .Where(cardInHand =>
+                    GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand)
+                    && !GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand)
+                )
+                .ToList();
 
-            List<List<Card>> candidateCardPermutationSubsets = PermutationsUtil.GetSubsetsPermutations(candidateCardsInHand);
+            List<List<Card>> candidateCardPermutationSubsets =
+                PermutationsUtil.GetSubsetsPermutations(candidateCardsInHand);
 
             foreach (var candidateCards in candidateCardPermutationSubsets)
             {
-                var totalCandidatePlaceCardAttempts = new List<PlaceCardAttempt> { initialPlaceCardAttempt };
+                var totalCandidatePlaceCardAttempts = new List<PlaceCardAttempt>
+                {
+                    initialPlaceCardAttempt
+                };
                 var candidatePlaceCardAttempts = new List<PlaceCardAttempt>();
 
                 for (var i = 0; i < candidateCards.Count; i++)
@@ -923,7 +1036,7 @@ namespace LanesBackend.Logic
                         ? initialPlaceCardAttempt.TargetRowIndex + 1 + i
                         : initialPlaceCardAttempt.TargetRowIndex - 1 - i;
 
-                    // When placing multiple cards beyond the middle of the lane, the target row index of 3 
+                    // When placing multiple cards beyond the middle of the lane, the target row index of 3
                     // is skipped. For example, the host might play one move from row indexes 1, 2, and 4,
                     // while the guest might play one move from row indexes 5, 4, 2.
                     if (forHostPlayer && rowIndex >= 3)
@@ -938,7 +1051,11 @@ namespace LanesBackend.Logic
                     var card = candidateCards[i];
                     if (card is not null)
                     {
-                        var attempt = new PlaceCardAttempt(card, initialPlaceCardAttempt.TargetLaneIndex, rowIndex);
+                        var attempt = new PlaceCardAttempt(
+                            card,
+                            initialPlaceCardAttempt.TargetLaneIndex,
+                            rowIndex
+                        );
                         candidatePlaceCardAttempts.Add(attempt);
                     }
                 }
@@ -967,10 +1084,12 @@ namespace LanesBackend.Logic
                 if (attempt1.TargetLaneIndex != attempt2.TargetLaneIndex)
                 {
                     return false;
-                } else if (attempt1.TargetRowIndex != attempt2.TargetRowIndex)
+                }
+                else if (attempt1.TargetRowIndex != attempt2.TargetRowIndex)
                 {
                     return false;
-                } else if (!GameUtil.SuitAndKindMatches(attempt1.Card, attempt2.Card))
+                }
+                else if (!GameUtil.SuitAndKindMatches(attempt1.Card, attempt2.Card))
                 {
                     return false;
                 }

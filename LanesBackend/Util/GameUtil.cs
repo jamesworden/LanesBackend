@@ -18,11 +18,17 @@ namespace LanesBackend.Util
             {
                 return "You placed too many cards!";
             }
-            if (move.PlaceCardAttempts.Select(attempt => attempt.TargetLaneIndex).Distinct().Count() > 1)
+            if (
+                move.PlaceCardAttempts.Select(attempt => attempt.TargetLaneIndex).Distinct().Count()
+                > 1
+            )
             {
                 return "You can't place cards on different lanes!";
             }
-            if (move.PlaceCardAttempts.Select(attempt => attempt.TargetRowIndex).Distinct().Count() < move.PlaceCardAttempts.Count)
+            if (
+                move.PlaceCardAttempts.Select(attempt => attempt.TargetRowIndex).Distinct().Count()
+                < move.PlaceCardAttempts.Count
+            )
             {
                 return "You can't place cards on the same position!";
             }
@@ -30,7 +36,9 @@ namespace LanesBackend.Util
             {
                 return "This lane was won already!";
             }
-            if (move.PlaceCardAttempts.Any(placeCardAttempt => placeCardAttempt.TargetRowIndex == 3))
+            if (
+                move.PlaceCardAttempts.Any(placeCardAttempt => placeCardAttempt.TargetRowIndex == 3)
+            )
             {
                 return "You can't place a card in the middle!";
             }
@@ -50,11 +58,17 @@ namespace LanesBackend.Util
             {
                 return "You can't capture a greater card!";
             }
-            if (StartedMovePlayerSide(game, move, playerIsHost) && PlayerHasAdvantage(game, move, playerIsHost))
+            if (
+                StartedMovePlayerSide(game, move, playerIsHost)
+                && PlayerHasAdvantage(game, move, playerIsHost)
+            )
             {
                 return "You must attack this lane!";
             }
-            if (StartedMoveOpponentSide(game, move, playerIsHost) && OpponentHasAdvantage(game, move, playerIsHost))
+            if (
+                StartedMoveOpponentSide(game, move, playerIsHost)
+                && OpponentHasAdvantage(game, move, playerIsHost)
+            )
             {
                 return "You must defend this lane!";
             }
@@ -92,7 +106,7 @@ namespace LanesBackend.Util
 
         public static bool IsPlayersTurn(Game game, bool playerIsHost)
         {
-            return game.IsHostPlayersTurn && playerIsHost 
+            return game.IsHostPlayersTurn && playerIsHost
                 || !game.IsHostPlayersTurn && !playerIsHost;
         }
 
@@ -111,9 +125,13 @@ namespace LanesBackend.Util
             return SuitMatches(card1, card2) && KindMatches(card1, card2);
         }
 
-        public static bool ContainsConsecutivePlaceCardAttempts(List<PlaceCardAttempt> placeCardAttempts)
+        public static bool ContainsConsecutivePlaceCardAttempts(
+            List<PlaceCardAttempt> placeCardAttempts
+        )
         {
-            var targetRowIndexes = placeCardAttempts.Select(placeCardAttempt => placeCardAttempt.TargetRowIndex).ToList();
+            var targetRowIndexes = placeCardAttempts
+                .Select(placeCardAttempt => placeCardAttempt.TargetRowIndex)
+                .ToList();
             targetRowIndexes.Sort();
 
             for (int i = 0; i < targetRowIndexes.Count - 1; i++)
@@ -142,7 +160,12 @@ namespace LanesBackend.Util
             if (playerIsHost)
             {
                 var startIndex = StartedMovePlayerSide(game, move, playerIsHost) ? 0 : 4;
-                return !CapturedAllPreviousRows(game, firstPlaceCardAttempt, startIndex, playerIsHost);
+                return !CapturedAllPreviousRows(
+                    game,
+                    firstPlaceCardAttempt,
+                    startIndex,
+                    playerIsHost
+                );
             }
 
             var endIndex = StartedMoveOpponentSide(game, move, playerIsHost) ? 2 : 6;
@@ -178,7 +201,12 @@ namespace LanesBackend.Util
         /// <summary>
         /// Return true if there were no previous rows to capture
         /// </summary>
-        public static bool CapturedAllPreviousRows(Game game, PlaceCardAttempt placeCardAttempt, int startIndex, bool playerIsHost)
+        public static bool CapturedAllPreviousRows(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            int startIndex,
+            bool playerIsHost
+        )
         {
             var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
@@ -216,7 +244,12 @@ namespace LanesBackend.Util
         /// <summary>
         /// Return true if there were no following rows to capture
         /// </summary>
-        public static bool CapturedAllFollowingRows(Game game, PlaceCardAttempt placeCardAttempt, int endIndex, bool playerIsHost)
+        public static bool CapturedAllFollowingRows(
+            Game game,
+            PlaceCardAttempt placeCardAttempt,
+            int endIndex,
+            bool playerIsHost
+        )
         {
             var targetLaneIndex = placeCardAttempt.TargetLaneIndex;
             var targetRowIndex = placeCardAttempt.TargetRowIndex;
@@ -281,7 +314,8 @@ namespace LanesBackend.Util
             var targetCard = targetRow[targetRow.Count - 1];
             var suitsMatch = targetCard.Suit == card.Suit;
             var targetCardIsGreater = !CardTrumpsCard(card, targetCard);
-            var playerPlayedCard = targetCard.PlayedBy == (playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest);
+            var playerPlayedCard =
+                targetCard.PlayedBy == (playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest);
 
             return suitsMatch && targetCardIsGreater && !playerPlayedCard;
         }
@@ -290,7 +324,7 @@ namespace LanesBackend.Util
         {
             PlaceCardAttempt initialPlaceCardAttempt = move.PlaceCardAttempts[0];
 
-            foreach(var placeCardAttempt in move.PlaceCardAttempts)
+            foreach (var placeCardAttempt in move.PlaceCardAttempts)
             {
                 var isMoreInitial = playerIsHost
                     ? placeCardAttempt.TargetRowIndex < initialPlaceCardAttempt.TargetRowIndex
@@ -315,22 +349,21 @@ namespace LanesBackend.Util
         public static bool PlayerHasAdvantage(Game game, Move move, bool playerIsHost)
         {
             var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
-            return game.Lanes[targetLaneIndex].LaneAdvantage == (playerIsHost
-                ? PlayerOrNone.Host
-                : PlayerOrNone.Guest);
+            return game.Lanes[targetLaneIndex].LaneAdvantage
+                == (playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest);
         }
 
         public static bool OpponentHasAdvantage(Game game, Move move, bool playerIsHost)
         {
             var targetLaneIndex = move.PlaceCardAttempts[0].TargetLaneIndex;
-            return game.Lanes[targetLaneIndex].LaneAdvantage == (playerIsHost
-                ? PlayerOrNone.Guest
-                : PlayerOrNone.Host);
+            return game.Lanes[targetLaneIndex].LaneAdvantage
+                == (playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host);
         }
 
         public static bool LaneHasNoAdvantage(Game game, Move move)
         {
-            return game.Lanes[move.PlaceCardAttempts[0].TargetLaneIndex].LaneAdvantage == PlayerOrNone.None;
+            return game.Lanes[move.PlaceCardAttempts[0].TargetLaneIndex].LaneAdvantage
+                == PlayerOrNone.None;
         }
 
         /// <summary>
@@ -346,14 +379,16 @@ namespace LanesBackend.Util
                 return true;
             }
 
-            return SuitMatches(firstAttempt.Card, lastCardPlayedInLane) 
+            return SuitMatches(firstAttempt.Card, lastCardPlayedInLane)
                 || KindMatches(firstAttempt.Card, lastCardPlayedInLane);
         }
 
         static bool TriedToReinforceGreaterCard(Game game, Move move, bool playerIsHost)
         {
             var firstAttempt = GetInitialPlaceCardAttempt(move, playerIsHost);
-            var targetRow = game.Lanes[firstAttempt.TargetLaneIndex].Rows[firstAttempt.TargetRowIndex];
+            var targetRow = game.Lanes[firstAttempt.TargetLaneIndex].Rows[
+                firstAttempt.TargetRowIndex
+            ];
             var targetCard = targetRow.LastOrDefault();
 
             if (targetCard is null)
@@ -365,8 +400,8 @@ namespace LanesBackend.Util
                 ? targetCard.PlayedBy == PlayerOrNone.Host
                 : targetCard.PlayedBy == PlayerOrNone.Guest;
 
-            return playerPlayedTargetCard 
-                && SuitMatches(targetCard, firstAttempt.Card) 
+            return playerPlayedTargetCard
+                && SuitMatches(targetCard, firstAttempt.Card)
                 && CardTrumpsCard(targetCard, firstAttempt.Card);
         }
     }

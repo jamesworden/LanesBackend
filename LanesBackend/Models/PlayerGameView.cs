@@ -53,7 +53,8 @@
             string gameCode,
             List<CandidateMove>? candidateMoves,
             bool hasEnded,
-            List<ChatMessageView> chatMessages)
+            List<ChatMessageView> chatMessages
+        )
         {
             NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
             NumCardsInOpponentsHand = numCardsInOpponentsHand;

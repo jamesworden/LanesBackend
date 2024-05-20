@@ -1,8 +1,8 @@
-﻿using LanesBackend.Exceptions;
+﻿using System.ComponentModel.DataAnnotations;
+using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace LanesBackend.Controllers
 {
@@ -17,19 +17,18 @@ namespace LanesBackend.Controllers
         // TODO: Remove from commit history.
         const string TESTING_API_KEY = "ThisIsASecretAPIKey123!Beans";
 
-        public TestingController(
-            IGameBroadcaster gameBroadcaster, 
-            IGameService gameService)
-        { 
+        public TestingController(IGameBroadcaster gameBroadcaster, IGameService gameService)
+        {
             GameBroadcaster = gameBroadcaster;
             GameService = gameService;
         }
 
         [HttpPost(Name = "UpdateGameWithTestData")]
         public async Task<ActionResult> UpdateGameWithTestData(
-            [FromBody] [Required] TestingGameData testingGameData, 
-            [FromQuery] [Required] string gameCode, 
-            [FromQuery] [Required] string apiKey)
+            [FromBody] [Required] TestingGameData testingGameData,
+            [FromQuery] [Required] string gameCode,
+            [FromQuery] [Required] string apiKey
+        )
         {
             var incorrectApiKey = !apiKey.Equals(TESTING_API_KEY);
             if (incorrectApiKey)
@@ -43,7 +42,8 @@ namespace LanesBackend.Controllers
                 await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
                 return Ok();
-            } catch (GameNotExistsException)
+            }
+            catch (GameNotExistsException)
             {
                 return NotFound();
             }

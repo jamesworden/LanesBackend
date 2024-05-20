@@ -39,15 +39,16 @@
         public List<ChatMessageView> ChatMessageViews { get; set; } = new();
 
         public Game(
-            string hostConnectionId, 
-            string guestConnectionId, 
-            string gameCode, 
+            string hostConnectionId,
+            string guestConnectionId,
+            string gameCode,
             Player hostPlayer,
             Player guestPlayer,
             Lane[] lanes,
             DateTime gameCreatedTimestampUTC,
             DurationOption durationOption,
-            DateTime? gameEndedTimestampUTC = null)
+            DateTime? gameEndedTimestampUTC = null
+        )
         {
             HostConnectionId = hostConnectionId;
             GuestConnectionId = guestConnectionId;

@@ -24,9 +24,9 @@ namespace LanesBackend.Logic
         /// <returns>Cards alongside their row indexes ordered from the bottom to the top of the row's stack of cards.</returns>
         public List<(Card, int)> GrabAllCardsFromLane(Lane lane)
         {
-            List<(Card, int) > cardsAndRowIndexes = new();
+            List<(Card, int)> cardsAndRowIndexes = new();
 
-            for (var rowIndex = 0; rowIndex < lane.Rows.Length; rowIndex++) 
+            for (var rowIndex = 0; rowIndex < lane.Rows.Length; rowIndex++)
             {
                 var row = lane.Rows[rowIndex];
 

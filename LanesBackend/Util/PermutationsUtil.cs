@@ -9,7 +9,12 @@
             return subsets;
         }
 
-        static void GenerateSubsetsPermutations<T>(List<T> list, int index, List<T> subset, List<List<T>> subsets)
+        static void GenerateSubsetsPermutations<T>(
+            List<T> list,
+            int index,
+            List<T> subset,
+            List<List<T>> subsets
+        )
         {
             if (index == list.Count)
             {
@@ -38,7 +43,12 @@
             result.AddRange(permutations);
         }
 
-        static void GeneratePermutations<T>(List<T> list, int startIndex, int endIndex, List<List<T>> result)
+        static void GeneratePermutations<T>(
+            List<T> list,
+            int startIndex,
+            int endIndex,
+            List<List<T>> result
+        )
         {
             if (startIndex == endIndex)
             {

@@ -17,6 +17,6 @@
 
         public bool GuestDeck = false;
 
-        public CardStore() {}
+        public CardStore() { }
     }
 }

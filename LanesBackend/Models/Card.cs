@@ -8,7 +8,7 @@
 
         public PlayerOrNone PlayedBy { get; set; }
 
-    public Card(Kind kind, Suit suit, PlayerOrNone playedBy = PlayerOrNone.None)
+        public Card(Kind kind, Suit suit, PlayerOrNone playedBy = PlayerOrNone.None)
         {
             Kind = kind;
             Suit = suit;

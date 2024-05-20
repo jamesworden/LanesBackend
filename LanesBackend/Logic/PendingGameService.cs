@@ -15,7 +15,8 @@ namespace LanesBackend.Logic
         public PendingGameService(
             IGameCodeService gameCodeService,
             IPendingGameCache pendingGameCache,
-            IGameService gameService)
+            IGameService gameService
+        )
         {
             GameCodeService = gameCodeService;
             PendingGameCache = pendingGameCache;
@@ -42,11 +43,12 @@ namespace LanesBackend.Logic
             var playerIsHost = false;
 
             var game = GameService.CreateGame(
-                pendingGame.HostConnectionId, 
-                guestConnectionId, 
-                gameCode, 
+                pendingGame.HostConnectionId,
+                guestConnectionId,
+                gameCode,
                 pendingGame.DurationOption,
-                playerIsHost);
+                playerIsHost
+            );
 
             PendingGameCache.RemovePendingGame(gameCode);
 

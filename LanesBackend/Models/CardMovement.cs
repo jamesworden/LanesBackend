@@ -2,7 +2,7 @@
 {
     public class CardMovement
     {
-       public CardStore From { get; set; }
+        public CardStore From { get; set; }
 
         public CardStore To { get; set; }
 

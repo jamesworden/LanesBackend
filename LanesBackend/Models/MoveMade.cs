@@ -13,11 +13,12 @@
         public bool PassedMove { get; set; }
 
         public MoveMade(
-            PlayerOrNone playedBy, 
-            Move move, 
-            DateTime timestampUTC, 
-            List<List<CardMovement>> cardMovements, 
-            bool passedMove = false)
+            PlayerOrNone playedBy,
+            Move move,
+            DateTime timestampUTC,
+            List<List<CardMovement>> cardMovements,
+            bool passedMove = false
+        )
         {
             PlayedBy = playedBy;
             Move = move;
