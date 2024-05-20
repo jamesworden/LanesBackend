@@ -25,9 +25,9 @@ namespace LanesBackend.Controllers
 
         [HttpPost(Name = "UpdateGameWithTestData")]
         public async Task<ActionResult> UpdateGameWithTestData(
-            [FromBody] [Required] TestingGameData testingGameData,
-            [FromQuery] [Required] string gameCode,
-            [FromQuery] [Required] string apiKey
+            [FromBody][Required] TestingGameData testingGameData,
+            [FromQuery][Required] string gameCode,
+            [FromQuery][Required] string apiKey
         )
         {
             var incorrectApiKey = !apiKey.Equals(TESTING_API_KEY);
