@@ -1,45 +1,55 @@
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using LanesBackend.Models;
 
 namespace LanesBackend.Util
 {
-  public class ChatUtil
+  public static class ChatUtil
   {
-    public static string ReplaceBadWordsWithAsterisks(string rawMessage)
+    public static string ReplaceBadWordsWithAsterisks(string input)
     {
-      // Normalize the input string to decompose combined characters (e.g., é -> e + ́)
-      string normalizedMessage = rawMessage.Normalize(NormalizationForm.FormD);
-      string messageWithoutAccents = StripAccentMarks(normalizedMessage);
-      foreach (string badWord in WordConstants.LowerCaseBadWords)
-      {
-        string normalizedBadWord = badWord.Normalize(NormalizationForm.FormD);
-        string strippedBadWord = StripAccentMarks(normalizedBadWord);
-        string pattern = @"\b" + string.Join(@"[^\w]*", strippedBadWord.ToCharArray()) + @"\b";
-        string asterisks = new string('*', badWord.Length);
-        messageWithoutAccents = Regex.Replace(
-          messageWithoutAccents,
-          pattern,
-          asterisks,
-          RegexOptions.IgnoreCase
-        );
-      }
+      StringBuilder result = new StringBuilder();
 
-      return messageWithoutAccents;
-    }
-
-    public static string StripAccentMarks(string text)
-    {
-      var sb = new StringBuilder();
-      foreach (char c in text)
+      foreach (char c in input)
       {
-        if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+        if (IsValidUnicodeCharacter(c))
         {
-          sb.Append(c);
+          result.Append(NormalizeChar(c));
         }
       }
-      return sb.ToString().Normalize(NormalizationForm.FormC);
+
+      string pattern = string.Join(
+        "|",
+        WordConstants.LowerCaseBadWords.Select(word =>
+          string.Join(@"\s*", word.ToCharArray().Select(c => $"[{Regex.Escape(c.ToString())}]"))
+        )
+      );
+
+      string replaced = Regex.Replace(
+        result.ToString(),
+        pattern,
+        match => new string('*', match.Value.Length),
+        RegexOptions.IgnoreCase
+      );
+
+      return replaced;
+    }
+
+    private static bool IsValidUnicodeCharacter(char c)
+    {
+      return !char.IsSurrogate(c);
+    }
+
+    private static string NormalizeChar(char c)
+    {
+      foreach (KeyValuePair<string, string> entry in WordConstants.ForeignCharacters)
+      {
+        if (entry.Key.Contains(c))
+        {
+          return entry.Value[0].ToString();
+        }
+      }
+      return c.ToString();
     }
   }
 }
