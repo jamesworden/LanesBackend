@@ -1,9 +1,9 @@
 ﻿namespace LanesBackend.Models
 {
-    public enum DurationOption
-    {
-        FiveMinutes,
-        ThreeMinutes,
-        OneMinute
-    }
+  public enum DurationOption
+  {
+    FiveMinutes,
+    ThreeMinutes,
+    OneMinute
+  }
 }

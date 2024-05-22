@@ -1,4 +1,4 @@
 ﻿namespace LanesBackend.Exceptions
 {
-    public class InvalidMoveException : Exception { }
+  public class InvalidMoveException : Exception { }
 }

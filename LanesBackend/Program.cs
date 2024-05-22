@@ -29,27 +29,27 @@ app.MapHub<GameHub>("/game");
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 else
 {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+  app.UseExceptionHandler("/Error");
+  app.UseHsts();
 }
 
 app.UseCors(builder =>
 {
-    builder
-        .WithOrigins(
-            "http://localhost:4200",
-            "https://localhost:4200",
-            "http://chessofcards.com",
-            "https://chessofcards.com"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
+  builder
+    .WithOrigins(
+      "http://localhost:4200",
+      "https://localhost:4200",
+      "http://chessofcards.com",
+      "https://chessofcards.com"
+    )
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials();
 });
 
 app.UseRouting();

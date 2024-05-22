@@ -1,9 +1,9 @@
 ﻿namespace LanesBackend.Models
 {
-    public enum PlayerOrNone
-    {
-        Host,
-        Guest,
-        None
-    }
+  public enum PlayerOrNone
+  {
+    Host,
+    Guest,
+    None
+  }
 }

@@ -1,4 +1,4 @@
 ﻿namespace LanesBackend.Exceptions
 {
-    public class GameNotExistsException : Exception { }
+  public class GameNotExistsException : Exception { }
 }

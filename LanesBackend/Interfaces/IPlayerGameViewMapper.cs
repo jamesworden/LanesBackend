@@ -2,10 +2,10 @@
 
 namespace LanesBackend.Interfaces
 {
-    public interface IPlayerGameViewMapper
-    {
-        public PlayerGameView MapToHostPlayerGameView(Game game);
+  public interface IPlayerGameViewMapper
+  {
+    public PlayerGameView MapToHostPlayerGameView(Game game);
 
-        public PlayerGameView MapToGuestPlayerGameView(Game game);
-    }
+    public PlayerGameView MapToGuestPlayerGameView(Game game);
+  }
 }
