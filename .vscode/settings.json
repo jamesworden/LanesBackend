@@ -1,3 +1,4 @@
 {
-	"[csharp]": { "editor.defaultFormatter": "csharpier.csharpier-vscode" }
+	"[csharp]": { "editor.defaultFormatter": "csharpier.csharpier-vscode" },
+	"dotnet-test-explorer.testProjectPath": "**/LanesBackendTests.csproj"
 }
