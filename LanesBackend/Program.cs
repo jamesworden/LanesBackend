@@ -43,7 +43,7 @@ else
 builder.Services.AddCors(Options =>
 {
   Options.AddPolicy(
-    "lanesBackend",
+    "lanesFrontend",
     CorsPolicyBuilder =>
     {
       CorsPolicyBuilder
@@ -59,6 +59,8 @@ builder.Services.AddCors(Options =>
     }
   );
 });
+
+app.UseCors("lanesFrontend");
 
 app.UseRouting();
 
