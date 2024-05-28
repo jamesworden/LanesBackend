@@ -4,6 +4,8 @@ using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Logic;
 using LanesBackend.Mappers;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,18 +40,24 @@ else
   app.UseHsts();
 }
 
-app.UseCors(builder =>
+builder.Services.AddCors(Options =>
 {
-  builder
-    .WithOrigins(
-      "http://localhost:4200",
-      "https://localhost:4200",
-      "http://chessofcards.com",
-      "https://chessofcards.com"
-    )
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials();
+  Options.AddPolicy(
+    "lanesBackend",
+    CorsPolicyBuilder =>
+    {
+      CorsPolicyBuilder
+        .WithOrigins(
+          "http://localhost:4200",
+          "https://localhost:4200",
+          "http://chessofcards.com",
+          "https://chessofcards.com"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    }
+  );
 });
 
 app.UseRouting();
