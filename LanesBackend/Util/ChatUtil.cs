@@ -21,7 +21,7 @@ namespace LanesBackend.Util
       string pattern = string.Join(
         "|",
         WordConstants.LowerCaseBadWords.Select(word =>
-          string.Join(@"\s*", word.ToCharArray().Select(c => $"[{Regex.Escape(c.ToString())}]"))
+          string.Join(@"\s*", word.ToCharArray().Select(c => $"[{Regex.Escape(c.ToString())}]+"))
         )
       );
 
