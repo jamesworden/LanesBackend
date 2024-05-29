@@ -30,13 +30,19 @@ namespace LanesBackend.Hubs
       GameBroadcaster = gameBroadcaster;
     }
 
-    public async Task CreateGame()
+    public async Task CreateGame(string? stringifiedPendingGameOptions)
     {
       string hostConnectionId = Context.ConnectionId;
 
       try
       {
-        var pendingGame = PendingGameService.CreatePendingGame(hostConnectionId);
+        var pendingGameOptions = stringifiedPendingGameOptions is null
+          ? null
+          : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedPendingGameOptions);
+        var pendingGame = PendingGameService.CreatePendingGame(
+          hostConnectionId,
+          pendingGameOptions
+        );
         var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
         var serializedPendingGameView = JsonConvert.SerializeObject(
           pendingGameView,

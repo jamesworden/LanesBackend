@@ -23,10 +23,13 @@ namespace LanesBackend.Logic
       GameService = gameService;
     }
 
-    public PendingGame CreatePendingGame(string hostConnectionId)
+    public PendingGame CreatePendingGame(
+      string hostConnectionId,
+      PendingGameOptions? pendingGameOptions
+    )
     {
       string gameCode = GameCodeService.GenerateUniqueGameCode();
-      var pendingGame = new PendingGame(gameCode, hostConnectionId);
+      var pendingGame = new PendingGame(gameCode, hostConnectionId, pendingGameOptions);
       PendingGameCache.AddPendingGame(pendingGame);
       return pendingGame;
     }

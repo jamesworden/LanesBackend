@@ -22,19 +22,10 @@ namespace LanesBackend.Caching
 
     public PendingGame? GetPendingGameByConnectionId(string hostConnectionId)
     {
-      var pendingGameCode = PendingGameCodeToHostConnectionId
-        .FirstOrDefault(row =>
-          row.Value is not null && row.Value.HostConnectionId == hostConnectionId
-        )
-        .Key;
-      if (pendingGameCode is null)
-      {
-        return null;
-      }
-
-      var pendingGame = new PendingGame(pendingGameCode, hostConnectionId);
-
-      return pendingGame;
+      var row = PendingGameCodeToHostConnectionId.FirstOrDefault(row =>
+        row.Value is not null && row.Value.HostConnectionId == hostConnectionId
+      );
+      return row.Value ?? null;
     }
 
     public bool RemovePendingGame(string gameCode)

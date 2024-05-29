@@ -4,7 +4,10 @@ namespace LanesBackend.Interfaces
 {
   public interface IPendingGameService
   {
-    public PendingGame CreatePendingGame(string hostConnectionId);
+    public PendingGame CreatePendingGame(
+      string hostConnectionId,
+      PendingGameOptions? pendingGameOptions
+    );
 
     public Game JoinPendingGame(string gameCode, string guestConnectionId);
 
