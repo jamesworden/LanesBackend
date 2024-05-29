@@ -3,41 +3,45 @@ using LanesBackend.Models;
 
 namespace LanesBackend.Caching
 {
-    public class PendingGameCache : IPendingGameCache
+  public class PendingGameCache : IPendingGameCache
+  {
+    private static readonly Dictionary<string, PendingGame> PendingGameCodeToHostConnectionId =
+      new();
+
+    public void AddPendingGame(PendingGame pendingGame)
     {
-        private static readonly Dictionary<string, PendingGame> PendingGameCodeToHostConnectionId = new();
-
-        public void AddPendingGame(PendingGame pendingGame)
-        {
-            PendingGameCodeToHostConnectionId.Add(pendingGame.GameCode, pendingGame);
-        }
-
-        public PendingGame? GetPendingGameByGameCode(string gameCode)
-        {
-            PendingGameCodeToHostConnectionId.TryGetValue(gameCode, out var pendingGame);
-
-            return pendingGame;
-        }
-
-        public PendingGame? GetPendingGameByConnectionId(string hostConnectionId)
-        {
-            var pendingGameCode = PendingGameCodeToHostConnectionId
-                .FirstOrDefault(row => row.Value is not null && row.Value.HostConnectionId == hostConnectionId).Key;
-            if (pendingGameCode is null)
-            {
-                return null;
-            }
-
-            var pendingGame = new PendingGame(pendingGameCode, hostConnectionId);
-
-            return pendingGame;
-        }
-
-        public bool RemovePendingGame(string gameCode)
-        {
-            var pendingGameRemoved = PendingGameCodeToHostConnectionId.Remove(gameCode);
-
-            return pendingGameRemoved;
-        }
+      PendingGameCodeToHostConnectionId.Add(pendingGame.GameCode, pendingGame);
     }
+
+    public PendingGame? GetPendingGameByGameCode(string gameCode)
+    {
+      PendingGameCodeToHostConnectionId.TryGetValue(gameCode, out var pendingGame);
+
+      return pendingGame;
+    }
+
+    public PendingGame? GetPendingGameByConnectionId(string hostConnectionId)
+    {
+      var pendingGameCode = PendingGameCodeToHostConnectionId
+        .FirstOrDefault(row =>
+          row.Value is not null && row.Value.HostConnectionId == hostConnectionId
+        )
+        .Key;
+      if (pendingGameCode is null)
+      {
+        return null;
+      }
+
+      var pendingGame = new PendingGame(pendingGameCode, hostConnectionId);
+
+      return pendingGame;
+    }
+
+    public bool RemovePendingGame(string gameCode)
+    {
+      var pendingGameRemoved = PendingGameCodeToHostConnectionId.Remove(gameCode);
+
+      return pendingGameRemoved;
+    }
+  }
 }

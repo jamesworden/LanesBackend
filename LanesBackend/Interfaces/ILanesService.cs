@@ -2,10 +2,10 @@
 
 namespace LanesBackend.Interfaces
 {
-    public interface ILanesService
-    {
-        public Lane[] CreateEmptyLanes();
+  public interface ILanesService
+  {
+    public Lane[] CreateEmptyLanes();
 
-        public List<(Card, int)> GrabAllCardsFromLane(Lane lane);
-    }
+    public List<(Card, int)> GrabAllCardsFromLane(Lane lane);
+  }
 }

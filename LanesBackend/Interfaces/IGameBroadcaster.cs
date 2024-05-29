@@ -2,8 +2,8 @@
 
 namespace LanesBackend.Interfaces
 {
-    public interface IGameBroadcaster
-    {
-        public Task BroadcastPlayerGameViews(Game game, string messageType);
-    }
+  public interface IGameBroadcaster
+  {
+    public Task BroadcastPlayerGameViews(Game game, string messageType);
+  }
 }

@@ -1,14 +1,14 @@
 ﻿{
-  "profiles": {
-    "LanesBackend": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7192",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "launchBrowser": true,
-      "launchUrl": "swagger"
-    }
-  }
+	"profiles": {
+		"LanesBackend": {
+			"commandName": "Project",
+			"dotnetRunMessages": true,
+			"applicationUrl": "https://localhost:7192",
+			"environmentVariables": {
+				"ASPNETCORE_ENVIRONMENT": "Development"
+			},
+			"launchBrowser": true,
+			"launchUrl": "swagger"
+		}
+	}
 }

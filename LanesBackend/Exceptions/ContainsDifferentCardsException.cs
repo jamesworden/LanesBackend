@@ -1,6 +1,4 @@
 ﻿namespace LanesBackend.Exceptions
 {
-    public class ContainsDifferentCardsException : Exception
-    {
-    }
+  public class ContainsDifferentCardsException : Exception { }
 }

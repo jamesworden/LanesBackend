@@ -4,6 +4,7 @@ using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Logic;
 using LanesBackend.Mappers;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,28 +24,42 @@ builder.Services.AddScoped<IPlayerGameViewMapper, PlayerGameViewMapper>();
 builder.Services.AddScoped<IGameBroadcaster, GameBroadcaster>();
 builder.Services.AddScoped<IPendingGameService, PendingGameService>();
 
+builder.Services.AddCors(Options =>
+{
+  Options.AddPolicy(
+    "lanesFrontend",
+    CorsPolicyBuilder =>
+    {
+      CorsPolicyBuilder
+        .WithOrigins(
+          "http://localhost:4200",
+          "https://localhost:4200",
+          "http://chessofcards.com",
+          "https://chessofcards.com"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    }
+  );
+});
+
 var app = builder.Build();
 
 app.MapHub<GameHub>("/game");
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 else
 {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+  app.UseExceptionHandler("/Error");
+  app.UseHsts();
 }
 
-app.UseCors(builder =>
-{
-    builder.WithOrigins("http://localhost:4200", "https://localhost:4200", "http://chessofcards.com", "https://chessofcards.com")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
-});
+app.UseCors("lanesFrontend");
 
 app.UseRouting();
 
