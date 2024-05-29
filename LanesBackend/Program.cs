@@ -5,7 +5,6 @@ using LanesBackend.Interfaces;
 using LanesBackend.Logic;
 using LanesBackend.Mappers;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,21 +23,6 @@ builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
 builder.Services.AddScoped<IPlayerGameViewMapper, PlayerGameViewMapper>();
 builder.Services.AddScoped<IGameBroadcaster, GameBroadcaster>();
 builder.Services.AddScoped<IPendingGameService, PendingGameService>();
-
-var app = builder.Build();
-
-app.MapHub<GameHub>("/game");
-
-if (app.Environment.IsDevelopment())
-{
-  app.UseSwagger();
-  app.UseSwaggerUI();
-}
-else
-{
-  app.UseExceptionHandler("/Error");
-  app.UseHsts();
-}
 
 builder.Services.AddCors(Options =>
 {
@@ -59,6 +43,21 @@ builder.Services.AddCors(Options =>
     }
   );
 });
+
+var app = builder.Build();
+
+app.MapHub<GameHub>("/game");
+
+if (app.Environment.IsDevelopment())
+{
+  app.UseSwagger();
+  app.UseSwaggerUI();
+}
+else
+{
+  app.UseExceptionHandler("/Error");
+  app.UseHsts();
+}
 
 app.UseCors("lanesFrontend");
 
