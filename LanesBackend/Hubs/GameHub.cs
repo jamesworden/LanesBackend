@@ -30,7 +30,7 @@ namespace LanesBackend.Hubs
       GameBroadcaster = gameBroadcaster;
     }
 
-    public async Task CreateGame(string? stringifiedPendingGameOptions)
+    public async Task CreatePendingGame(string? stringifiedPendingGameOptions)
     {
       string hostConnectionId = Context.ConnectionId;
 
