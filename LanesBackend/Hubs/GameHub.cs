@@ -39,6 +39,12 @@ namespace LanesBackend.Hubs
         var pendingGameOptions = stringifiedPendingGameOptions is null
           ? null
           : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedPendingGameOptions);
+
+        if (pendingGameOptions?.HostName is not null && pendingGameOptions.HostName.Trim() == "")
+        {
+          pendingGameOptions.HostName = null;
+        }
+
         var pendingGame = PendingGameService.CreatePendingGame(
           hostConnectionId,
           pendingGameOptions
@@ -70,6 +76,14 @@ namespace LanesBackend.Hubs
           : JsonConvert.DeserializeObject<JoinPendingGameOptions>(
             stringifiedJoinPendingGameOptions
           );
+
+        if (
+          joinPendingGameOptions?.GuestName is not null
+          && joinPendingGameOptions?.GuestName.Trim() == ""
+        )
+        {
+          joinPendingGameOptions.GuestName = null;
+        }
 
         var game = PendingGameService.JoinPendingGame(
           gameCode,

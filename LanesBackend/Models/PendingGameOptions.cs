@@ -4,6 +4,6 @@ namespace LanesBackend.Models
   {
     public DurationOption DurationOption { get; set; }
 
-    public string HostName { get; set; } = "";
+    public string? HostName { get; set; }
   }
 }
