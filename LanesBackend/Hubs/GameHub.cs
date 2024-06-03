@@ -1,6 +1,7 @@
 ﻿using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Util;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -45,6 +46,16 @@ namespace LanesBackend.Hubs
           pendingGameOptions.HostName = null;
         }
 
+        if (pendingGameOptions?.HostName is not null)
+        {
+          var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(pendingGameOptions.HostName);
+          if (sensoredName != pendingGameOptions.HostName)
+          {
+            await Clients.Client(hostConnectionId).SendAsync(MessageType.InvalidName);
+            return;
+          }
+        }
+
         var pendingGame = PendingGameService.CreatePendingGame(
           hostConnectionId,
           pendingGameOptions
@@ -83,6 +94,18 @@ namespace LanesBackend.Hubs
         )
         {
           joinPendingGameOptions.GuestName = null;
+        }
+
+        if (joinPendingGameOptions?.GuestName is not null)
+        {
+          var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(
+            joinPendingGameOptions.GuestName
+          );
+          if (sensoredName != joinPendingGameOptions.GuestName)
+          {
+            await Clients.Client(guestConnectionId).SendAsync(MessageType.InvalidName);
+            return;
+          }
         }
 
         var game = PendingGameService.JoinPendingGame(
