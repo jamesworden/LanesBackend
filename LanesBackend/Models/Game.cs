@@ -38,6 +38,10 @@
 
     public List<ChatMessageView> ChatMessageViews { get; set; } = new();
 
+    public string? HostName { get; set; }
+
+    public string? GuestName { get; set; }
+
     public Game(
       string hostConnectionId,
       string guestConnectionId,
@@ -47,7 +51,9 @@
       Lane[] lanes,
       DateTime gameCreatedTimestampUTC,
       DurationOption durationOption,
-      DateTime? gameEndedTimestampUTC = null
+      DateTime? gameEndedTimestampUTC,
+      string? hostName,
+      string? guestName
     )
     {
       HostConnectionId = hostConnectionId;
@@ -59,6 +65,8 @@
       GameCreatedTimestampUTC = gameCreatedTimestampUTC;
       DurationOption = durationOption;
       GameEndedTimestampUTC = gameEndedTimestampUTC;
+      HostName = hostName;
+      GuestName = guestName;
     }
   }
 }

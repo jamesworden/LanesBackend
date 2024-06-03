@@ -43,7 +43,11 @@ namespace LanesBackend.Hubs
           hostConnectionId,
           pendingGameOptions
         );
-        var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+        var pendingGameView = new PendingGameView(
+          pendingGame.GameCode,
+          pendingGame.DurationOption,
+          pendingGame.HostName
+        );
         var serializedPendingGameView = JsonConvert.SerializeObject(
           pendingGameView,
           new StringEnumConverter()
@@ -55,13 +59,23 @@ namespace LanesBackend.Hubs
       catch (Exception) { }
     }
 
-    public async Task JoinGame(string gameCode)
+    public async Task JoinGame(string gameCode, string? stringifiedJoinPendingGameOptions)
     {
       var guestConnectionId = Context.ConnectionId;
 
       try
       {
-        var game = PendingGameService.JoinPendingGame(gameCode, guestConnectionId);
+        var joinPendingGameOptions = stringifiedJoinPendingGameOptions is null
+          ? null
+          : JsonConvert.DeserializeObject<JoinPendingGameOptions>(
+            stringifiedJoinPendingGameOptions
+          );
+
+        var game = PendingGameService.JoinPendingGame(
+          gameCode,
+          guestConnectionId,
+          joinPendingGameOptions
+        );
         await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
       }
       catch (PendingGameNotExistsException)
@@ -238,7 +252,11 @@ namespace LanesBackend.Hubs
       try
       {
         var pendingGame = PendingGameService.SelectDurationOption(connectionId, durationOption);
-        var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+        var pendingGameView = new PendingGameView(
+          pendingGame.GameCode,
+          pendingGame.DurationOption,
+          pendingGame.HostName
+        );
         var serializedPendingGameView = JsonConvert.SerializeObject(
           pendingGameView,
           new StringEnumConverter()

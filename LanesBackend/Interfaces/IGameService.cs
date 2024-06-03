@@ -9,7 +9,9 @@ namespace LanesBackend.Interfaces
       string guestConnectionId,
       string gameCode,
       DurationOption durationOption,
-      bool playerIsHost
+      bool playerIsHost,
+      string? HostName,
+      string? GuestName
     );
 
     public (Game, IEnumerable<MoveMadeResult>) MakeMove(

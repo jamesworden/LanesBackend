@@ -34,7 +34,11 @@ namespace LanesBackend.Logic
       return pendingGame;
     }
 
-    public Game JoinPendingGame(string gameCode, string guestConnectionId)
+    public Game JoinPendingGame(
+      string gameCode,
+      string guestConnectionId,
+      JoinPendingGameOptions? joinPendingGameOptions
+    )
     {
       var upperCaseGameCode = gameCode.ToUpper();
       var pendingGame = PendingGameCache.GetPendingGameByGameCode(upperCaseGameCode);
@@ -50,7 +54,9 @@ namespace LanesBackend.Logic
         guestConnectionId,
         gameCode,
         pendingGame.DurationOption,
-        playerIsHost
+        playerIsHost,
+        pendingGame.HostName,
+        joinPendingGameOptions?.GuestName
       );
 
       PendingGameCache.RemovePendingGame(gameCode);

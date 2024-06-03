@@ -9,7 +9,11 @@ namespace LanesBackend.Interfaces
       PendingGameOptions? pendingGameOptions
     );
 
-    public Game JoinPendingGame(string gameCode, string guestConnectionId);
+    public Game JoinPendingGame(
+      string gameCode,
+      string guestConnectionId,
+      JoinPendingGameOptions? joinPendingGameOptions
+    );
 
     public PendingGame SelectDurationOption(string connectionId, DurationOption durationOption);
 
