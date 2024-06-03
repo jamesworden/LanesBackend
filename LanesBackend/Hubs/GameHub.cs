@@ -309,6 +309,18 @@ namespace LanesBackend.Hubs
       catch (Exception) { }
     }
 
+    public void DeletePendingGame()
+    {
+      var connectionId = Context.ConnectionId;
+
+      try
+      {
+        var game = PendingGameService.RemovePendingGame(connectionId);
+      }
+      catch (GameNotExistsException) { }
+      catch (Exception) { }
+    }
+
     public override async Task OnDisconnectedAsync(Exception? _)
     {
       var connectionId = Context.ConnectionId;
