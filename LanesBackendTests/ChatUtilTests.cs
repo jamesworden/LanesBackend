@@ -12,6 +12,7 @@ namespace UnitTest
     [InlineData("This is a damn with multiple damn", "This is a **** with multiple ****")]
     [InlineData("bit ch", "******")]
     [InlineData("biitch", "******")]
+    [InlineData("home", "home")]
     public void ReplaceBadWords_WithAsterisks(string input, string expected)
     {
       // Act

@@ -8,7 +8,7 @@ namespace LanesBackend.Util
   {
     public static string ReplaceBadWordsWithAsterisks(string input)
     {
-      StringBuilder result = new StringBuilder();
+      StringBuilder result = new();
 
       foreach (char c in input)
       {
@@ -20,9 +20,11 @@ namespace LanesBackend.Util
 
       string pattern = string.Join(
         "|",
-        WordConstants.LowerCaseBadWords.Select(word =>
-          string.Join(@"\s*", word.ToCharArray().Select(c => $"[{Regex.Escape(c.ToString())}]+"))
-        )
+        WordConstants
+          .LowerCaseBadWords.Where(word => word.Length > 2)
+          .Select(word =>
+            string.Join(@"\s*", word.ToCharArray().Select(c => $"[{Regex.Escape(c.ToString())}]+"))
+          )
       );
 
       string replaced = Regex.Replace(
