@@ -36,6 +36,10 @@
 
     public List<ChatMessageView> ChatMessages { get; set; }
 
+    public string? HostName { get; set; }
+
+    public string? GuestName { get; set; }
+
     public PlayerGameView(
       int numCardsInOpponentsDeck,
       int numCardsInOpponentsHand,
@@ -53,7 +57,9 @@
       string gameCode,
       List<CandidateMove>? candidateMoves,
       bool hasEnded,
-      List<ChatMessageView> chatMessages
+      List<ChatMessageView> chatMessages,
+      string? hostName,
+      string? guestName
     )
     {
       NumCardsInOpponentsDeck = numCardsInOpponentsDeck;
@@ -73,6 +79,8 @@
       CandidateMoves = candidateMoves;
       HasEnded = hasEnded;
       ChatMessages = chatMessages;
+      HostName = hostName;
+      GuestName = guestName;
     }
   }
 }

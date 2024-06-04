@@ -3,7 +3,7 @@
 ## Deploying to production
 
 -   First we must build an artifact to deploy. Start by opening the terminal and going to the following directory: `LanesBackend\LanesBackend`.
--   Here, execute this command: `dotnet publish -o ../app`. This assumes you have the dotnet CLI tool installed. The artifact should now be built.
+-   Here, execute this command: `dotnet publish -o ../app -r linux-x64 --self-contained`. This assumes you have the dotnet CLI tool installed. The artifact should now be built. The parameters on these commands have become necessary for our Code Deploy agent to deploy the app correctly since the advent of .Net 8.
 -   You can test that this artifact works locally with `dotnet run ./app/LanesBackend.dll`. If there's any strange behavior or errors, cleaning the contents of that `app` folder before rebuilding an artifact may help.
 -   Now we must deploy this artifact; push this artifact to Github directly to master or in a new branch.
 -   Open a new browser tab to login to the AWS Console. Go to the Code Deploy service.

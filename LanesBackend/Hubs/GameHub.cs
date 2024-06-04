@@ -1,6 +1,7 @@
 ﻿using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Util;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -30,14 +31,40 @@ namespace LanesBackend.Hubs
       GameBroadcaster = gameBroadcaster;
     }
 
-    public async Task CreateGame()
+    public async Task CreatePendingGame(string? stringifiedPendingGameOptions)
     {
       string hostConnectionId = Context.ConnectionId;
 
       try
       {
-        var pendingGame = PendingGameService.CreatePendingGame(hostConnectionId);
-        var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+        var pendingGameOptions = stringifiedPendingGameOptions is null
+          ? null
+          : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedPendingGameOptions);
+
+        if (pendingGameOptions?.HostName is not null && pendingGameOptions.HostName.Trim() == "")
+        {
+          pendingGameOptions.HostName = null;
+        }
+
+        if (pendingGameOptions?.HostName is not null)
+        {
+          var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(pendingGameOptions.HostName);
+          if (sensoredName != pendingGameOptions.HostName)
+          {
+            await Clients.Client(hostConnectionId).SendAsync(MessageType.InvalidName);
+            return;
+          }
+        }
+
+        var pendingGame = PendingGameService.CreatePendingGame(
+          hostConnectionId,
+          pendingGameOptions
+        );
+        var pendingGameView = new PendingGameView(
+          pendingGame.GameCode,
+          pendingGame.DurationOption,
+          pendingGame.HostName
+        );
         var serializedPendingGameView = JsonConvert.SerializeObject(
           pendingGameView,
           new StringEnumConverter()
@@ -49,13 +76,43 @@ namespace LanesBackend.Hubs
       catch (Exception) { }
     }
 
-    public async Task JoinGame(string gameCode)
+    public async Task JoinGame(string gameCode, string? stringifiedJoinPendingGameOptions)
     {
       var guestConnectionId = Context.ConnectionId;
 
       try
       {
-        var game = PendingGameService.JoinPendingGame(gameCode, guestConnectionId);
+        var joinPendingGameOptions = stringifiedJoinPendingGameOptions is null
+          ? null
+          : JsonConvert.DeserializeObject<JoinPendingGameOptions>(
+            stringifiedJoinPendingGameOptions
+          );
+
+        if (
+          joinPendingGameOptions?.GuestName is not null
+          && joinPendingGameOptions?.GuestName.Trim() == ""
+        )
+        {
+          joinPendingGameOptions.GuestName = null;
+        }
+
+        if (joinPendingGameOptions?.GuestName is not null)
+        {
+          var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(
+            joinPendingGameOptions.GuestName
+          );
+          if (sensoredName != joinPendingGameOptions.GuestName)
+          {
+            await Clients.Client(guestConnectionId).SendAsync(MessageType.InvalidName);
+            return;
+          }
+        }
+
+        var game = PendingGameService.JoinPendingGame(
+          gameCode,
+          guestConnectionId,
+          joinPendingGameOptions
+        );
         await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
       }
       catch (PendingGameNotExistsException)
@@ -232,7 +289,11 @@ namespace LanesBackend.Hubs
       try
       {
         var pendingGame = PendingGameService.SelectDurationOption(connectionId, durationOption);
-        var pendingGameView = new PendingGameView(pendingGame.GameCode, pendingGame.DurationOption);
+        var pendingGameView = new PendingGameView(
+          pendingGame.GameCode,
+          pendingGame.DurationOption,
+          pendingGame.HostName
+        );
         var serializedPendingGameView = JsonConvert.SerializeObject(
           pendingGameView,
           new StringEnumConverter()
@@ -298,6 +359,18 @@ namespace LanesBackend.Hubs
         var opponentId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
 
         await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.NewChatMessage);
+      }
+      catch (GameNotExistsException) { }
+      catch (Exception) { }
+    }
+
+    public void DeletePendingGame()
+    {
+      var connectionId = Context.ConnectionId;
+
+      try
+      {
+        var game = PendingGameService.RemovePendingGame(connectionId);
       }
       catch (GameNotExistsException) { }
       catch (Exception) { }

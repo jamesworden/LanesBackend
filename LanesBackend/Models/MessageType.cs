@@ -21,5 +21,7 @@
     public static readonly string TurnSkippedNoMoves = "TurnSkippedNoMoves";
 
     public static readonly string NewChatMessage = "NewChatMessage";
+
+    public static readonly string InvalidName = "InvalidName";
   }
 }

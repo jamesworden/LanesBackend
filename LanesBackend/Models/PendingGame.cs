@@ -8,10 +8,22 @@
 
     public DurationOption DurationOption { get; set; }
 
-    public PendingGame(string gameCode, string hostConnectionId)
+    public string? HostName { get; set; }
+
+    public PendingGame(
+      string gameCode,
+      string hostConnectionId,
+      PendingGameOptions? pendingGameOptions
+    )
     {
       GameCode = gameCode;
       HostConnectionId = hostConnectionId;
+
+      if (pendingGameOptions is not null)
+      {
+        DurationOption = pendingGameOptions.DurationOption;
+        HostName = pendingGameOptions.HostName;
+      }
     }
   }
 }

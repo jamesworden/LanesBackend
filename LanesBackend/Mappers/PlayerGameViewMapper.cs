@@ -9,9 +9,9 @@ namespace LanesBackend.Mappers
     {
       var isHost = true;
       var candidateMoves =
-        (game.IsHostPlayersTurn && game.CandidateMoves.Any())
+        (game.IsHostPlayersTurn && game.CandidateMoves.Count != 0)
           ? game.CandidateMoves.LastOrDefault()
-          : new List<CandidateMove>();
+          : [];
 
       return new PlayerGameView(
         game.GuestPlayer.Deck.Cards.Count,
@@ -30,7 +30,9 @@ namespace LanesBackend.Mappers
         game.GameCode,
         candidateMoves,
         game.HasEnded,
-        game.ChatMessageViews
+        game.ChatMessageViews,
+        game.HostName,
+        game.GuestName
       );
     }
 
@@ -38,9 +40,9 @@ namespace LanesBackend.Mappers
     {
       var isHost = false;
       var candidateMoves =
-        (!game.IsHostPlayersTurn && game.CandidateMoves.Any())
+        (!game.IsHostPlayersTurn && game.CandidateMoves.Count != 0)
           ? game.CandidateMoves.LastOrDefault()
-          : new List<CandidateMove>();
+          : [];
 
       return new PlayerGameView(
         game.HostPlayer.Deck.Cards.Count,
@@ -59,11 +61,13 @@ namespace LanesBackend.Mappers
         game.GameCode,
         candidateMoves,
         game.HasEnded,
-        game.ChatMessageViews
+        game.ChatMessageViews,
+        game.HostName,
+        game.GuestName
       );
     }
 
-    private List<MoveMade> HideOpponentsDrawnCards(List<MoveMade> movesMade, bool isHost)
+    private static List<MoveMade> HideOpponentsDrawnCards(List<MoveMade> movesMade, bool isHost)
     {
       return movesMade
         .Select(moveMade =>
@@ -72,7 +76,7 @@ namespace LanesBackend.Mappers
             moveMade.PlayedBy,
             moveMade.Move,
             moveMade.TimestampUTC,
-            new List<List<CardMovement>>()
+            []
           )
           {
             CardMovements = moveMade
@@ -81,8 +85,8 @@ namespace LanesBackend.Mappers
                 return movementBurstMade
                   .Select(cardMovement =>
                   {
-                    var fromHostDeckAndIsGuest = (cardMovement.From.HostDeck && !isHost);
-                    var fromGuestDeckAndIsHost = (cardMovement.From.GuestDeck && isHost);
+                    var fromHostDeckAndIsGuest = cardMovement.From.HostDeck && !isHost;
+                    var fromGuestDeckAndIsHost = cardMovement.From.GuestDeck && isHost;
                     var isOpponentDrawnCardMovement =
                       fromHostDeckAndIsGuest || fromGuestDeckAndIsHost;
 

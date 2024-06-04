@@ -23,15 +23,22 @@ namespace LanesBackend.Logic
       GameService = gameService;
     }
 
-    public PendingGame CreatePendingGame(string hostConnectionId)
+    public PendingGame CreatePendingGame(
+      string hostConnectionId,
+      PendingGameOptions? pendingGameOptions
+    )
     {
       string gameCode = GameCodeService.GenerateUniqueGameCode();
-      var pendingGame = new PendingGame(gameCode, hostConnectionId);
+      var pendingGame = new PendingGame(gameCode, hostConnectionId, pendingGameOptions);
       PendingGameCache.AddPendingGame(pendingGame);
       return pendingGame;
     }
 
-    public Game JoinPendingGame(string gameCode, string guestConnectionId)
+    public Game JoinPendingGame(
+      string gameCode,
+      string guestConnectionId,
+      JoinPendingGameOptions? joinPendingGameOptions
+    )
     {
       var upperCaseGameCode = gameCode.ToUpper();
       var pendingGame = PendingGameCache.GetPendingGameByGameCode(upperCaseGameCode);
@@ -47,7 +54,9 @@ namespace LanesBackend.Logic
         guestConnectionId,
         gameCode,
         pendingGame.DurationOption,
-        playerIsHost
+        playerIsHost,
+        pendingGame.HostName,
+        joinPendingGameOptions?.GuestName
       );
 
       PendingGameCache.RemovePendingGame(gameCode);

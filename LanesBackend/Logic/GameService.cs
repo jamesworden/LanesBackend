@@ -25,7 +25,9 @@ namespace LanesBackend.Logic
       string guestConnectionId,
       string gameCode,
       DurationOption durationOption,
-      bool playerIsHost
+      bool playerIsHost,
+      string? hostName,
+      string? guestName
     )
     {
       var deck = CardService.CreateAndShuffleDeck();
@@ -56,7 +58,10 @@ namespace LanesBackend.Logic
           guestPlayer,
           lanes,
           gameCreatedTimestampUTC,
-          durationOption
+          durationOption,
+          null,
+          hostName,
+          guestName
         );
 
       var candidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
