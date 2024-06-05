@@ -40,6 +40,10 @@
 
     public string? GuestName { get; set; }
 
+    public int HostSecondsRemaining;
+
+    public int GuestSecondsRemaining;
+
     public PlayerGameView(
       int numCardsInOpponentsDeck,
       int numCardsInOpponentsHand,
@@ -58,6 +62,8 @@
       List<CandidateMove>? candidateMoves,
       bool hasEnded,
       List<ChatMessageView> chatMessages,
+      int hostSecondsRemaining,
+      int guestSecondsRemaining,
       string? hostName,
       string? guestName
     )
@@ -81,6 +87,8 @@
       ChatMessages = chatMessages;
       HostName = hostName;
       GuestName = guestName;
+      HostSecondsRemaining = hostSecondsRemaining;
+      GuestSecondsRemaining = guestSecondsRemaining;
     }
   }
 }

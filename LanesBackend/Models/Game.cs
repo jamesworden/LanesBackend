@@ -1,4 +1,6 @@
-﻿namespace LanesBackend.Models
+﻿using System.Diagnostics;
+
+namespace LanesBackend.Models
 {
   public class Game
   {
@@ -48,6 +50,12 @@
 
     public Timer? DisconnectTimer = null;
 
+    public Stopwatch? HostTimer = null;
+
+    public Stopwatch? GuestTimer = null;
+
+    public int DurationInSeconds;
+
     public Game(
       string hostConnectionId,
       string guestConnectionId,
@@ -57,6 +65,7 @@
       Lane[] lanes,
       DateTime gameCreatedTimestampUTC,
       DurationOption durationOption,
+      int durationInSeconds,
       DateTime? gameEndedTimestampUTC,
       string? hostName,
       string? guestName
@@ -73,6 +82,7 @@
       GameEndedTimestampUTC = gameEndedTimestampUTC;
       HostName = hostName;
       GuestName = guestName;
+      DurationInSeconds = durationInSeconds;
     }
   }
 }

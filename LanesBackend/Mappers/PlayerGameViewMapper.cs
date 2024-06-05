@@ -31,6 +31,8 @@ namespace LanesBackend.Mappers
         candidateMoves,
         game.HasEnded,
         game.ChatMessageViews,
+        game.DurationInSeconds - (game.HostTimer?.Elapsed.Seconds ?? 0),
+        game.DurationInSeconds - (game.GuestTimer?.Elapsed.Seconds ?? 0),
         game.HostName,
         game.GuestName
       );
@@ -62,6 +64,8 @@ namespace LanesBackend.Mappers
         candidateMoves,
         game.HasEnded,
         game.ChatMessageViews,
+        game.DurationInSeconds - (game.HostTimer?.Elapsed.Seconds ?? 0),
+        game.DurationInSeconds - (game.GuestTimer?.Elapsed.Seconds ?? 0),
         game.HostName,
         game.GuestName
       );

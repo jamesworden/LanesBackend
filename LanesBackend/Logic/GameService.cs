@@ -1,4 +1,5 @@
-﻿using LanesBackend.Exceptions;
+﻿using System.Diagnostics;
+using LanesBackend.Exceptions;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
@@ -51,6 +52,8 @@ namespace LanesBackend.Logic
 
       var gameCreatedTimestampUTC = DateTime.UtcNow;
 
+      var durationInSeconds = GetMinutes(durationOption) * 60;
+
       Game game =
         new(
           hostConnectionId,
@@ -61,6 +64,7 @@ namespace LanesBackend.Logic
           lanes,
           gameCreatedTimestampUTC,
           durationOption,
+          durationInSeconds,
           null,
           hostName,
           guestName
@@ -70,6 +74,10 @@ namespace LanesBackend.Logic
       game.CandidateMoves.Add(candidateMoves);
 
       GameCache.AddGame(game);
+
+      game.HostTimer = new Stopwatch();
+      game.GuestTimer = new Stopwatch();
+      game.HostTimer.Start();
 
       return game;
     }
@@ -141,10 +149,20 @@ namespace LanesBackend.Logic
         game.HasEnded = true;
       }
 
+      var activeTimer = game.IsHostPlayersTurn ? game.HostTimer : game.GuestTimer;
+      var inactiveTimer = game.IsHostPlayersTurn ? game.GuestTimer : game.HostTimer;
+      inactiveTimer?.Stop();
+      activeTimer?.Start();
+
       if (game.HasEnded)
       {
         game.GameEndedTimestampUTC = DateTime.UtcNow;
         GameCache.RemoveGameByConnectionId(connectionId);
+
+        game.HostTimer?.Stop();
+        game.GuestTimer?.Stop();
+        game.HostTimer = null;
+        game.GuestTimer = null;
       }
 
       return (game, moveMadeResults);
@@ -186,6 +204,11 @@ namespace LanesBackend.Logic
         game.CandidateMoves.Add(candidateMoves);
       }
 
+      var activeTimer = game.IsHostPlayersTurn ? game.HostTimer : game.GuestTimer;
+      var inactiveTimer = game.IsHostPlayersTurn ? game.GuestTimer : game.HostTimer;
+      inactiveTimer?.Stop();
+      activeTimer?.Start();
+
       return game;
     }
 
@@ -217,6 +240,10 @@ namespace LanesBackend.Logic
       {
         game.HasEnded = true;
         game.GameEndedTimestampUTC = DateTime.UtcNow;
+        game.HostTimer?.Stop();
+        game.GuestTimer?.Stop();
+        game.HostTimer = null;
+        game.GuestTimer = null;
       }
 
       return game;
@@ -241,6 +268,9 @@ namespace LanesBackend.Logic
       game.GameEndedTimestampUTC = DateTime.UtcNow;
       GameCache.RemoveGameByConnectionId(connectionId);
 
+      game.HostTimer = null;
+      game.GuestTimer = null;
+
       return game;
     }
 
@@ -257,6 +287,12 @@ namespace LanesBackend.Logic
 
       game.HasEnded = true;
       game.GameEndedTimestampUTC = DateTime.UtcNow;
+
+      game.HostTimer?.Stop();
+      game.GuestTimer?.Stop();
+      game.HostTimer = null;
+      game.GuestTimer = null;
+
       GameCache.RemoveGameByConnectionId(connectionId);
 
       return game;
@@ -272,6 +308,11 @@ namespace LanesBackend.Logic
 
       game.HasEnded = true;
       game.GameEndedTimestampUTC = DateTime.UtcNow;
+      game.HostTimer?.Stop();
+      game.GuestTimer?.Stop();
+      game.HostTimer = null;
+      game.GuestTimer = null;
+
       GameCache.RemoveGameByConnectionId(connectionId);
 
       return game;
@@ -1202,6 +1243,17 @@ namespace LanesBackend.Logic
       }
 
       return game;
+    }
+
+    private static int GetMinutes(DurationOption durationOption)
+    {
+      return durationOption switch
+      {
+        DurationOption.FiveMinutes => 5,
+        DurationOption.ThreeMinutes => 3,
+        DurationOption.OneMinute => 1,
+        _ => 0,
+      };
     }
   }
 }
