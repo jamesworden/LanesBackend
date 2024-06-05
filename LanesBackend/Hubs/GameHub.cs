@@ -78,10 +78,32 @@ namespace LanesBackend.Hubs
 
     public async Task JoinGame(string gameCode, string? stringifiedJoinPendingGameOptions)
     {
-      var guestConnectionId = Context.ConnectionId;
+      var connectionId = Context.ConnectionId;
 
       try
       {
+        var reconnectedGame = GameService.AttemptToJoinExistingGame(gameCode, connectionId);
+        if (reconnectedGame is not null)
+        {
+          var isHost = reconnectedGame.HostConnectionId == connectionId;
+
+          if (isHost)
+          {
+            await GameBroadcaster.BroadcastHostGameView(reconnectedGame, MessageType.Reconnected);
+            await Clients
+              .Client(reconnectedGame.GuestConnectionId)
+              .SendAsync(MessageType.OpponentReconnected);
+          }
+          else
+          {
+            await GameBroadcaster.BroadcastGuestGameView(reconnectedGame, MessageType.Reconnected);
+            await Clients
+              .Client(reconnectedGame.HostConnectionId)
+              .SendAsync(MessageType.OpponentReconnected);
+          }
+          return;
+        }
+
         var joinPendingGameOptions = stringifiedJoinPendingGameOptions is null
           ? null
           : JsonConvert.DeserializeObject<JoinPendingGameOptions>(
@@ -103,21 +125,21 @@ namespace LanesBackend.Hubs
           );
           if (sensoredName != joinPendingGameOptions.GuestName)
           {
-            await Clients.Client(guestConnectionId).SendAsync(MessageType.InvalidName);
+            await Clients.Client(connectionId).SendAsync(MessageType.InvalidName);
             return;
           }
         }
 
         var game = PendingGameService.JoinPendingGame(
           gameCode,
-          guestConnectionId,
+          connectionId,
           joinPendingGameOptions
         );
         await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
       }
       catch (PendingGameNotExistsException)
       {
-        await Clients.Client(guestConnectionId).SendAsync(MessageType.InvalidGameCode);
+        await Clients.Client(connectionId).SendAsync(MessageType.InvalidGameCode);
       }
       catch (Exception) { }
     }
@@ -386,17 +408,14 @@ namespace LanesBackend.Hubs
         return;
       }
 
-      var game = GameService.RemoveGame(connectionId);
-      if (game is not null)
+      try
       {
-        var hostDisconnected = connectionId == game.HostConnectionId;
-        var opponentConnectionId = hostDisconnected
-          ? game.GuestConnectionId
-          : game.HostConnectionId;
-        await Clients
-          .Client(opponentConnectionId)
-          .SendAsync(MessageType.GameOver, "Opponent Disconnected. You win!");
+        await Clients.All.SendAsync(MessageType.OpponentDisconnected);
+        GameService.MarkPlayerAsDisconnected(connectionId);
+        await Task.CompletedTask;
       }
+      catch (GameNotExistsException) { }
+      catch (Exception) { }
     }
   }
 }

@@ -4,6 +4,7 @@ using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Logic;
 using LanesBackend.Mappers;
+using LanesBackend.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();
 builder.Services.AddScoped<IPlayerGameViewMapper, PlayerGameViewMapper>();
 builder.Services.AddScoped<IGameBroadcaster, GameBroadcaster>();
 builder.Services.AddScoped<IPendingGameService, PendingGameService>();
+
+builder.Services.AddHostedService<GameDisconnectionService>();
 
 builder.Services.AddCors(Options =>
 {

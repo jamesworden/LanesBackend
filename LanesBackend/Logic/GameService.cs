@@ -1,24 +1,26 @@
 ﻿using LanesBackend.Exceptions;
+using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using LanesBackend.Util;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LanesBackend.Logic
 {
-  public class GameService : IGameService
+  public class GameService(
+    ILanesService lanesService,
+    ICardService cardService,
+    IGameCache gameCache,
+    IHubContext<GameHub> gameHubContext
+  ) : IGameService
   {
-    private readonly ILanesService LanesService;
+    private readonly ILanesService LanesService = lanesService;
 
-    private readonly ICardService CardService;
+    private readonly ICardService CardService = cardService;
 
-    private readonly IGameCache GameCache;
+    private readonly IGameCache GameCache = gameCache;
 
-    public GameService(ILanesService lanesService, ICardService cardService, IGameCache gameCache)
-    {
-      LanesService = lanesService;
-      CardService = cardService;
-      GameCache = gameCache;
-    }
+    private readonly IHubContext<GameHub> GameHubContext = gameHubContext;
 
     public Game CreateGame(
       string hostConnectionId,
@@ -296,6 +298,61 @@ namespace LanesBackend.Logic
       game.CandidateMoves.Add(candidateMoves);
 
       return game;
+    }
+
+    public Game MarkPlayerAsDisconnected(string connectionId)
+    {
+      var game = GameCache.FindGameByConnectionId(connectionId);
+      if (game is null)
+      {
+        throw new GameNotExistsException();
+      }
+
+      var hostPlayerIsDisconnected = connectionId == game.HostConnectionId;
+      if (hostPlayerIsDisconnected)
+      {
+        game.HostPlayerDisconnectedTimestampUTC = DateTime.UtcNow;
+      }
+      else
+      {
+        game.GuestPlayerDisconnectedTimestampUTC = DateTime.UtcNow;
+      }
+
+      var bothPlayersDisconnected =
+        game.HostPlayerDisconnectedTimestampUTC is not null
+        && game.GuestPlayerDisconnectedTimestampUTC is not null;
+      if (bothPlayersDisconnected)
+      {
+        game.GameEndedTimestampUTC = DateTime.UtcNow;
+        game.HasEnded = true;
+        game.WonBy = PlayerOrNone.None;
+        return game;
+      }
+
+      game.DisconnectTimer = new Timer(
+        OnDisconnectionTimeout,
+        game,
+        TimeSpan.FromSeconds(30),
+        Timeout.InfiniteTimeSpan
+      );
+
+      return game;
+    }
+
+    private async void OnDisconnectionTimeout(object? state)
+    {
+      if (state is null)
+      {
+        return;
+      }
+
+      var game = (Game)state;
+      var hostLost = game.HostPlayerDisconnectedTimestampUTC is not null;
+      game.WonBy = hostLost ? PlayerOrNone.Guest : PlayerOrNone.Host;
+      game.HasEnded = true;
+      game.GameEndedTimestampUTC = DateTime.UtcNow;
+
+      await GameHubContext.Clients.All.SendAsync(MessageType.GameOver, "Opponent resigned.");
     }
 
     public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage)
@@ -1107,6 +1164,36 @@ namespace LanesBackend.Logic
         4 => "e",
         _ => "",
       };
+    }
+
+    public Game? AttemptToJoinExistingGame(string gameCode, string connectionId)
+    {
+      var game = GameCache.FindGameByGameCode(gameCode);
+      if (game is null)
+      {
+        return null;
+      }
+
+      if (game.HostPlayerDisconnectedTimestampUTC is not null)
+      {
+        game.HostConnectionId = connectionId;
+        game.HostPlayerDisconnectedTimestampUTC = null;
+        game.DisconnectTimer?.Dispose();
+        game.DisconnectTimer = null;
+      }
+      else if (game.GuestPlayerDisconnectedTimestampUTC is not null)
+      {
+        game.GuestConnectionId = connectionId;
+        game.GuestPlayerDisconnectedTimestampUTC = null;
+        game.DisconnectTimer?.Dispose();
+        game.DisconnectTimer = null;
+      }
+      else
+      {
+        return null;
+      }
+
+      return game;
     }
   }
 }

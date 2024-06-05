@@ -39,5 +39,9 @@ namespace LanesBackend.Interfaces
     public Game UpdateGame(TestingGameData testingGameData, string gameCode);
 
     public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage);
+
+    public Game MarkPlayerAsDisconnected(string connectionId);
+
+    public Game? AttemptToJoinExistingGame(string gameCode, string connectionId);
   }
 }

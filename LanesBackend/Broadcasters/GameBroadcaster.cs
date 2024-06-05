@@ -43,5 +43,29 @@ namespace LanesBackend.Broadcasters
         .Clients.Client(game.GuestConnectionId)
         .SendAsync(messageType, serializedGuestGameView);
     }
+
+    public async Task BroadcastHostGameView(Game game, string messageType)
+    {
+      var hostGameView = PlayerGameViewMapper.MapToHostPlayerGameView(game);
+      var serializedHostGameView = JsonConvert.SerializeObject(
+        hostGameView,
+        new StringEnumConverter()
+      );
+      await GameHubContext
+        .Clients.Client(game.HostConnectionId)
+        .SendAsync(messageType, serializedHostGameView);
+    }
+
+    public async Task BroadcastGuestGameView(Game game, string messageType)
+    {
+      var guestGameView = PlayerGameViewMapper.MapToGuestPlayerGameView(game);
+      var serializedGuestGameView = JsonConvert.SerializeObject(
+        guestGameView,
+        new StringEnumConverter()
+      );
+      await GameHubContext
+        .Clients.Client(game.GuestConnectionId)
+        .SendAsync(messageType, serializedGuestGameView);
+    }
   }
 }

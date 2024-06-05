@@ -42,6 +42,12 @@
 
     public string? GuestName { get; set; }
 
+    public DateTime? HostPlayerDisconnectedTimestampUTC = null;
+
+    public DateTime? GuestPlayerDisconnectedTimestampUTC = null;
+
+    public Timer? DisconnectTimer = null;
+
     public Game(
       string hostConnectionId,
       string guestConnectionId,

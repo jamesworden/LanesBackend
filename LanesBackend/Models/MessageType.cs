@@ -23,5 +23,11 @@
     public static readonly string NewChatMessage = "NewChatMessage";
 
     public static readonly string InvalidName = "InvalidName";
+
+    public static readonly string OpponentDisconnected = "OpponentDisconnected";
+
+    public static readonly string OpponentReconnected = "OpponentReconnected";
+
+    public static readonly string Reconnected = "Reconnected";
   }
 }
