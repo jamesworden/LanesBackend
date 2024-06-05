@@ -15,9 +15,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddCors();
 
-builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IGameCodeService, GameCodeService>();
-builder.Services.AddScoped<ILanesService, LanesService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IGameCache, GameCache>();
 builder.Services.AddScoped<IPendingGameCache, PendingGameCache>();

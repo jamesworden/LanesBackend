@@ -5,7 +5,7 @@ namespace LanesBackend.Caching
 {
   public class GameCache : IGameCache
   {
-    private static readonly List<Game> Games = new();
+    private static readonly List<Game> Games = [];
 
     public void AddGame(Game game)
     {

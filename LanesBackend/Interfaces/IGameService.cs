@@ -24,8 +24,6 @@ namespace LanesBackend.Interfaces
 
     public Hand RearrangeHand(string connectionId, List<Card> cards);
 
-    public Game? RemoveGame(string connectionId);
-
     public Game? FindGame(string connectionId);
 
     public Game AcceptDrawOffer(string connectionId);
@@ -33,8 +31,6 @@ namespace LanesBackend.Interfaces
     public Game ResignGame(string connectionId);
 
     public Game EndGame(string connectionId);
-
-    public List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer);
 
     public Game UpdateGame(TestingGameData testingGameData, string gameCode);
 
