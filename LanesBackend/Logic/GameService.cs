@@ -360,7 +360,7 @@ namespace LanesBackend.Logic
 
       await GameHubContext
         .Clients.Client(remainingConnectionId)
-        .SendAsync(MessageType.GameOver, "Opponent resigned.");
+        .SendAsync(MessageType.GameOver, "Opponent left the game.");
     }
 
     public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage)
