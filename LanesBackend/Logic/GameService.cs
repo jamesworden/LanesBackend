@@ -356,6 +356,8 @@ namespace LanesBackend.Logic
       game.GameEndedTimestampUTC = DateTime.UtcNow;
       var remainingConnectionId = hostLost ? game.GuestConnectionId : game.HostConnectionId;
 
+      GameCache.RemoveGameByConnectionId(remainingConnectionId);
+
       await GameHubContext
         .Clients.Client(remainingConnectionId)
         .SendAsync(MessageType.GameOver, "Opponent resigned.");
