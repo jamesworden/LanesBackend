@@ -1221,12 +1221,6 @@ namespace LanesBackend.Util
       return null;
     }
 
-    public static Deck CreateAndShuffleDeck()
-    {
-      var deck = CreateDeck();
-      return ShuffleDeck(deck);
-    }
-
     public static Tuple<Deck, Deck> SplitDeck(Deck deck)
     {
       var numCardsInHalfDeck = deck.Cards.Count / 2;

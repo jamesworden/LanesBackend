@@ -24,7 +24,8 @@ namespace LanesBackend.Logic
       string? guestName
     )
     {
-      var deck = GameUtil.CreateAndShuffleDeck();
+      var deck = GameUtil.CreateDeck();
+      deck = GameUtil.ShuffleDeck(deck);
       var playerDecks = GameUtil.SplitDeck(deck);
 
       var hostDeck = playerDecks.Item1;
