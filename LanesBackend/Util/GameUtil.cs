@@ -443,7 +443,7 @@ namespace LanesBackend.Util
           var candidateMove = GetCandidateMove(move, game, forHostPlayer);
           candidateMoves.Add(candidateMove);
 
-          if (GameUtil.IsDefensive(placeCardAttempt, game.IsHostPlayersTurn))
+          if (IsDefensive(placeCardAttempt, game.IsHostPlayersTurn))
           {
             var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
             var cardsInHand = player.Hand.Cards;
@@ -489,8 +489,8 @@ namespace LanesBackend.Util
 
       var candidateCardsInHand = cardsInHand
         .Where(cardInHand =>
-          GameUtil.KindMatches(initialPlaceCardAttempt.Card, cardInHand)
-          && !GameUtil.SuitMatches(initialPlaceCardAttempt.Card, cardInHand)
+          KindMatches(initialPlaceCardAttempt.Card, cardInHand)
+          && !SuitMatches(initialPlaceCardAttempt.Card, cardInHand)
         )
         .ToList();
 
@@ -565,7 +565,7 @@ namespace LanesBackend.Util
         {
           return false;
         }
-        else if (!GameUtil.SuitAndKindMatches(attempt1.Card, attempt2.Card))
+        else if (!SuitAndKindMatches(attempt1.Card, attempt2.Card))
         {
           return false;
         }
@@ -786,7 +786,7 @@ namespace LanesBackend.Util
       var isCardMostOffensive =
         mostOffensiveCard is not null
         && topCard is not null
-        && GameUtil.SuitAndKindMatches(mostOffensiveCard, topCard);
+        && SuitAndKindMatches(mostOffensiveCard, topCard);
 
       lane.LastCardPlayed =
         !isCardMostOffensive && cardReinforced ? mostOffensiveCard : placeCardAttempt.Card;
@@ -816,7 +816,7 @@ namespace LanesBackend.Util
         )
       };
 
-      var notation = GameUtil.GetCardMovementNotation(placeCardAttempt);
+      var notation = GetCardMovementNotation(placeCardAttempt);
 
       return new CardMovement(from, to, placeCardAttempt.Card, notation);
     }
