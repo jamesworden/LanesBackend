@@ -14,7 +14,7 @@ namespace LanesBackend.Util
       {
         return "It's not your turn!";
       }
-      if (!move.PlaceCardAttempts.Any())
+      if (move.PlaceCardAttempts.Count == 0)
       {
         return "You need to place a card!";
       }
