@@ -410,11 +410,16 @@ namespace LanesBackend.Hubs
 
       try
       {
-        await Clients.All.SendAsync(MessageType.OpponentDisconnected);
-        GameService.MarkPlayerAsDisconnected(connectionId);
-        await Task.CompletedTask;
+        var game = GameService.MarkPlayerAsDisconnected(connectionId);
+        if (game is not null)
+        {
+          var hostDisconnected = connectionId == game.HostConnectionId;
+          var opponentConnectionId = hostDisconnected
+            ? game.GuestConnectionId
+            : game.HostConnectionId;
+          await Clients.Client(opponentConnectionId).SendAsync(MessageType.OpponentDisconnected);
+        }
       }
-      catch (GameNotExistsException) { }
       catch (Exception) { }
     }
   }

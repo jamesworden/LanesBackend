@@ -300,12 +300,12 @@ namespace LanesBackend.Logic
       return game;
     }
 
-    public Game MarkPlayerAsDisconnected(string connectionId)
+    public Game? MarkPlayerAsDisconnected(string connectionId)
     {
       var game = GameCache.FindGameByConnectionId(connectionId);
       if (game is null)
       {
-        throw new GameNotExistsException();
+        return null;
       }
 
       var hostPlayerIsDisconnected = connectionId == game.HostConnectionId;
@@ -326,6 +326,9 @@ namespace LanesBackend.Logic
         game.GameEndedTimestampUTC = DateTime.UtcNow;
         game.HasEnded = true;
         game.WonBy = PlayerOrNone.None;
+
+        GameCache.RemoveGameByConnectionId(connectionId);
+
         return game;
       }
 
@@ -351,8 +354,11 @@ namespace LanesBackend.Logic
       game.WonBy = hostLost ? PlayerOrNone.Guest : PlayerOrNone.Host;
       game.HasEnded = true;
       game.GameEndedTimestampUTC = DateTime.UtcNow;
+      var remainingConnectionId = hostLost ? game.GuestConnectionId : game.HostConnectionId;
 
-      await GameHubContext.Clients.All.SendAsync(MessageType.GameOver, "Opponent resigned.");
+      await GameHubContext
+        .Clients.Client(remainingConnectionId)
+        .SendAsync(MessageType.GameOver, "Opponent resigned.");
     }
 
     public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage)
