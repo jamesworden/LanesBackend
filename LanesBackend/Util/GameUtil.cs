@@ -429,7 +429,7 @@ namespace LanesBackend.Util
       return candidateMoves;
     }
 
-    private static List<CandidateMove> GetCandidateMoves(Game game, Card card, bool forHostPlayer)
+    public static List<CandidateMove> GetCandidateMoves(Game game, Card card, bool forHostPlayer)
     {
       var candidateMoves = new List<CandidateMove>();
 
@@ -1343,7 +1343,7 @@ namespace LanesBackend.Util
       return cardsAndRowIndexes;
     }
 
-    private static Lane CreateEmptyLane()
+    public static Lane CreateEmptyLane()
     {
       var rows = CreateEmptyRows();
       Lane lane = new(rows);
@@ -1351,7 +1351,7 @@ namespace LanesBackend.Util
       return lane;
     }
 
-    private static List<Card>[] CreateEmptyRows()
+    public static List<Card>[] CreateEmptyRows()
     {
       List<Card>[] rows = new List<Card>[NUMBER_OF_ROWS];
 
