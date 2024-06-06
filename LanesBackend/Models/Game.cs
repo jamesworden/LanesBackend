@@ -54,6 +54,8 @@ namespace LanesBackend.Models
 
     public Stopwatch? GuestTimer = null;
 
+    public Timer? EndGameTimer = null;
+
     public int DurationInSeconds;
 
     public Game(

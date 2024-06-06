@@ -70,6 +70,7 @@ namespace LanesBackend.Logic
       game.HostTimer = new Stopwatch();
       game.GuestTimer = new Stopwatch();
       game.HostTimer.Start();
+      game.EndGameTimer = GetEndGameTimer(game);
 
       return game;
     }
@@ -195,13 +196,56 @@ namespace LanesBackend.Logic
     /// <summary>
     /// Starts the clock of the player whose turn it is.
     /// Pauses the clock of the player whose turn it is not.
+    /// Ensures that the game's `EndGameTimer` is configured to match the player of whose turn it is.
     /// </summary>
-    private static void SwitchTimeClocks(Game game)
+    private void SwitchTimeClocks(Game game)
     {
       var activeTimer = game.IsHostPlayersTurn ? game.HostTimer : game.GuestTimer;
       var inactiveTimer = game.IsHostPlayersTurn ? game.GuestTimer : game.HostTimer;
+
       inactiveTimer?.Stop();
       activeTimer?.Start();
+
+      game.EndGameTimer?.Dispose();
+      game.EndGameTimer = GetEndGameTimer(game);
+    }
+
+    private Timer GetEndGameTimer(Game game)
+    {
+      var secondsRemaining = game.IsHostPlayersTurn
+        ? game.DurationInSeconds - (game.HostTimer?.Elapsed.Seconds ?? 0)
+        : game.DurationInSeconds - (game.GuestTimer?.Elapsed.Seconds ?? 0);
+
+      return new Timer(
+        OnTimerRanOut,
+        game,
+        TimeSpan.FromSeconds(secondsRemaining),
+        Timeout.InfiniteTimeSpan
+      );
+    }
+
+    public async void OnTimerRanOut(object? state)
+    {
+      if (state is null)
+      {
+        return;
+      }
+
+      var game = (Game)state;
+      var hostLost = game.IsHostPlayersTurn;
+      game.WonBy = hostLost ? PlayerOrNone.Guest : PlayerOrNone.Host;
+
+      EndGame(game);
+
+      var winningConnectionId = hostLost ? game.GuestConnectionId : game.HostConnectionId;
+      var losingConnectionId = hostLost ? game.HostConnectionId : game.GuestConnectionId;
+
+      await GameHubContext
+        .Clients.Client(losingConnectionId)
+        .SendAsync(MessageType.GameOver, "You ran out of time. You lose!");
+      await GameHubContext
+        .Clients.Client(winningConnectionId)
+        .SendAsync(MessageType.GameOver, "Opponent ran out of time. You win!");
     }
 
     public Hand RearrangeHand(string connectionId, List<Card> cards)
@@ -281,6 +325,9 @@ namespace LanesBackend.Logic
 
       game.GuestTimer?.Stop();
       game.GuestTimer = null;
+
+      game.EndGameTimer?.Dispose();
+      game.EndGameTimer = null;
 
       if (GameCache.RemoveGameByConnectionId(game.HostConnectionId) is null)
       {
