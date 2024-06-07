@@ -296,18 +296,18 @@ public class GameService(
     return (EndGame(game), []);
   }
 
-  public Game ResignGame(string connectionId)
+  public (Game?, IEnumerable<ResignGameResults>) ResignGame(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, [ResignGameResults.GameDoesNotExist]);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
     game.WonBy = playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host;
 
-    return EndGame(game);
+    return (EndGame(game), []);
   }
 
   public Game EndGame(string connectionId)

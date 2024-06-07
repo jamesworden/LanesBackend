@@ -291,7 +291,17 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.ResignGame(connectionId);
+      var (game, results) = GameService.ResignGame(connectionId);
+
+      if (results.Contains(ResignGameResults.GameDoesNotExist))
+      {
+        return;
+      }
+
+      if (game is null)
+      {
+        return;
+      }
 
       var playerIsHost = game.HostConnectionId == connectionId;
       var winnerConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
@@ -302,7 +312,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         .SendAsync(MessageType.GameOver, "Opponent resigned.");
       await Clients.Client(loserConnectionId).SendAsync(MessageType.GameOver, "Game resigned.");
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 
