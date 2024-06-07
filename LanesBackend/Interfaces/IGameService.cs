@@ -22,7 +22,7 @@ public interface IGameService
     List<Card>? rearrangedCardsInHand
   );
 
-  public Game PassMove(string connectionId);
+  public (Game?, IEnumerable<PassMoveResults>) PassMove(string connectionId);
 
   public (Hand?, IEnumerable<RearrangeHandResults>) RearrangeHand(
     string connectionId,

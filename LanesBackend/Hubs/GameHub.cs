@@ -200,20 +200,34 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.PassMove(connectionId);
+      var (game, results) = GameService.PassMove(connectionId);
+
+      if (results.Contains(PassMoveResults.GameDoesNotExist))
+      {
+        return;
+      }
+
+      if (results.Contains(PassMoveResults.NotPlayersTurn))
+      {
+        return;
+      }
+
+      if (game is null)
+      {
+        return;
+      }
+
       await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.PassedMove);
 
-      if (game.HasEnded)
+      if (results.Contains(PassMoveResults.GameHasEnded))
       {
-        await Clients
-          .Client(game.HostConnectionId)
-          .SendAsync(MessageType.GameOver, "It's a draw by repetition!");
-        await Clients
-          .Client(game.GuestConnectionId)
-          .SendAsync(MessageType.GameOver, "It's a draw by repetition!");
+        await GameBroadcaster.BroadcastPlayerGameViews(
+          game,
+          MessageType.GameOver,
+          "It's a draw by repetition!"
+        );
       }
     }
-    catch (NotPlayersTurnException) { }
     catch (Exception) { }
   }
 

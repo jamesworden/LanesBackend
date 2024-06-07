@@ -142,7 +142,7 @@ public class GameService(
 
     if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
     {
-      game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+      SetNextPlayersTurn(game);
       game.CandidateMoves.Add(opponentCandidateMoves);
     }
     else
@@ -159,8 +159,6 @@ public class GameService(
       );
     }
 
-    SwitchTimeClocks(game);
-
     if (!anyValidPlayerCandidateMoves && !anyValidOpponentCandidateMoves)
     {
       EndGame(game);
@@ -169,21 +167,18 @@ public class GameService(
     return (game, moveMadeResults);
   }
 
-  public Game PassMove(string connectionId)
+  public (Game?, IEnumerable<PassMoveResults>) PassMove(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, [PassMoveResults.GameDoesNotExist]);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
-    var hostAndHostTurn = playerIsHost && game.IsHostPlayersTurn;
-    var guestAndGuestTurn = !playerIsHost && !game.IsHostPlayersTurn;
-    var isPlayersTurn = hostAndHostTurn || guestAndGuestTurn;
-    if (!isPlayersTurn)
+    if (!GameUtil.IsPlayersTurn(game, playerIsHost))
     {
-      throw new NotPlayersTurnException();
+      return (game, [PassMoveResults.NotPlayersTurn]);
     }
 
     var cardMovements = GameUtil.DrawCardsUntil(game, playerIsHost, 5);
@@ -191,13 +186,11 @@ public class GameService(
     var playedBy = playerIsHost ? PlayerOrNone.Host : PlayerOrNone.Guest;
     var timeStampUTC = DateTime.UtcNow;
     game.MovesMade.Add(new MoveMade(playedBy, move, timeStampUTC, cardMovements, true));
-    game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
 
     if (GameUtil.HasThreeBackToBackPasses(game))
     {
-      game.HasEnded = true;
-      game.GameEndedTimestampUTC = timeStampUTC;
-      GameCache.RemoveGameByConnectionId(connectionId);
+      EndGame(game);
+      return (game, [PassMoveResults.GameHasEnded]);
     }
     else
     {
@@ -205,9 +198,9 @@ public class GameService(
       game.CandidateMoves.Add(candidateMoves);
     }
 
-    SwitchTimeClocks(game);
+    SetNextPlayersTurn(game);
 
-    return game;
+    return (game, []);
   }
 
   /// <summary>
@@ -215,8 +208,10 @@ public class GameService(
   /// Pauses the clock of the player whose turn it is not.
   /// Ensures that the game's `EndGameTimer` is configured to match the player of whose turn it is.
   /// </summary>
-  private void SwitchTimeClocks(Game game)
+  private void SetNextPlayersTurn(Game game)
   {
+    game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
+
     var activeTimer = game.IsHostPlayersTurn ? game.HostTimer : game.GuestTimer;
     var inactiveTimer = game.IsHostPlayersTurn ? game.GuestTimer : game.HostTimer;
 
