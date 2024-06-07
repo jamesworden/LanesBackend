@@ -217,8 +217,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         return;
       }
 
-      await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.PassedMove);
-
       if (results.Contains(PassMoveResults.GameHasEnded))
       {
         await GameBroadcaster.BroadcastPlayerGameViews(
@@ -226,7 +224,10 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
           MessageType.GameOver,
           "It's a draw by repetition!"
         );
+        return;
       }
+
+      await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.PassedMove);
     }
     catch (Exception) { }
   }
