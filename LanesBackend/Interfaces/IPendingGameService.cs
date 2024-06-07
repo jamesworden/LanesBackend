@@ -16,7 +16,5 @@ public interface IPendingGameService
     JoinPendingGameOptions? joinPendingGameOptions
   );
 
-  public PendingGame SelectDurationOption(string connectionId, DurationOption durationOption);
-
   public PendingGame? RemovePendingGame(string connectionId);
 }

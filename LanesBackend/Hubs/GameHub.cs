@@ -286,31 +286,6 @@ public class GameHub : Hub
     catch (Exception) { }
   }
 
-  public async Task SelectDurationOption(string stringifiedDurationOption)
-  {
-    var connectionId = Context.ConnectionId;
-    var durationOption = Enum.Parse<DurationOption>(stringifiedDurationOption);
-
-    try
-    {
-      var pendingGame = PendingGameService.SelectDurationOption(connectionId, durationOption);
-      var pendingGameView = new PendingGameView(
-        pendingGame.GameCode,
-        pendingGame.DurationOption,
-        pendingGame.HostName
-      );
-      var serializedPendingGameView = JsonConvert.SerializeObject(
-        pendingGameView,
-        new StringEnumConverter()
-      );
-      await Clients
-        .Client(connectionId)
-        .SendAsync(MessageType.PendingGameUpdated, serializedPendingGameView);
-    }
-    catch (PendingGameNotExistsException) { }
-    catch (Exception) { }
-  }
-
   public async Task CheckHostForEmptyTimer()
   {
     var connectionId = Context.ConnectionId;
