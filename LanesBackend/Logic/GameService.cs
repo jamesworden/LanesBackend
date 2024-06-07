@@ -93,17 +93,12 @@ public class GameService(
       return (null, []);
     }
 
-    var lastCandidateMoves = game.CandidateMoves.LastOrDefault();
-    var moveIsOneOfLastCandidates =
-      lastCandidateMoves?.Any(candidateMove => GameUtil.MovesMatch(candidateMove.Move, move))
-      ?? false;
-    if (lastCandidateMoves is not null && !moveIsOneOfLastCandidates)
+    if (!game.MoveIsLatestCandidate(move))
     {
       return (game, [MoveMadeResults.InvalidMove]);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
-    var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
     var cardMovements = GameUtil.PlaceCardsAndApplyGameRules(
       game,
       move.PlaceCardAttempts,
@@ -112,9 +107,15 @@ public class GameService(
 
     if (rearrangedCardsInHand is not null)
     {
-      RearrangeHand(connectionId, rearrangedCardsInHand);
+      var (hand, results) = RearrangeHand(connectionId, rearrangedCardsInHand);
+
+      if (results.Contains(RearrangeHandResults.InvalidCards))
+      {
+        return (game, [MoveMadeResults.InvalidMove]);
+      }
     }
 
+    var placedMultipleCards = move.PlaceCardAttempts.Count > 1;
     var drawnCardMovements = placedMultipleCards
       ? GameUtil.DrawCardsFromDeck(game, playerIsHost, 1)
       : GameUtil.DrawCardsUntil(game, playerIsHost, 5);

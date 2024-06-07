@@ -232,4 +232,15 @@ public class Game(
     EndGameTimer?.Dispose();
     EndGameTimer = null;
   }
+
+  public bool MoveIsLatestCandidate(Move move)
+  {
+    var lastCandidateMoves = CandidateMoves.LastOrDefault();
+
+    var moveIsOneOfLastCandidates =
+      lastCandidateMoves?.Any(candidateMove => GameUtil.MovesMatch(candidateMove.Move, move))
+      ?? false;
+
+    return lastCandidateMoves is not null && !moveIsOneOfLastCandidates;
+  }
 }
