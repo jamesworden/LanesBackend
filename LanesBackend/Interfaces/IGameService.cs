@@ -24,7 +24,10 @@ public interface IGameService
 
   public Game PassMove(string connectionId);
 
-  public Hand RearrangeHand(string connectionId, List<Card> cards);
+  public (Hand?, IEnumerable<RearrangeHandResults>) RearrangeHand(
+    string connectionId,
+    List<Card> cards
+  );
 
   public Game? FindGame(string connectionId);
 

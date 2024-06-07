@@ -265,12 +265,15 @@ public class GameService(
       .SendAsync(MessageType.GameOver, "Opponent ran out of time. You win!");
   }
 
-  public Hand RearrangeHand(string connectionId, List<Card> cards)
+  public (Hand?, IEnumerable<RearrangeHandResults>) RearrangeHand(
+    string connectionId,
+    List<Card> cards
+  )
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, [RearrangeHandResults.GameDoesNotExist]);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
@@ -279,11 +282,11 @@ public class GameService(
     bool containsDifferentCards = GameUtil.ContainsDifferentCards(existingCards, cards);
     if (containsDifferentCards)
     {
-      throw new ContainsDifferentCardsException();
+      return (existingHand, [RearrangeHandResults.InvalidCards]);
     }
 
     existingHand.Cards = cards;
-    return existingHand;
+    return (existingHand, []);
   }
 
   public Game? FindGame(string connectionId)

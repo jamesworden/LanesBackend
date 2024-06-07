@@ -117,10 +117,23 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      GameService.RearrangeHand(connectionId, cards);
+      var (hand, results) = GameService.RearrangeHand(connectionId, cards);
+
+      if (results.Contains(RearrangeHandResults.InvalidCards))
+      {
+        return;
+      }
+
+      if (results.Contains(RearrangeHandResults.GameDoesNotExist))
+      {
+        return;
+      }
+
+      if (hand is null)
+      {
+        return;
+      }
     }
-    catch (ContainsDifferentCardsException) { }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 
