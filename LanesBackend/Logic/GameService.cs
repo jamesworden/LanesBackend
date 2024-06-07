@@ -192,13 +192,10 @@ public class GameService(
       EndGame(game);
       return (game, [PassMoveResults.GameHasEnded]);
     }
-    else
-    {
-      var candidateMoves = game.GetCandidateMoves(game.IsHostPlayersTurn, game.IsHostPlayersTurn);
-      game.CandidateMoves.Add(candidateMoves);
-    }
 
     SetNextPlayersTurn(game);
+    var candidateMoves = game.GetCandidateMoves(game.IsHostPlayersTurn, game.IsHostPlayersTurn);
+    game.CandidateMoves.Add(candidateMoves);
 
     return (game, []);
   }
