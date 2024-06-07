@@ -10,8 +10,6 @@ namespace LanesBackend.Hubs
 {
   public class GameHub : Hub
   {
-    private readonly IGameCache GameCache;
-
     private readonly IGameService GameService;
 
     private readonly IPendingGameService PendingGameService;
@@ -19,13 +17,11 @@ namespace LanesBackend.Hubs
     private readonly IGameBroadcaster GameBroadcaster;
 
     public GameHub(
-      IGameCache gameCache,
       IGameService gameService,
       IGameBroadcaster gameBroadcaster,
       IPendingGameService pendingGameService
     )
     {
-      GameCache = gameCache;
       GameService = gameService;
       PendingGameService = pendingGameService;
       GameBroadcaster = gameBroadcaster;
