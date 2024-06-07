@@ -33,7 +33,7 @@ public interface IGameService
 
   public (Game?, IEnumerable<ResignGameResults>) ResignGame(string connectionId);
 
-  public Game EndGame(string connectionId);
+  public (Game?, IEnumerable<EndGameResults>) EndGame(string connectionId);
 
   public Game UpdateGame(TestingGameData testingGameData, string gameCode);
 

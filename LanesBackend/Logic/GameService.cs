@@ -310,15 +310,15 @@ public class GameService(
     return (EndGame(game), []);
   }
 
-  public Game EndGame(string connectionId)
+  public (Game?, IEnumerable<EndGameResults>) EndGame(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, [EndGameResults.GameDoesNotExist]);
     }
 
-    return EndGame(game);
+    return (EndGame(game), []);
   }
 
   private Game EndGame(Game game)
