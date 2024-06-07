@@ -117,17 +117,7 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var (hand, results) = GameService.RearrangeHand(connectionId, cards);
-
-      if (results.Contains(RearrangeHandResults.InvalidCards))
-      {
-        return;
-      }
-
-      if (hand is null)
-      {
-        return;
-      }
+      GameService.RearrangeHand(connectionId, cards);
     }
     catch (Exception) { }
   }
@@ -370,9 +360,8 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.RemovePendingGame(connectionId);
+      GameService.RemovePendingGame(connectionId);
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 
@@ -389,14 +378,14 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
     try
     {
       var game = GameService.MarkPlayerAsDisconnected(connectionId);
-      if (game is not null)
+      if (game is null)
       {
-        var hostDisconnected = connectionId == game.HostConnectionId;
-        var opponentConnectionId = hostDisconnected
-          ? game.GuestConnectionId
-          : game.HostConnectionId;
-        await Clients.Client(opponentConnectionId).SendAsync(MessageType.OpponentDisconnected);
+        return;
       }
+
+      var hostDisconnected = connectionId == game.HostConnectionId;
+      var opponentConnectionId = hostDisconnected ? game.GuestConnectionId : game.HostConnectionId;
+      await Clients.Client(opponentConnectionId).SendAsync(MessageType.OpponentDisconnected);
     }
     catch (Exception) { }
   }
