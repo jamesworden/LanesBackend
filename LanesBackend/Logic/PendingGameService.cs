@@ -1,6 +1,8 @@
 ﻿using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Util;
+using Results;
 
 namespace LanesBackend.Logic
 {
@@ -23,15 +25,29 @@ namespace LanesBackend.Logic
       GameService = gameService;
     }
 
-    public PendingGame CreatePendingGame(
+    public (PendingGame?, IEnumerable<CreatePendingGameResults>) CreatePendingGame(
       string hostConnectionId,
       PendingGameOptions? pendingGameOptions
     )
     {
+      if (pendingGameOptions?.HostName is not null && pendingGameOptions.HostName.Trim() == "")
+      {
+        pendingGameOptions.HostName = null;
+      }
+
+      if (pendingGameOptions?.HostName is not null)
+      {
+        var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(pendingGameOptions.HostName);
+        if (sensoredName != pendingGameOptions.HostName)
+        {
+          return (null, [CreatePendingGameResults.InvalidName]);
+        }
+      }
+
       string gameCode = GameCodeService.GenerateUniqueGameCode();
       var pendingGame = new PendingGame(gameCode, hostConnectionId, pendingGameOptions);
       PendingGameCache.AddPendingGame(pendingGame);
-      return pendingGame;
+      return (pendingGame, []);
     }
 
     public Game JoinPendingGame(

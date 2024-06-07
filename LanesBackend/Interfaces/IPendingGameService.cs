@@ -1,10 +1,11 @@
 ﻿using LanesBackend.Models;
+using Results;
 
 namespace LanesBackend.Interfaces;
 
 public interface IPendingGameService
 {
-  public PendingGame CreatePendingGame(
+  public (PendingGame?, IEnumerable<CreatePendingGameResults>) CreatePendingGame(
     string hostConnectionId,
     PendingGameOptions? pendingGameOptions
   );

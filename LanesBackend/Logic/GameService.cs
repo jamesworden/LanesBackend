@@ -3,6 +3,7 @@ using LanesBackend.Exceptions;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Results;
 using LanesBackend.Util;
 using Microsoft.AspNetCore.SignalR;
 
@@ -73,7 +74,7 @@ namespace LanesBackend.Logic
       return game;
     }
 
-    public (Game, IEnumerable<MoveMadeResult>) MakeMove(
+    public (Game, IEnumerable<MoveMadeResults>) MakeMove(
       string connectionId,
       Move move,
       List<Card>? rearrangedCardsInHand
@@ -116,11 +117,17 @@ namespace LanesBackend.Logic
       var moveMade = new MoveMade(playedBy, move, DateTime.UtcNow, cardMovements);
       game.MovesMade.Add(moveMade);
 
-      var opponentCandidateMoves = game.GetCandidateMoves(!game.IsHostPlayersTurn, true);
+      var opponentCandidateMoves = game.GetCandidateMoves(
+        !game.IsHostPlayersTurn,
+        !game.IsHostPlayersTurn
+      );
       var anyValidOpponentCandidateMoves = opponentCandidateMoves.Any(move => move.IsValid);
-      var playerCandidateMoves = game.GetCandidateMoves(game.IsHostPlayersTurn, true);
+      var playerCandidateMoves = game.GetCandidateMoves(
+        game.IsHostPlayersTurn,
+        game.IsHostPlayersTurn
+      );
       var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
-      var moveMadeResults = new List<MoveMadeResult>();
+      var moveMadeResults = new List<MoveMadeResults>();
 
       if ((!placedMultipleCards && anyValidOpponentCandidateMoves) || !anyValidPlayerCandidateMoves)
       {
@@ -134,10 +141,11 @@ namespace LanesBackend.Logic
 
       if (!anyValidOpponentCandidateMoves)
       {
-        var moveMadeResult = game.IsHostPlayersTurn
-          ? MoveMadeResult.GuestTurnSkippedNoMoves
-          : MoveMadeResult.HostTurnSkippedNoMoves;
-        moveMadeResults.Add(moveMadeResult);
+        moveMadeResults.Add(
+          game.IsHostPlayersTurn
+            ? MoveMadeResults.GuestTurnSkippedNoMoves
+            : MoveMadeResults.HostTurnSkippedNoMoves
+        );
       }
 
       SwitchTimeClocks(game);

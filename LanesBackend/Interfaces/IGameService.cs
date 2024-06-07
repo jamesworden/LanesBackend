@@ -1,4 +1,5 @@
 ﻿using LanesBackend.Models;
+using LanesBackend.Results;
 
 namespace LanesBackend.Interfaces;
 
@@ -14,7 +15,7 @@ public interface IGameService
     string? GuestName
   );
 
-  public (Game, IEnumerable<MoveMadeResult>) MakeMove(
+  public (Game, IEnumerable<MoveMadeResults>) MakeMove(
     string connectionId,
     Move move,
     List<Card>? rearrangedCardsInHand

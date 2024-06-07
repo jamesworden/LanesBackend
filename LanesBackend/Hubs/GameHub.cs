@@ -1,10 +1,12 @@
 ﻿using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
+using LanesBackend.Results;
 using LanesBackend.Util;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Results;
 
 namespace LanesBackend.Hubs;
 
@@ -37,31 +39,33 @@ public class GameHub : Hub
         ? null
         : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedPendingGameOptions);
 
-      if (pendingGameOptions?.HostName is not null && pendingGameOptions.HostName.Trim() == "")
+      var (pendingGame, results) = PendingGameService.CreatePendingGame(
+        hostConnectionId,
+        pendingGameOptions
+      );
+
+      if (results.Contains(CreatePendingGameResults.InvalidName))
       {
-        pendingGameOptions.HostName = null;
+        await Clients.Client(hostConnectionId).SendAsync(MessageType.InvalidName);
+        return;
       }
 
-      if (pendingGameOptions?.HostName is not null)
+      if (pendingGame is null)
       {
-        var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(pendingGameOptions.HostName);
-        if (sensoredName != pendingGameOptions.HostName)
-        {
-          await Clients.Client(hostConnectionId).SendAsync(MessageType.InvalidName);
-          return;
-        }
+        return;
       }
 
-      var pendingGame = PendingGameService.CreatePendingGame(hostConnectionId, pendingGameOptions);
       var pendingGameView = new PendingGameView(
         pendingGame.GameCode,
         pendingGame.DurationOption,
         pendingGame.HostName
       );
+
       var serializedPendingGameView = JsonConvert.SerializeObject(
-        pendingGameView,
+        pendingGame,
         new StringEnumConverter()
       );
+
       await Clients
         .Client(hostConnectionId)
         .SendAsync(MessageType.CreatedPendingGame, serializedPendingGameView);
@@ -169,11 +173,11 @@ public class GameHub : Hub
 
       if (!game.HasEnded)
       {
-        if (moveMadeResults.Contains(MoveMadeResult.HostTurnSkippedNoMoves))
+        if (moveMadeResults.Contains(MoveMadeResults.HostTurnSkippedNoMoves))
         {
           await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
         }
-        else if (moveMadeResults.Contains(MoveMadeResult.GuestTurnSkippedNoMoves))
+        else if (moveMadeResults.Contains(MoveMadeResults.GuestTurnSkippedNoMoves))
         {
           await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
         }
