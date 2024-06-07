@@ -14,7 +14,8 @@ public class GameService(
   IGameCache gameCache,
   IPendingGameCache pendingGameCache,
   IGameCodeService gameCodeService,
-  IHubContext<GameHub> gameHubContext
+  IHubContext<GameHub> gameHubContext,
+  IGameBroadcaster gameBroadcaster
 ) : IGameService
 {
   private readonly IGameCache GameCache = gameCache;
@@ -24,6 +25,8 @@ public class GameService(
   private readonly IPendingGameCache PendingGameCache = pendingGameCache;
 
   private readonly IGameCodeService GameCodeService = gameCodeService;
+
+  private readonly IGameBroadcaster GameBroadcaster = gameBroadcaster;
 
   public Game CreateGame(
     string hostConnectionId,
@@ -243,15 +246,16 @@ public class GameService(
 
     EndGame(game);
 
-    var winningConnectionId = hostLost ? game.GuestConnectionId : game.HostConnectionId;
-    var losingConnectionId = hostLost ? game.HostConnectionId : game.GuestConnectionId;
-
-    await GameHubContext
-      .Clients.Client(losingConnectionId)
-      .SendAsync(MessageType.GameOver, "You ran out of time. You lose!");
-    await GameHubContext
-      .Clients.Client(winningConnectionId)
-      .SendAsync(MessageType.GameOver, "Opponent ran out of time. You win!");
+    await GameBroadcaster.BroadcastHostGameView(
+      game,
+      MessageType.GameOver,
+      hostLost ? "You ran out of time. You lose!" : "Opponent ran out of time. You win!"
+    );
+    await GameBroadcaster.BroadcastHostGameView(
+      game,
+      MessageType.GameOver,
+      hostLost ? "Opponent ran out of time. You win!" : "You ran out of time. You lose!"
+    );
   }
 
   public (Hand?, IEnumerable<RearrangeHandResults>) RearrangeHand(
@@ -398,9 +402,22 @@ public class GameService(
 
     GameCache.RemoveGameByConnectionId(remainingConnectionId);
 
-    await GameHubContext
-      .Clients.Client(remainingConnectionId)
-      .SendAsync(MessageType.GameOver, "Opponent left the game.");
+    if (hostLost)
+    {
+      await GameBroadcaster.BroadcastGuestGameView(
+        game,
+        MessageType.GameOver,
+        "Opponent left the game."
+      );
+    }
+    else
+    {
+      await GameBroadcaster.BroadcastHostGameView(
+        game,
+        MessageType.GameOver,
+        "Opponent left the game."
+      );
+    }
   }
 
   public (Game?, IEnumerable<SendChatMessageResults>) SendChatMessage(

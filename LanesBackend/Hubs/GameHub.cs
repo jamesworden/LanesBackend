@@ -175,13 +175,16 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         return;
       }
 
-      var winnerConnId =
-        game.WonBy == PlayerOrNone.Host ? game.HostConnectionId : game.GuestConnectionId;
-      var loserConnId =
-        game.WonBy == PlayerOrNone.Host ? game.GuestConnectionId : game.HostConnectionId;
-
-      await Clients.Client(winnerConnId).SendAsync(MessageType.GameOver, "You win!");
-      await Clients.Client(loserConnId).SendAsync(MessageType.GameOver, "You lose!");
+      await GameBroadcaster.BroadcastHostGameView(
+        game,
+        MessageType.GameOver,
+        game.WonBy == PlayerOrNone.Host ? "You win!" : "You lose!"
+      );
+      await GameBroadcaster.BroadcastGuestGameView(
+        game,
+        MessageType.GameOver,
+        game.WonBy == PlayerOrNone.Guest ? "You win!" : "You lose!"
+      );
     }
     catch (Exception) { }
   }
@@ -281,59 +284,17 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
       }
 
       var playerIsHost = game.HostConnectionId == connectionId;
-      var winnerConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
-      var loserConnectionId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
 
-      await Clients
-        .Client(winnerConnectionId)
-        .SendAsync(MessageType.GameOver, "Opponent resigned.");
-      await Clients.Client(loserConnectionId).SendAsync(MessageType.GameOver, "Game resigned.");
-    }
-    catch (Exception) { }
-  }
-
-  public async Task CheckHostForEmptyTimer()
-  {
-    var connectionId = Context.ConnectionId;
-
-    try
-    {
-      var game = GameService.EndGame(connectionId);
-
-      if (game is null)
-      {
-        return;
-      }
-
-      await Clients
-        .Client(game.HostConnectionId)
-        .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-      await Clients
-        .Client(game.GuestConnectionId)
-        .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
-    }
-    catch (Exception) { }
-  }
-
-  public async Task CheckGuestForEmptyTimer()
-  {
-    var connectionId = Context.ConnectionId;
-
-    try
-    {
-      var game = GameService.EndGame(connectionId);
-
-      if (game is null)
-      {
-        return;
-      }
-
-      await Clients
-        .Client(game.GuestConnectionId)
-        .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
-      await Clients
-        .Client(game.HostConnectionId)
-        .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
+      await GameBroadcaster.BroadcastHostGameView(
+        game,
+        MessageType.GameOver,
+        playerIsHost ? "Game resigned." : "Opponent resigned."
+      );
+      await GameBroadcaster.BroadcastGuestGameView(
+        game,
+        MessageType.GameOver,
+        playerIsHost ? "Game resigned." : "Opponent resigned."
+      );
     }
     catch (Exception) { }
   }
