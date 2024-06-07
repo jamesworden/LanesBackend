@@ -1,5 +1,4 @@
-﻿using LanesBackend.Exceptions;
-using LanesBackend.Interfaces;
+﻿using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using LanesBackend.Results;
 using Microsoft.AspNetCore.SignalR;

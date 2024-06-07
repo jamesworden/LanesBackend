@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using LanesBackend.Exceptions;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
@@ -335,12 +334,12 @@ public class GameService(
     return game;
   }
 
-  public Game UpdateGame(TestingGameData testingGameData, string gameCode)
+  public Game? UpdateGame(TestingGameData testingGameData, string gameCode)
   {
     var game = GameCache.FindGameByGameCode(gameCode);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return null;
     }
     return game.Update(testingGameData);
   }

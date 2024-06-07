@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using LanesBackend.Exceptions;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -39,13 +38,15 @@ namespace LanesBackend.Controllers
       try
       {
         var game = GameService.UpdateGame(testingGameData, gameCode);
+
+        if (game is null)
+        {
+          return NotFound();
+        }
+
         await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
 
         return Ok();
-      }
-      catch (GameNotExistsException)
-      {
-        return NotFound();
       }
       catch (Exception)
       {
