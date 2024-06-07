@@ -124,11 +124,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         return;
       }
 
-      if (results.Contains(RearrangeHandResults.GameDoesNotExist))
-      {
-        return;
-      }
-
       if (hand is null)
       {
         return;
@@ -202,11 +197,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
     {
       var (game, results) = GameService.PassMove(connectionId);
 
-      if (results.Contains(PassMoveResults.GameDoesNotExist))
-      {
-        return;
-      }
-
       if (results.Contains(PassMoveResults.NotPlayersTurn))
       {
         return;
@@ -239,11 +229,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
     try
     {
       var (game, results) = GameService.OfferDraw(connectionId);
-
-      if (results.Contains(OfferDrawResults.GameDoesNotExist))
-      {
-        return;
-      }
 
       if (results.Contains(OfferDrawResults.AlreadyOfferedDraw))
       {
@@ -291,12 +276,7 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var (game, results) = GameService.ResignGame(connectionId);
-
-      if (results.Contains(ResignGameResults.GameDoesNotExist))
-      {
-        return;
-      }
+      var game = GameService.ResignGame(connectionId);
 
       if (game is null)
       {
@@ -321,7 +301,7 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var (game, results) = GameService.EndGame(connectionId);
+      var game = GameService.EndGame(connectionId);
 
       if (game is null)
       {
@@ -344,7 +324,7 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var (game, results) = GameService.EndGame(connectionId);
+      var game = GameService.EndGame(connectionId);
 
       if (game is null)
       {
@@ -358,7 +338,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         .Client(game.HostConnectionId)
         .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 
@@ -368,19 +347,20 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      if (rawMessage.Trim().Length == 0)
+      var (game, results) = GameService.SendChatMessage(connectionId, rawMessage);
+
+      if (game is null)
       {
         return;
       }
 
-      var (game, chatMessage) = GameService.AddChatMessageToGame(connectionId, rawMessage);
-      var playerIsHost = game.HostConnectionId == connectionId;
-      var playerId = playerIsHost ? game.HostConnectionId : game.GuestConnectionId;
-      var opponentId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+      if (results.Contains(SendChatMessageResults.MessageHasNoContent))
+      {
+        return;
+      }
 
       await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.NewChatMessage);
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 

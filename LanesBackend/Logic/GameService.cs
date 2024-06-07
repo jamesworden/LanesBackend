@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using LanesBackend.Caching;
 using LanesBackend.Exceptions;
 using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
@@ -172,7 +171,7 @@ public class GameService(
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [PassMoveResults.GameDoesNotExist]);
+      return (null, []);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
@@ -263,7 +262,7 @@ public class GameService(
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [RearrangeHandResults.GameDoesNotExist]);
+      return (null, []);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
@@ -284,7 +283,7 @@ public class GameService(
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [AcceptDrawOfferResults.GameDoesNotExist]);
+      return (null, []);
     }
 
     var isHost = connectionId == game.HostConnectionId;
@@ -296,29 +295,29 @@ public class GameService(
     return (EndGame(game), []);
   }
 
-  public (Game?, IEnumerable<ResignGameResults>) ResignGame(string connectionId)
+  public Game? ResignGame(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [ResignGameResults.GameDoesNotExist]);
+      return null;
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
     game.WonBy = playerIsHost ? PlayerOrNone.Guest : PlayerOrNone.Host;
 
-    return (EndGame(game), []);
+    return EndGame(game);
   }
 
-  public (Game?, IEnumerable<EndGameResults>) EndGame(string connectionId)
+  public Game? EndGame(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [EndGameResults.GameDoesNotExist]);
+      return null;
     }
 
-    return (EndGame(game), []);
+    return EndGame(game);
   }
 
   private Game EndGame(Game game)
@@ -405,12 +404,20 @@ public class GameService(
       .SendAsync(MessageType.GameOver, "Opponent left the game.");
   }
 
-  public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage)
+  public (Game?, IEnumerable<SendChatMessageResults>) SendChatMessage(
+    string connectionId,
+    string rawMessage
+  )
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, []);
+    }
+
+    if (rawMessage.Trim().Length == 0)
+    {
+      return (game, [SendChatMessageResults.MessageHasNoContent]);
     }
 
     var sensoredMessage = ChatUtil.ReplaceBadWordsWithAsterisks(rawMessage);
@@ -421,7 +428,7 @@ public class GameService(
     game.ChatMessages.Add(chatMessage);
     game.ChatMessageViews.Add(chatMessageView);
 
-    return (game, chatMessageView);
+    return (game, []);
   }
 
   private Game? JoinExistingGame(string gameCode, string connectionId)
@@ -562,7 +569,7 @@ public class GameService(
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      return (null, [OfferDrawResults.GameDoesNotExist]);
+      return (null, []);
     }
 
     var isHost = connectionId == game.HostConnectionId;

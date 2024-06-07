@@ -31,13 +31,16 @@ public interface IGameService
 
   public (Game?, IEnumerable<AcceptDrawOfferResults>) AcceptDrawOffer(string connectionId);
 
-  public (Game?, IEnumerable<ResignGameResults>) ResignGame(string connectionId);
+  public Game? ResignGame(string connectionId);
 
-  public (Game?, IEnumerable<EndGameResults>) EndGame(string connectionId);
+  public Game? EndGame(string connectionId);
 
-  public Game UpdateGame(TestingGameData testingGameData, string gameCode);
+  public Game? UpdateGame(TestingGameData testingGameData, string gameCode);
 
-  public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage);
+  public (Game?, IEnumerable<SendChatMessageResults>) SendChatMessage(
+    string connectionId,
+    string rawMessage
+  );
 
   public Game? MarkPlayerAsDisconnected(string connectionId);
 
