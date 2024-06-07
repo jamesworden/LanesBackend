@@ -29,8 +29,6 @@ public interface IGameService
     List<Card> cards
   );
 
-  public Game? FindGame(string connectionId);
-
   public (Game?, IEnumerable<AcceptDrawOfferResults>) AcceptDrawOffer(string connectionId);
 
   public Game ResignGame(string connectionId);

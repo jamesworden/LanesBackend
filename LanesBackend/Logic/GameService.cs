@@ -279,11 +279,6 @@ public class GameService(
     return (existingHand, []);
   }
 
-  public Game? FindGame(string connectionId)
-  {
-    return GameCache.FindGameByConnectionId(connectionId);
-  }
-
   public (Game?, IEnumerable<AcceptDrawOfferResults>) AcceptDrawOffer(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
@@ -564,7 +559,7 @@ public class GameService(
 
   public (Game?, IEnumerable<OfferDrawResults>) OfferDraw(string connectionId)
   {
-    var game = FindGame(connectionId);
+    var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
       return (null, [OfferDrawResults.GameDoesNotExist]);
