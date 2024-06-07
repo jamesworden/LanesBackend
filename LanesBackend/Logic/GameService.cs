@@ -24,15 +24,13 @@ namespace LanesBackend.Logic
       string? guestName
     )
     {
-      var deck = GameUtil.CreateDeck();
-      deck = GameUtil.ShuffleDeck(deck);
-      var playerDecks = GameUtil.SplitDeck(deck);
+      var playerDecks = new Deck().Shuffle().Split();
 
       var hostDeck = playerDecks.Item1;
       var guestDeck = playerDecks.Item2;
 
-      var hostHandCards = GameUtil.DrawCards(hostDeck, 5);
-      var guestHandCards = GameUtil.DrawCards(guestDeck, 5);
+      var hostHandCards = hostDeck.DrawCards(5);
+      var guestHandCards = guestDeck.DrawCards(5);
 
       var hostHand = new Hand(hostHandCards);
       var guestHand = new Hand(guestHandCards);
