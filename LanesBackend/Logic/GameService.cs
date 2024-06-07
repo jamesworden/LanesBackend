@@ -200,13 +200,11 @@ public class GameService(
     return (game, []);
   }
 
-  /// <summary>
-  /// Starts the clock of the player whose turn it is.
-  /// Pauses the clock of the player whose turn it is not.
-  /// Ensures that the game's `EndGameTimer` is configured to match the player of whose turn it is.
-  /// </summary>
   private void SetNextPlayersTurn(Game game)
   {
+    game.DrawOfferFromGuest = false;
+    game.DrawOfferFromHost = false;
+
     game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
 
     var activeTimer = game.IsHostPlayersTurn ? game.HostTimer : game.GuestTimer;
@@ -286,17 +284,21 @@ public class GameService(
     return GameCache.FindGameByConnectionId(connectionId);
   }
 
-  public Game AcceptDrawOffer(string connectionId)
+  public (Game?, IEnumerable<AcceptDrawOfferResults>) AcceptDrawOffer(string connectionId)
   {
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, [AcceptDrawOfferResults.GameDoesNotExist]);
     }
 
-    // [Security Hardening]: Actually verify that the opponent offererd a draw to begin with.
+    var isHost = connectionId == game.HostConnectionId;
+    if ((isHost && !game.DrawOfferFromGuest) || (!isHost && !game.DrawOfferFromHost))
+    {
+      return (null, [AcceptDrawOfferResults.NoOfferExists]);
+    }
 
-    return EndGame(game);
+    return (EndGame(game), []);
   }
 
   public Game ResignGame(string connectionId)
@@ -558,5 +560,33 @@ public class GameService(
     }
 
     return (game, [JoinGameResults.GameStarted]);
+  }
+
+  public (Game?, IEnumerable<OfferDrawResults>) OfferDraw(string connectionId)
+  {
+    var game = FindGame(connectionId);
+    if (game is null)
+    {
+      return (null, [OfferDrawResults.GameDoesNotExist]);
+    }
+
+    var isHost = connectionId == game.HostConnectionId;
+    var alreadyOfferedDraw =
+      (isHost && game.DrawOfferFromHost) || (!isHost && game.DrawOfferFromGuest);
+    if (alreadyOfferedDraw)
+    {
+      return (game, [OfferDrawResults.AlreadyOfferedDraw]);
+    }
+
+    if (isHost)
+    {
+      game.DrawOfferFromHost = true;
+    }
+    else
+    {
+      game.DrawOfferFromGuest = true;
+    }
+
+    return (game, []);
   }
 }

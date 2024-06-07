@@ -31,7 +31,7 @@ public interface IGameService
 
   public Game? FindGame(string connectionId);
 
-  public Game AcceptDrawOffer(string connectionId);
+  public (Game?, IEnumerable<AcceptDrawOfferResults>) AcceptDrawOffer(string connectionId);
 
   public Game ResignGame(string connectionId);
 
@@ -53,6 +53,8 @@ public interface IGameService
     string gameCode,
     JoinPendingGameOptions? options
   );
+
+  public (Game?, IEnumerable<OfferDrawResults>) OfferDraw(string connectionId);
 
   public PendingGame? RemovePendingGame(string connectionId);
 }

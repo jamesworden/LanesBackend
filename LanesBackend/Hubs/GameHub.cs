@@ -238,16 +238,28 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.FindGame(connectionId);
+      var (game, results) = GameService.OfferDraw(connectionId);
+
+      if (results.Contains(OfferDrawResults.GameDoesNotExist))
+      {
+        return;
+      }
+
+      if (results.Contains(OfferDrawResults.AlreadyOfferedDraw))
+      {
+        return;
+      }
+
       if (game is null)
       {
-        throw new GameNotExistsException();
+        return;
       }
+
       var playerIsHost = game.HostConnectionId == connectionId;
       var opponentConnectionId = playerIsHost ? game.GuestConnectionId : game.HostConnectionId;
+
       await Clients.Client(opponentConnectionId).SendAsync(MessageType.DrawOffered);
     }
-    catch (GameNotExistsException) { }
     catch { }
   }
 
@@ -257,11 +269,19 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.AcceptDrawOffer(connectionId);
-      await Clients.Client(game.HostConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
-      await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.GameOver, "It's a draw.");
+      var (game, results) = GameService.AcceptDrawOffer(connectionId);
+      if (results.Contains(AcceptDrawOfferResults.NoOfferExists))
+      {
+        return;
+      }
+
+      if (game is null)
+      {
+        return;
+      }
+
+      await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameOver, "It's a draw.");
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 

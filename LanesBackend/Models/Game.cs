@@ -72,6 +72,10 @@ public class Game(
 
   public int DurationInSeconds = durationInSeconds;
 
+  public bool DrawOfferFromHost = false;
+
+  public bool DrawOfferFromGuest = false;
+
   public List<CandidateMove> GetCandidateMoves(bool asHostPlayer, bool isHostPlayersTurn)
   {
     var player = asHostPlayer ? HostPlayer : GuestPlayer;
