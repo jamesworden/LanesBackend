@@ -1,11 +1,10 @@
 ﻿using LanesBackend.Models;
 
-namespace LanesBackend.Interfaces
-{
-  public interface IPlayerGameViewMapper
-  {
-    public PlayerGameView MapToHostPlayerGameView(Game game);
+namespace LanesBackend.Interfaces;
 
-    public PlayerGameView MapToGuestPlayerGameView(Game game);
-  }
+public interface IPlayerGameViewMapper
+{
+  public PlayerGameView MapToHostPlayerGameView(Game game);
+
+  public PlayerGameView MapToGuestPlayerGameView(Game game);
 }

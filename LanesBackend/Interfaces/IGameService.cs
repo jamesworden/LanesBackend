@@ -1,43 +1,42 @@
 ﻿using LanesBackend.Models;
 
-namespace LanesBackend.Interfaces
+namespace LanesBackend.Interfaces;
+
+public interface IGameService
 {
-  public interface IGameService
-  {
-    public Game CreateGame(
-      string hostConnectionId,
-      string guestConnectionId,
-      string gameCode,
-      DurationOption durationOption,
-      bool playerIsHost,
-      string? HostName,
-      string? GuestName
-    );
+  public Game CreateGame(
+    string hostConnectionId,
+    string guestConnectionId,
+    string gameCode,
+    DurationOption durationOption,
+    bool playerIsHost,
+    string? HostName,
+    string? GuestName
+  );
 
-    public (Game, IEnumerable<MoveMadeResult>) MakeMove(
-      string connectionId,
-      Move move,
-      List<Card>? rearrangedCardsInHand
-    );
+  public (Game, IEnumerable<MoveMadeResult>) MakeMove(
+    string connectionId,
+    Move move,
+    List<Card>? rearrangedCardsInHand
+  );
 
-    public Game PassMove(string connectionId);
+  public Game PassMove(string connectionId);
 
-    public Hand RearrangeHand(string connectionId, List<Card> cards);
+  public Hand RearrangeHand(string connectionId, List<Card> cards);
 
-    public Game? FindGame(string connectionId);
+  public Game? FindGame(string connectionId);
 
-    public Game AcceptDrawOffer(string connectionId);
+  public Game AcceptDrawOffer(string connectionId);
 
-    public Game ResignGame(string connectionId);
+  public Game ResignGame(string connectionId);
 
-    public Game EndGame(string connectionId);
+  public Game EndGame(string connectionId);
 
-    public Game UpdateGame(TestingGameData testingGameData, string gameCode);
+  public Game UpdateGame(TestingGameData testingGameData, string gameCode);
 
-    public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage);
+  public (Game, ChatMessageView) AddChatMessageToGame(string connectionId, string rawMessage);
 
-    public Game? MarkPlayerAsDisconnected(string connectionId);
+  public Game? MarkPlayerAsDisconnected(string connectionId);
 
-    public Game? AttemptToJoinExistingGame(string gameCode, string connectionId);
-  }
+  public Game? AttemptToJoinExistingGame(string gameCode, string connectionId);
 }

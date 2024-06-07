@@ -1,4 +1,3 @@
-﻿namespace LanesBackend.Exceptions
-{
-  public class PendingGameNotExistsException : Exception { }
-}
+﻿namespace LanesBackend.Exceptions;
+
+public class PendingGameNotExistsException : Exception { }

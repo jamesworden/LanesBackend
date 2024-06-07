@@ -1,22 +1,21 @@
 ﻿using LanesBackend.Models;
 
-namespace LanesBackend.Interfaces
+namespace LanesBackend.Interfaces;
+
+public interface IPendingGameService
 {
-  public interface IPendingGameService
-  {
-    public PendingGame CreatePendingGame(
-      string hostConnectionId,
-      PendingGameOptions? pendingGameOptions
-    );
+  public PendingGame CreatePendingGame(
+    string hostConnectionId,
+    PendingGameOptions? pendingGameOptions
+  );
 
-    public Game JoinPendingGame(
-      string gameCode,
-      string guestConnectionId,
-      JoinPendingGameOptions? joinPendingGameOptions
-    );
+  public Game JoinPendingGame(
+    string gameCode,
+    string guestConnectionId,
+    JoinPendingGameOptions? joinPendingGameOptions
+  );
 
-    public PendingGame SelectDurationOption(string connectionId, DurationOption durationOption);
+  public PendingGame SelectDurationOption(string connectionId, DurationOption durationOption);
 
-    public PendingGame? RemovePendingGame(string connectionId);
-  }
+  public PendingGame? RemovePendingGame(string connectionId);
 }
