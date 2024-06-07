@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
-using LanesBackend.Hubs;
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using LanesBackend.Results;
 using LanesBackend.Util;
-using Microsoft.AspNetCore.SignalR;
 using Results;
 
 namespace LanesBackend.Logic;
@@ -13,13 +11,10 @@ public class GameService(
   IGameCache gameCache,
   IPendingGameCache pendingGameCache,
   IGameCodeService gameCodeService,
-  IHubContext<GameHub> gameHubContext,
   IGameBroadcaster gameBroadcaster
 ) : IGameService
 {
   private readonly IGameCache GameCache = gameCache;
-
-  private readonly IHubContext<GameHub> GameHubContext = gameHubContext;
 
   private readonly IPendingGameCache PendingGameCache = pendingGameCache;
 
