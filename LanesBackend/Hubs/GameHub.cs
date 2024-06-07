@@ -321,7 +321,13 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.EndGame(connectionId);
+      var (game, results) = GameService.EndGame(connectionId);
+
+      if (game is null)
+      {
+        return;
+      }
+
       await Clients
         .Client(game.HostConnectionId)
         .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
@@ -338,7 +344,13 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var game = GameService.EndGame(connectionId);
+      var (game, results) = GameService.EndGame(connectionId);
+
+      if (game is null)
+      {
+        return;
+      }
+
       await Clients
         .Client(game.GuestConnectionId)
         .SendAsync(MessageType.GameOver, "Your timer ran out. You lose.");
