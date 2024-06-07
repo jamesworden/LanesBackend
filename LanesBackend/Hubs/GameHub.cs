@@ -138,31 +138,40 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
 
     try
     {
-      var (game, moveMadeResults) = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
-      await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
+      var (game, results) = GameService.MakeMove(connectionId, move, rearrangedCardsInHand);
+
+      if (game is null)
+      {
+        return;
+      }
+
+      if (results.Contains(MoveMadeResults.InvalidMove))
+      {
+        return;
+      }
 
       if (!game.HasEnded)
       {
-        if (moveMadeResults.Contains(MoveMadeResults.HostTurnSkippedNoMoves))
+        if (results.Contains(MoveMadeResults.HostTurnSkippedNoMoves))
         {
           await Clients.Client(game.HostConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
         }
-        else if (moveMadeResults.Contains(MoveMadeResults.GuestTurnSkippedNoMoves))
+        else if (results.Contains(MoveMadeResults.GuestTurnSkippedNoMoves))
         {
           await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.TurnSkippedNoMoves);
         }
 
+        await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameUpdated);
         return;
       }
 
       if (game.WonBy == PlayerOrNone.None)
       {
-        await Clients
-          .Client(game.HostConnectionId)
-          .SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
-        await Clients
-          .Client(game.GuestConnectionId)
-          .SendAsync(MessageType.GameOver, "It's a draw. No player has moves!");
+        await GameBroadcaster.BroadcastPlayerGameViews(
+          game,
+          MessageType.GameOver,
+          "It's a draw. No player has moves!"
+        );
         return;
       }
 
@@ -174,9 +183,7 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
       await Clients.Client(winnerConnId).SendAsync(MessageType.GameOver, "You win!");
       await Clients.Client(loserConnId).SendAsync(MessageType.GameOver, "You lose!");
     }
-    catch (GameNotExistsException) { }
-    catch (InvalidMoveException) { }
-    catch { }
+    catch (Exception) { }
   }
 
   public async Task PassMove()

@@ -84,7 +84,7 @@ public class GameService(
     return game;
   }
 
-  public (Game, IEnumerable<MoveMadeResults>) MakeMove(
+  public (Game?, IEnumerable<MoveMadeResults>) MakeMove(
     string connectionId,
     Move move,
     List<Card>? rearrangedCardsInHand
@@ -93,7 +93,7 @@ public class GameService(
     var game = GameCache.FindGameByConnectionId(connectionId);
     if (game is null)
     {
-      throw new GameNotExistsException();
+      return (null, []);
     }
 
     var lastCandidateMoves = game.CandidateMoves.LastOrDefault();
@@ -102,7 +102,7 @@ public class GameService(
       ?? false;
     if (lastCandidateMoves is not null && !moveIsOneOfLastCandidates)
     {
-      throw new InvalidMoveException();
+      return (game, [MoveMadeResults.InvalidMove]);
     }
 
     var playerIsHost = game.HostConnectionId == connectionId;
@@ -393,8 +393,7 @@ public class GameService(
     var game = (Game)state;
     var hostLost = game.HostPlayerDisconnectedTimestampUTC is not null;
     game.WonBy = hostLost ? PlayerOrNone.Guest : PlayerOrNone.Host;
-    game.HasEnded = true;
-    game.GameEndedTimestampUTC = DateTime.UtcNow;
+    EndGame(game);
     var remainingConnectionId = hostLost ? game.GuestConnectionId : game.HostConnectionId;
 
     GameCache.RemoveGameByConnectionId(remainingConnectionId);

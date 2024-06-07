@@ -16,7 +16,7 @@ public interface IGameService
     string? GuestName
   );
 
-  public (Game, IEnumerable<MoveMadeResults>) MakeMove(
+  public (Game?, IEnumerable<MoveMadeResults>) MakeMove(
     string connectionId,
     Move move,
     List<Card>? rearrangedCardsInHand
