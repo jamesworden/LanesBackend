@@ -8,9 +8,14 @@ namespace LanesBackend.Util
 
     private static readonly int NUMBER_OF_ROWS = 7;
 
-    public static string? GetReasonIfMoveInvalid(Move move, Game game, bool playerIsHost)
+    public static string? GetReasonIfMoveInvalid(
+      Move move,
+      Game game,
+      bool playerIsHost,
+      bool isHostPlayersTurn
+    )
     {
-      if (!IsPlayersTurn(game, playerIsHost))
+      if (!((playerIsHost && isHostPlayersTurn) || (!playerIsHost && !isHostPlayersTurn)))
       {
         return "It's not your turn!";
       }
@@ -413,136 +418,6 @@ namespace LanesBackend.Util
       }
 
       return true;
-    }
-
-    public static List<CandidateMove> GetCandidateMoves(Game game, bool forHostPlayer)
-    {
-      var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
-      var candidateMoves = new List<CandidateMove>();
-
-      foreach (var cardInHand in player.Hand.Cards)
-      {
-        var cardCandidateMoves = GetCandidateMoves(game, cardInHand, forHostPlayer);
-        candidateMoves.AddRange(cardCandidateMoves);
-      }
-
-      return candidateMoves;
-    }
-
-    public static List<CandidateMove> GetCandidateMoves(Game game, Card card, bool forHostPlayer)
-    {
-      var candidateMoves = new List<CandidateMove>();
-
-      for (var rowIndex = 0; rowIndex < 7; rowIndex++)
-      {
-        for (var laneIndex = 0; laneIndex < 5; laneIndex++)
-        {
-          var placeCardAttempt = new PlaceCardAttempt(card, laneIndex, rowIndex);
-          var placeCardAttempts = new List<PlaceCardAttempt> { placeCardAttempt };
-          var move = new Move(placeCardAttempts);
-          var candidateMove = GetCandidateMove(move, game, forHostPlayer);
-          candidateMoves.Add(candidateMove);
-
-          if (IsDefensive(placeCardAttempt, game.IsHostPlayersTurn))
-          {
-            var player = forHostPlayer ? game.HostPlayer : game.GuestPlayer;
-            var cardsInHand = player.Hand.Cards;
-            var placeMultipleCandidateMoves = GetPlaceMultipleCandidateMoves(
-              placeCardAttempt,
-              cardsInHand,
-              game,
-              forHostPlayer
-            );
-            candidateMoves.AddRange(placeMultipleCandidateMoves);
-          }
-        }
-      }
-
-      return candidateMoves;
-    }
-
-    public static List<CandidateMove> GetOpponentCandidateMoves(Game game)
-    {
-      game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
-      var opponentCandidateMoves = GetCandidateMoves(game, game.IsHostPlayersTurn);
-      game.IsHostPlayersTurn = !game.IsHostPlayersTurn;
-
-      return opponentCandidateMoves;
-    }
-
-    public static CandidateMove GetCandidateMove(Move move, Game game, bool forHostPlayer)
-    {
-      var invalidReason = GetReasonIfMoveInvalid(move, game, forHostPlayer);
-      var isValid = invalidReason is null;
-      var candidateMove = new CandidateMove(move, isValid, invalidReason);
-      return candidateMove;
-    }
-
-    public static List<CandidateMove> GetPlaceMultipleCandidateMoves(
-      PlaceCardAttempt initialPlaceCardAttempt,
-      List<Card> cardsInHand,
-      Game game,
-      bool forHostPlayer
-    )
-    {
-      var candidateMoves = new List<CandidateMove>();
-
-      var candidateCardsInHand = cardsInHand
-        .Where(cardInHand =>
-          KindMatches(initialPlaceCardAttempt.Card, cardInHand)
-          && !SuitMatches(initialPlaceCardAttempt.Card, cardInHand)
-        )
-        .ToList();
-
-      List<List<Card>> candidateCardPermutationSubsets = PermutationsUtil.GetSubsetsPermutations(
-        candidateCardsInHand
-      );
-
-      foreach (var candidateCards in candidateCardPermutationSubsets)
-      {
-        var totalCandidatePlaceCardAttempts = new List<PlaceCardAttempt>
-        {
-          initialPlaceCardAttempt
-        };
-        var candidatePlaceCardAttempts = new List<PlaceCardAttempt>();
-
-        for (var i = 0; i < candidateCards.Count; i++)
-        {
-          var rowIndex = forHostPlayer
-            ? initialPlaceCardAttempt.TargetRowIndex + 1 + i
-            : initialPlaceCardAttempt.TargetRowIndex - 1 - i;
-
-          // When placing multiple cards beyond the middle of the lane, the target row index of 3
-          // is skipped. For example, the host might play one move from row indexes 1, 2, and 4,
-          // while the guest might play one move from row indexes 5, 4, 2.
-          if (forHostPlayer && rowIndex >= 3)
-          {
-            rowIndex++;
-          }
-          else if (!forHostPlayer && rowIndex <= 3)
-          {
-            rowIndex--;
-          }
-
-          var card = candidateCards[i];
-          if (card is not null)
-          {
-            var attempt = new PlaceCardAttempt(
-              card,
-              initialPlaceCardAttempt.TargetLaneIndex,
-              rowIndex
-            );
-            candidatePlaceCardAttempts.Add(attempt);
-          }
-        }
-
-        totalCandidatePlaceCardAttempts.AddRange(candidatePlaceCardAttempts);
-        var move = new Move(totalCandidatePlaceCardAttempts);
-        var candidateMove = GetCandidateMove(move, game, forHostPlayer);
-        candidateMoves.Add(candidateMove);
-      }
-
-      return candidateMoves;
     }
 
     public static bool MovesMatch(Move move1, Move move2)

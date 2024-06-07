@@ -60,7 +60,7 @@ namespace LanesBackend.Logic
           guestName
         );
 
-      var candidateMoves = GameUtil.GetCandidateMoves(game, game.IsHostPlayersTurn);
+      var candidateMoves = game.GetCandidateMoves(true, true);
       game.CandidateMoves.Add(candidateMoves);
 
       GameCache.AddGame(game);
@@ -116,9 +116,9 @@ namespace LanesBackend.Logic
       var moveMade = new MoveMade(playedBy, move, DateTime.UtcNow, cardMovements);
       game.MovesMade.Add(moveMade);
 
-      var opponentCandidateMoves = GameUtil.GetOpponentCandidateMoves(game);
+      var opponentCandidateMoves = game.GetCandidateMoves(!game.IsHostPlayersTurn, true);
       var anyValidOpponentCandidateMoves = opponentCandidateMoves.Any(move => move.IsValid);
-      var playerCandidateMoves = GameUtil.GetCandidateMoves(game, game.IsHostPlayersTurn);
+      var playerCandidateMoves = game.GetCandidateMoves(game.IsHostPlayersTurn, true);
       var anyValidPlayerCandidateMoves = playerCandidateMoves.Any(move => move.IsValid);
       var moveMadeResults = new List<MoveMadeResult>();
 
@@ -182,7 +182,7 @@ namespace LanesBackend.Logic
       }
       else
       {
-        var candidateMoves = GameUtil.GetCandidateMoves(game, game.IsHostPlayersTurn);
+        var candidateMoves = game.GetCandidateMoves(game.IsHostPlayersTurn, game.IsHostPlayersTurn);
         game.CandidateMoves.Add(candidateMoves);
       }
 
@@ -312,26 +312,12 @@ namespace LanesBackend.Logic
 
     private Game EndGame(Game game)
     {
-      game.HasEnded = true;
-      game.GameEndedTimestampUTC = DateTime.UtcNow;
-
-      game.DisconnectTimer?.Dispose();
-      game.DisconnectTimer = null;
-
-      game.HostTimer?.Stop();
-      game.HostTimer = null;
-
-      game.GuestTimer?.Stop();
-      game.GuestTimer = null;
-
-      game.EndGameTimer?.Dispose();
-      game.EndGameTimer = null;
+      game.End();
 
       if (GameCache.RemoveGameByConnectionId(game.HostConnectionId) is null)
       {
         GameCache.RemoveGameByConnectionId(game.GuestConnectionId);
       }
-
       return game;
     }
 
@@ -342,20 +328,7 @@ namespace LanesBackend.Logic
       {
         throw new GameNotExistsException();
       }
-
-      game.Lanes = testingGameData.Lanes;
-      game.HostPlayer.Hand = testingGameData.HostHand;
-      game.GuestPlayer.Hand = testingGameData.GuestHand;
-      game.HostPlayer.Deck = testingGameData.HostDeck;
-      game.GuestPlayer.Deck = testingGameData.GuestDeck;
-      game.RedJokerLaneIndex = testingGameData.RedJokerLaneIndex;
-      game.BlackJokerLaneIndex = testingGameData.BlackJokerLaneIndex;
-      game.IsHostPlayersTurn = testingGameData.IsHostPlayersTurn;
-
-      var candidateMoves = GameUtil.GetCandidateMoves(game, game.IsHostPlayersTurn);
-      game.CandidateMoves.Add(candidateMoves);
-
-      return game;
+      return game.Update(testingGameData);
     }
 
     public Game? MarkPlayerAsDisconnected(string connectionId)
@@ -381,10 +354,7 @@ namespace LanesBackend.Logic
         && game.GuestPlayerDisconnectedTimestampUTC is not null;
       if (bothPlayersDisconnected)
       {
-        game.GameEndedTimestampUTC = DateTime.UtcNow;
-        game.HasEnded = true;
-        game.WonBy = PlayerOrNone.None;
-
+        game.End();
         GameCache.RemoveGameByConnectionId(connectionId);
 
         return game;
