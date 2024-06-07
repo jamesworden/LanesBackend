@@ -329,7 +329,6 @@ public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster)
         .Client(game.GuestConnectionId)
         .SendAsync(MessageType.GameOver, "Your opponent's timer ran out. You win!");
     }
-    catch (GameNotExistsException) { }
     catch (Exception) { }
   }
 
