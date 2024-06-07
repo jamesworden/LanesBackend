@@ -1,5 +1,6 @@
 ﻿using LanesBackend.Models;
 using LanesBackend.Results;
+using Results;
 
 namespace LanesBackend.Interfaces;
 
@@ -39,5 +40,16 @@ public interface IGameService
 
   public Game? MarkPlayerAsDisconnected(string connectionId);
 
-  public Game? AttemptToJoinExistingGame(string gameCode, string connectionId);
+  public (PendingGame?, IEnumerable<CreatePendingGameResults>) CreatePendingGame(
+    string hostConnectionId,
+    PendingGameOptions? options
+  );
+
+  public (Game?, IEnumerable<JoinGameResults>) JoinGame(
+    string connectionId,
+    string gameCode,
+    JoinPendingGameOptions? options
+  );
+
+  public PendingGame? RemovePendingGame(string connectionId);
 }

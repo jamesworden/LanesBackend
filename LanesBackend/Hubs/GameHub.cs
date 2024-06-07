@@ -2,7 +2,6 @@
 using LanesBackend.Interfaces;
 using LanesBackend.Models;
 using LanesBackend.Results;
-using LanesBackend.Util;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -10,39 +9,23 @@ using Results;
 
 namespace LanesBackend.Hubs;
 
-public class GameHub : Hub
+public class GameHub(IGameService gameService, IGameBroadcaster gameBroadcaster) : Hub
 {
-  private readonly IGameService GameService;
+  private readonly IGameService GameService = gameService;
 
-  private readonly IPendingGameService PendingGameService;
+  private readonly IGameBroadcaster GameBroadcaster = gameBroadcaster;
 
-  private readonly IGameBroadcaster GameBroadcaster;
-
-  public GameHub(
-    IGameService gameService,
-    IGameBroadcaster gameBroadcaster,
-    IPendingGameService pendingGameService
-  )
-  {
-    GameService = gameService;
-    PendingGameService = pendingGameService;
-    GameBroadcaster = gameBroadcaster;
-  }
-
-  public async Task CreatePendingGame(string? stringifiedPendingGameOptions)
+  public async Task CreatePendingGame(string? stringifiedOptions)
   {
     string hostConnectionId = Context.ConnectionId;
 
     try
     {
-      var pendingGameOptions = stringifiedPendingGameOptions is null
+      var options = stringifiedOptions is null
         ? null
-        : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedPendingGameOptions);
+        : JsonConvert.DeserializeObject<PendingGameOptions>(stringifiedOptions);
 
-      var (pendingGame, results) = PendingGameService.CreatePendingGame(
-        hostConnectionId,
-        pendingGameOptions
-      );
+      var (pendingGame, results) = GameService.CreatePendingGame(hostConnectionId, options);
 
       if (results.Contains(CreatePendingGameResults.InvalidName))
       {
@@ -73,62 +56,51 @@ public class GameHub : Hub
     catch (Exception) { }
   }
 
-  public async Task JoinGame(string gameCode, string? stringifiedJoinPendingGameOptions)
+  public async Task JoinGame(string gameCode, string? stringifiedOptions)
   {
     var connectionId = Context.ConnectionId;
 
     try
     {
-      var reconnectedGame = GameService.AttemptToJoinExistingGame(gameCode, connectionId);
-      if (reconnectedGame is not null)
-      {
-        var isHost = reconnectedGame.HostConnectionId == connectionId;
+      var options = stringifiedOptions is null
+        ? null
+        : JsonConvert.DeserializeObject<JoinPendingGameOptions>(stringifiedOptions);
 
-        if (isHost)
-        {
-          await GameBroadcaster.BroadcastHostGameView(reconnectedGame, MessageType.Reconnected);
-          await Clients
-            .Client(reconnectedGame.GuestConnectionId)
-            .SendAsync(MessageType.OpponentReconnected);
-        }
-        else
-        {
-          await GameBroadcaster.BroadcastGuestGameView(reconnectedGame, MessageType.Reconnected);
-          await Clients
-            .Client(reconnectedGame.HostConnectionId)
-            .SendAsync(MessageType.OpponentReconnected);
-        }
+      var (game, results) = GameService.JoinGame(connectionId, gameCode, options);
+
+      if (results.Contains(JoinGameResults.InvalidName))
+      {
+        await Clients.Client(connectionId).SendAsync(MessageType.InvalidName);
+      }
+
+      if (results.Contains(JoinGameResults.InvalidGameCode))
+      {
+        await Clients.Client(connectionId).SendAsync(MessageType.InvalidGameCode);
+      }
+
+      if (game is null)
+      {
         return;
       }
 
-      var joinPendingGameOptions = stringifiedJoinPendingGameOptions is null
-        ? null
-        : JsonConvert.DeserializeObject<JoinPendingGameOptions>(stringifiedJoinPendingGameOptions);
-
-      if (
-        joinPendingGameOptions?.GuestName is not null
-        && joinPendingGameOptions?.GuestName.Trim() == ""
-      )
+      if (results.Contains(JoinGameResults.GameStarted))
       {
-        joinPendingGameOptions.GuestName = null;
+        await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
       }
 
-      if (joinPendingGameOptions?.GuestName is not null)
+      var isHost = game.HostConnectionId == connectionId;
+
+      if (results.Contains(JoinGameResults.HostReconnected))
       {
-        var sensoredName = ChatUtil.ReplaceBadWordsWithAsterisks(joinPendingGameOptions.GuestName);
-        if (sensoredName != joinPendingGameOptions.GuestName)
-        {
-          await Clients.Client(connectionId).SendAsync(MessageType.InvalidName);
-          return;
-        }
+        await GameBroadcaster.BroadcastHostGameView(game, MessageType.Reconnected);
+        await Clients.Client(game.GuestConnectionId).SendAsync(MessageType.OpponentReconnected);
       }
 
-      var game = PendingGameService.JoinPendingGame(gameCode, connectionId, joinPendingGameOptions);
-      await GameBroadcaster.BroadcastPlayerGameViews(game, MessageType.GameStarted);
-    }
-    catch (PendingGameNotExistsException)
-    {
-      await Clients.Client(connectionId).SendAsync(MessageType.InvalidGameCode);
+      if (results.Contains(JoinGameResults.GuestReconnected))
+      {
+        await GameBroadcaster.BroadcastGuestGameView(game, MessageType.Reconnected);
+        await Clients.Client(game.HostConnectionId).SendAsync(MessageType.OpponentReconnected);
+      }
     }
     catch (Exception) { }
   }
@@ -350,7 +322,7 @@ public class GameHub : Hub
 
     try
     {
-      var game = PendingGameService.RemovePendingGame(connectionId);
+      var game = GameService.RemovePendingGame(connectionId);
     }
     catch (GameNotExistsException) { }
     catch (Exception) { }
@@ -360,7 +332,7 @@ public class GameHub : Hub
   {
     var connectionId = Context.ConnectionId;
 
-    var pendingGame = PendingGameService.RemovePendingGame(connectionId);
+    var pendingGame = GameService.RemovePendingGame(connectionId);
     if (pendingGame is not null)
     {
       return;
