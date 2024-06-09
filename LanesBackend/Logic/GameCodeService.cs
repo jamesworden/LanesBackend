@@ -2,18 +2,13 @@
 
 namespace LanesBackend.Logic
 {
-  public class GameCodeService : IGameCodeService
+  public class GameCodeService(IPendingGameCache pendingGameCache) : IGameCodeService
   {
-    private readonly IPendingGameCache PendingGameCache;
+    private readonly IPendingGameCache PendingGameCache = pendingGameCache;
 
     private static readonly Random Random = new();
 
     private static readonly string Consonants = "BCDFGHJKLMNPQRSTVWXZ";
-
-    public GameCodeService(IPendingGameCache pendingGameCache)
-    {
-      PendingGameCache = pendingGameCache;
-    }
 
     public string GenerateUniqueGameCode()
     {
