@@ -544,6 +544,8 @@ public class GameService(
     JoinPendingGameOptions? options
   )
   {
+    gameCode = gameCode.ToUpper();
+
     var existingGame = JoinExistingGame(gameCode, connectionId);
     if (existingGame is not null)
     {
