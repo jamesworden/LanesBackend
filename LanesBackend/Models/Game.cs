@@ -243,4 +243,29 @@ public class Game(
 
     return lastCandidateMoves is not null && !moveIsOneOfLastCandidates;
   }
+
+  /// <summary>
+  /// Returns whether a draw was previously offered or not.
+  /// </summary>
+  public bool OfferDrawIfNotOfferedYet(string connectionId)
+  {
+    var isHost = connectionId == HostConnectionId;
+    var alreadyOfferedDraw = (isHost && DrawOfferFromHost) || (!isHost && DrawOfferFromGuest);
+
+    if (alreadyOfferedDraw)
+    {
+      return true;
+    }
+
+    if (isHost)
+    {
+      DrawOfferFromHost = true;
+    }
+    else
+    {
+      DrawOfferFromGuest = true;
+    }
+
+    return false;
+  }
 }

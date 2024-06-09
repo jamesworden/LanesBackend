@@ -585,21 +585,9 @@ public class GameService(
       return (null, []);
     }
 
-    var isHost = connectionId == game.HostConnectionId;
-    var alreadyOfferedDraw =
-      (isHost && game.DrawOfferFromHost) || (!isHost && game.DrawOfferFromGuest);
-    if (alreadyOfferedDraw)
+    if (game.OfferDrawIfNotOfferedYet(connectionId))
     {
       return (game, [OfferDrawResults.AlreadyOfferedDraw]);
-    }
-
-    if (isHost)
-    {
-      game.DrawOfferFromHost = true;
-    }
-    else
-    {
-      game.DrawOfferFromGuest = true;
     }
 
     return (game, []);
