@@ -1,9 +1,9 @@
 ﻿[Unit]
-Description=.NET Lanes Backend
+Description=.NET Lanes.Api
 
 [Service]
 WorkingDirectory=/var/www/
-ExecStart=/usr/bin/dotnet /var/www/LanesBackend.dll
+ExecStart=/usr/bin/dotnet /var/www/Lanes.Api.dll
 Restart=always
 # Restart Service after 10 seconds when dotnet service crashes:
 RestartSec=10
