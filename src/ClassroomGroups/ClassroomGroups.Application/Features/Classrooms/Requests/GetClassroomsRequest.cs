@@ -1,4 +1,4 @@
-﻿using ClassroomGroups.Domain.Features.Classrooms;
+﻿using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Requests;
