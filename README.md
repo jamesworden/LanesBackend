@@ -14,6 +14,8 @@ Years ago, I was playing cards with my brother in law and for some reason, we de
 
 Not many people play Lanes, or `chessofcards.com`. it's also likely that not many people will use `classroomgroups.com`, a new application that I'm working on. For this reason, it doesn't make sense for me to spend money on more than one server. So my applications that need a backend server will live on this one to save money. Because I now call the original 'Lanes' card game 'Chess of Cards' and because this server now supports backend code for multiple applications, 'Lanes' is now the term used to represent this server in its entirety, that is, the APIs for my smaller projects.
 
+---
+
 ## Documentation
 
 ### App Secrets & Environment Variables
@@ -35,9 +37,9 @@ Microsoft provides official documentation on that [here](https://learn.microsoft
 
 ##### ClassroomGroups App Secret Setup
 
-To prepare yourself for local development, execute the following commands:
-- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientId" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_ID"`
-- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientSecret" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_SECRET"`
+To prepare yourself for local development, execute the following commands in the root directory of this repository. Note that the ALL_CAPS_SNAKE_CASE strings will need to be replaced with the real values. You can contact James Worden to find these.
+- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientId" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_ID" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
+- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientSecret" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_SECRET" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
 
 ### Deploying to production
 
