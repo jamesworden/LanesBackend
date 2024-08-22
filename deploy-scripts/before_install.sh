@@ -2,13 +2,9 @@
 rm -rf /var/www/*
 rm -rf /etc/systemd/system/webapi.service
 
-# Install AWS CLI if not already installed
-sudo apt-get update
-sudo apt-get install -y awscli
-
 # Fetch the environment variables from SSM Parameter Store
-clientId=$(aws ssm get-parameter --name "/ClassroomGroups/Google/ClientId" --query "Parameter.Value" --output text)
-clientSecret=$(aws ssm get-parameter --name "/ClassroomGroups/Google/ClientSecret" --query "Parameter.Value" --output text)
+clientId=$(aws ssm get-parameter --name "/ClassroomGroups/Google/ClientId" --region "us-east-1" --query "Parameter.Value" --output text)
+clientSecret=$(aws ssm get-parameter --name "/ClassroomGroups/Google/ClientSecret" --region "us-east-1" --query "Parameter.Value" --output text)
 
 # Set the environment variables
 export ClassroomGroups__Authentication__Google__ClientId=$clientId
