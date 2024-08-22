@@ -41,9 +41,9 @@ builder
     options =>
     {
       options.ClientId =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
+        builder.Configuration["ClassroomGroups__Authentication__Google__ClientId"] ?? "";
       options.ClientSecret =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
+        builder.Configuration["ClassroomGroups__Authentication__Google__ClientId"] ?? "";
     }
   );
 
