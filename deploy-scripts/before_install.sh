@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+﻿#!/bin/bash
 
 echo "[Before Installing App] Removing installed code and the systemd service file..."
 sudo rm -rf /var/www/*
