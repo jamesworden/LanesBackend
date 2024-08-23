@@ -12,5 +12,4 @@ echo "[Before Installing App] /ClassroomGroups/Google/ClientId: $clientId"
 echo "[Before Installing App] /ClassroomGroups/Google/ClientSecret: $clientSecret"
 
 echo "[Before Installing App] Persisting app secrets as environment variables..."
-export ClassroomGroups__Authentication__Google__ClientId=$clientId
-export ClassroomGroups__Authentication__Google__ClientSecret=$clientSecret
+. ./set_environment_variables.sh $clientId $clientSecret

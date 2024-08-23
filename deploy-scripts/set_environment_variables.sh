@@ -1,0 +1,2 @@
+export ClassroomGroups__Authentication__Google__ClientId=$1
+export ClassroomGroups__Authentication__Google__ClientSecret=$2
