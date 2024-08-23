@@ -23,36 +23,6 @@ builder
   )
   .AddEnvironmentVariables();
 
-// Auth | Preemptively devising authentication schemes until we need them is overkill.
-// The default one is for ClassroomGroups "sign in with google" redirection auth.
-builder
-  .Services.AddAuthentication(options =>
-  {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-  })
-  .AddCookie(options =>
-  {
-    options.LoginPath = "/authentication/login";
-    options.LogoutPath = "/authentication/logout";
-  })
-  .AddGoogle(
-    GoogleDefaults.AuthenticationScheme,
-    options =>
-    {
-      options.ClientId =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"]
-        ?? Environment.GetEnvironmentVariable("ClassroomGroups__Authentication__Google__ClientId")
-        ?? "";
-      options.ClientSecret =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"]
-        ?? Environment.GetEnvironmentVariable(
-          "ClassroomGroups__Authentication__Google__ClientSecret"
-        )
-        ?? "";
-    }
-  );
-
 builder.Services.AddAuthorization();
 
 // Register event handlers from assemblies
