@@ -40,6 +40,7 @@ builder
     GoogleDefaults.AuthenticationScheme,
     options =>
     {
+      // TODO: Figure out if builder.Configuration is sufficent.
       options.ClientId =
         builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"]
         ?? Environment.GetEnvironmentVariable("ClassroomGroups__Authentication__Google__ClientId")
