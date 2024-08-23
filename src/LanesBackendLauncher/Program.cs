@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Text.Json.Serialization;
-using Amazon.Extensions.Configuration.SystemsManager;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
 using ChessOfCards.DataAccess.Interfaces;
@@ -23,8 +22,6 @@ builder
     reloadOnChange: true
   )
   .AddEnvironmentVariables();
-
-builder.Configuration.AddSystemsManager("/ClassroomGroups/");
 
 // Auth | Preemptively devising authentication schemes until we need them is overkill.
 // The default one is for ClassroomGroups "sign in with google" redirection auth.
