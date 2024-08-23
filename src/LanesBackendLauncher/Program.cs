@@ -140,6 +140,8 @@ try
 
   app.MapControllers();
 
+  app.MapHealthChecks("/health");
+
   app.Run();
 }
 catch (Exception ex)
