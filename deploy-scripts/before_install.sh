@@ -12,4 +12,4 @@ echo "[Before Installing App] /ClassroomGroups/Google/ClientId: $clientId"
 echo "[Before Installing App] /ClassroomGroups/Google/ClientSecret: $clientSecret"
 
 echo "[Before Installing App] Persisting app secrets as environment variables..."
-. ./set_environment_variables.sh $clientId $clientSecret
+source ./set_environment_variables.sh $clientId $clientSecret
