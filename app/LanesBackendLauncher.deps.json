@@ -9,7 +9,8 @@
     ".NETCoreApp,Version=v8.0/linux-x64": {
       "LanesBackendLauncher/1.0.0": {
         "dependencies": {
-          "Amazon.Extensions.Configuration.SystemsManager": "6.2.1",
+          "AWS.Logger.AspNetCore": "3.5.3",
+          "AWSSDK.CloudWatchLogs": "3.7.401",
           "ChessOfCards.Api": "1.0.0",
           "ClassroomGroups.Api": "1.0.0",
           "MediatR": "12.3.0",
@@ -1302,68 +1303,54 @@
           }
         }
       },
-      "Amazon.Extensions.Configuration.SystemsManager/6.2.1": {
+      "AWS.Logger.AspNetCore/3.5.3": {
         "dependencies": {
-          "AWSSDK.AppConfigData": "3.7.301.35",
-          "AWSSDK.Extensions.NETCore.Setup": "3.7.300",
-          "AWSSDK.SimpleSystemsManagement": "3.7.303.23",
-          "Microsoft.Extensions.Configuration": "2.0.2"
+          "AWS.Logger.Core": "3.3.3",
+          "Microsoft.Extensions.Configuration": "2.1.0",
+          "Microsoft.Extensions.DependencyInjection": "2.1.0",
+          "Microsoft.Extensions.Logging": "2.1.0"
         },
         "runtime": {
-          "lib/net8.0/Amazon.Extensions.Configuration.SystemsManager.dll": {
-            "assemblyVersion": "6.2.1.0",
-            "fileVersion": "6.2.1.0"
+          "lib/netstandard2.0/AWS.Logger.AspNetCore.dll": {
+            "assemblyVersion": "3.5.3.0",
+            "fileVersion": "3.5.3.0"
           }
         }
       },
-      "AWSSDK.AppConfigData/3.7.301.35": {
+      "AWS.Logger.Core/3.3.3": {
         "dependencies": {
-          "AWSSDK.Core": "3.7.303.14"
+          "AWSSDK.CloudWatchLogs": "3.7.401"
         },
         "runtime": {
-          "lib/net8.0/AWSSDK.AppConfigData.dll": {
+          "lib/netstandard2.0/AWS.Logger.Core.dll": {
+            "assemblyVersion": "3.3.3.0",
+            "fileVersion": "3.3.3.0"
+          }
+        }
+      },
+      "AWSSDK.CloudWatchLogs/3.7.401": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.400.2"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.CloudWatchLogs.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.301.35"
+            "fileVersion": "3.7.401.0"
           }
         }
       },
-      "AWSSDK.Core/3.7.303.14": {
+      "AWSSDK.Core/3.7.400.2": {
         "runtime": {
           "lib/net8.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.303.14"
-          }
-        }
-      },
-      "AWSSDK.Extensions.NETCore.Setup/3.7.300": {
-        "dependencies": {
-          "AWSSDK.Core": "3.7.303.14",
-          "Microsoft.Extensions.Configuration.Abstractions": "2.2.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll": {
-            "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.7.0"
-          }
-        }
-      },
-      "AWSSDK.SimpleSystemsManagement/3.7.303.23": {
-        "dependencies": {
-          "AWSSDK.Core": "3.7.303.14"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.SimpleSystemsManagement.dll": {
-            "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.303.23"
+            "fileVersion": "3.7.400.2"
           }
         }
       },
       "MediatR/12.3.0": {
         "dependencies": {
           "MediatR.Contracts": "2.0.1",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1"
         },
         "runtime": {
           "lib/net6.0/MediatR.dll": {
@@ -1383,7 +1370,7 @@
       "Microsoft.AspNetCore.Authentication.Abstractions/2.2.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
           "Microsoft.Extensions.Options": "2.2.0"
         }
       },
@@ -1397,7 +1384,7 @@
       },
       "Microsoft.AspNetCore.Authorization/2.2.0": {
         "dependencies": {
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
           "Microsoft.Extensions.Options": "2.2.0"
         }
       },
@@ -1477,7 +1464,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.Http.Extensions": "2.2.0",
           "Microsoft.AspNetCore.Routing.Abstractions": "2.2.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
           "Microsoft.Extensions.ObjectPool": "2.2.0",
           "Microsoft.Extensions.Options": "2.2.0"
         }
@@ -1506,8 +1493,8 @@
           "Microsoft.AspNetCore.Authorization": "2.2.0",
           "Microsoft.AspNetCore.SignalR.Common": "1.1.0",
           "Microsoft.AspNetCore.SignalR.Protocols.Json": "1.1.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
           "System.Reflection.Emit": "4.3.0",
           "System.Threading.Channels": "4.5.0"
         }
@@ -1521,7 +1508,7 @@
       "Microsoft.AspNetCore.WebSockets/2.2.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Http.Extensions": "2.2.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
           "Microsoft.Extensions.Options": "2.2.0",
           "System.Net.WebSockets.WebSocketProtocol": "4.5.1"
         }
@@ -1533,7 +1520,7 @@
         }
       },
       "Microsoft.Extensions.ApiDescription.Server/6.0.5": {},
-      "Microsoft.Extensions.Configuration/2.0.2": {
+      "Microsoft.Extensions.Configuration/2.1.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "2.2.0"
         }
@@ -1543,7 +1530,17 @@
           "Microsoft.Extensions.Primitives": "2.2.0"
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.0": {},
+      "Microsoft.Extensions.Configuration.Binder/2.1.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "2.1.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection/2.1.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.1": {},
       "Microsoft.Extensions.FileProviders.Abstractions/2.2.0": {
         "dependencies": {
           "Microsoft.Extensions.Primitives": "2.2.0"
@@ -1552,16 +1549,28 @@
       "Microsoft.Extensions.Hosting.Abstractions/2.2.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "2.2.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
           "Microsoft.Extensions.FileProviders.Abstractions": "2.2.0",
-          "Microsoft.Extensions.Logging.Abstractions": "2.2.0"
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1"
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/2.2.0": {},
+      "Microsoft.Extensions.Logging/2.1.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Binder": "2.1.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1",
+          "Microsoft.Extensions.Options": "2.2.0"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1"
+        }
+      },
       "Microsoft.Extensions.ObjectPool/2.2.0": {},
       "Microsoft.Extensions.Options/2.2.0": {
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
           "Microsoft.Extensions.Primitives": "2.2.0",
           "System.ComponentModel.Annotations": "4.5.0"
         }
@@ -1765,7 +1774,8 @@
         "dependencies": {
           "ChessOfCards.DataAccess": "1.0.0",
           "ChessOfCards.Domain": "1.0.0",
-          "MediatR": "12.3.0"
+          "MediatR": "12.3.0",
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.1"
         },
         "runtime": {
           "ChessOfCards.Application.dll": {}
@@ -1829,40 +1839,33 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Amazon.Extensions.Configuration.SystemsManager/6.2.1": {
+    "AWS.Logger.AspNetCore/3.5.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lB8UNOr+0Iq3OXxGjsYvxrTsePUC+unhCZha/BbLr55c4HuIlWmtunb3mzbeanuxWYa9mYPm4Cy11YA1Ibvpkw==",
-      "path": "amazon.extensions.configuration.systemsmanager/6.2.1",
-      "hashPath": "amazon.extensions.configuration.systemsmanager.6.2.1.nupkg.sha512"
+      "sha512": "sha512-rCMUHIdehxqcqUcwTNPpg298itn/ZRJrzyBffq6InRom1x5Hf2zw3kIK5SRx0B+Ve5kMGGRf1mYoWbQIHHcwvg==",
+      "path": "aws.logger.aspnetcore/3.5.3",
+      "hashPath": "aws.logger.aspnetcore.3.5.3.nupkg.sha512"
     },
-    "AWSSDK.AppConfigData/3.7.301.35": {
+    "AWS.Logger.Core/3.3.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-L+PY8iEf4df1rkBKnZBo/dEJno0OkkwTJ55wO+R2Ao2lt+tV2jc6sJ50fAKq+Iw5VaC1Gzj6T/WqKIc+wSlptQ==",
-      "path": "awssdk.appconfigdata/3.7.301.35",
-      "hashPath": "awssdk.appconfigdata.3.7.301.35.nupkg.sha512"
+      "sha512": "sha512-JEXjiwIwAws5YJZDVwSqUoZIjMxsAuaZOQFZfLk6lYTg9NLrFY1dHafy6qifz/8ZQSlBiuSs+MAAHlBqHF9Cfw==",
+      "path": "aws.logger.core/3.3.3",
+      "hashPath": "aws.logger.core.3.3.3.nupkg.sha512"
     },
-    "AWSSDK.Core/3.7.303.14": {
+    "AWSSDK.CloudWatchLogs/3.7.401": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-CB0eSYIH1TjP2z16l8cKkG3UkuYj9KZdmGFuzx+JML7DhdsIz+dnuwI4fPf1mH8GlfjhS17xgHp1apDty/pS0A==",
-      "path": "awssdk.core/3.7.303.14",
-      "hashPath": "awssdk.core.3.7.303.14.nupkg.sha512"
+      "sha512": "sha512-zA4Mzn22WG9FnuO67qLdeVkjGc/JVvO9RopY3izopvCrIIsKmvcFuo64A9p/2nC4fiXGfewB0I24cdE8XcbchA==",
+      "path": "awssdk.cloudwatchlogs/3.7.401",
+      "hashPath": "awssdk.cloudwatchlogs.3.7.401.nupkg.sha512"
     },
-    "AWSSDK.Extensions.NETCore.Setup/3.7.300": {
+    "AWSSDK.Core/3.7.400.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-zMxAHFYSAWHsVV9Cn96nE+V40agRCjT0etF10f0d/nFMMb1z7lecVwNadq9JYyqlDj+jsVRH9ydk4Al4v/1+jg==",
-      "path": "awssdk.extensions.netcore.setup/3.7.300",
-      "hashPath": "awssdk.extensions.netcore.setup.3.7.300.nupkg.sha512"
-    },
-    "AWSSDK.SimpleSystemsManagement/3.7.303.23": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-A5S4W1z9TC0cI4srpp7S48fqZqMS2Yb09nj6JsScY4jbTu8scWZpyTj35sv4OaGncBOqTSYvlR7T+TSHEFJQLg==",
-      "path": "awssdk.simplesystemsmanagement/3.7.303.23",
-      "hashPath": "awssdk.simplesystemsmanagement.3.7.303.23.nupkg.sha512"
+      "sha512": "sha512-Hq2GvaU4GMNJOrZfq5K5to9pXgmUvgKs2ITbLmVCs1/DtFThv8hQUmnzzONbxb0n3b7mj7Ztlp0gF6PuuSq+5A==",
+      "path": "awssdk.core/3.7.400.2",
+      "hashPath": "awssdk.core.3.7.400.2.nupkg.sha512"
     },
     "MediatR/12.3.0": {
       "type": "package",
@@ -2032,12 +2035,12 @@
       "path": "microsoft.extensions.apidescription.server/6.0.5",
       "hashPath": "microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512"
     },
-    "Microsoft.Extensions.Configuration/2.0.2": {
+    "Microsoft.Extensions.Configuration/2.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-L51zGiDlJ4dPpKhFnP6grn2AQlZix9SvyEJ+HO7j/C2lyGA+cd6aDLqJTUhbXZGZ9zaa11eHvz14zG9HV24DRA==",
-      "path": "microsoft.extensions.configuration/2.0.2",
-      "hashPath": "microsoft.extensions.configuration.2.0.2.nupkg.sha512"
+      "sha512": "sha512-SS8ce1GYQTkZoOq5bskqQ+m7xiXQjnKRiGfVNZkkX2SX0HpXNRsKnSUaywRRuCje3v2KT9xeacsM3J9/G2exsQ==",
+      "path": "microsoft.extensions.configuration/2.1.0",
+      "hashPath": "microsoft.extensions.configuration.2.1.0.nupkg.sha512"
     },
     "Microsoft.Extensions.Configuration.Abstractions/2.2.0": {
       "type": "package",
@@ -2046,12 +2049,26 @@
       "path": "microsoft.extensions.configuration.abstractions/2.2.0",
       "hashPath": "microsoft.extensions.configuration.abstractions.2.2.0.nupkg.sha512"
     },
-    "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.0": {
+    "Microsoft.Extensions.Configuration.Binder/2.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-cjWrLkJXK0rs4zofsK4bSdg+jhDLTaxrkXu4gS6Y7MAlCvRyNNgwY/lJi5RDlQOnSZweHqoyvgvbdvQsRIW+hg==",
-      "path": "microsoft.extensions.dependencyinjection.abstractions/8.0.0",
-      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
+      "sha512": "sha512-Fls0O54Ielz1DiVYpcmiUpeizN1iKGGI5yAWAoShfmUvMcQ8jAGOK1a+DaflHA5hN9IOKvmSos0yewDYAIY0ZA==",
+      "path": "microsoft.extensions.configuration.binder/2.1.0",
+      "hashPath": "microsoft.extensions.configuration.binder.2.1.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gqQviLfuA31PheEGi+XJoZc1bc9H9RsPa9Gq9XuDct7XGWSR9eVXjK5Sg7CSUPhTFHSuxUFY12wcTYLZ4zM1hg==",
+      "path": "microsoft.extensions.dependencyinjection/2.1.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.2.1.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fGLiCRLMYd00JYpClraLjJTNKLmMJPnqxMaiRzEBIIvevlzxz33mXy39Lkd48hu1G+N21S7QpaO5ZzKsI6FRuA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/8.0.1",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512"
     },
     "Microsoft.Extensions.FileProviders.Abstractions/2.2.0": {
       "type": "package",
@@ -2067,12 +2084,19 @@
       "path": "microsoft.extensions.hosting.abstractions/2.2.0",
       "hashPath": "microsoft.extensions.hosting.abstractions.2.2.0.nupkg.sha512"
     },
-    "Microsoft.Extensions.Logging.Abstractions/2.2.0": {
+    "Microsoft.Extensions.Logging/2.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-B2WqEox8o+4KUOpL7rZPyh6qYjik8tHi2tN8Z9jZkHzED8ElYgZa/h6K+xliB435SqUcWT290Fr2aa8BtZjn8A==",
-      "path": "microsoft.extensions.logging.abstractions/2.2.0",
-      "hashPath": "microsoft.extensions.logging.abstractions.2.2.0.nupkg.sha512"
+      "sha512": "sha512-kuZbZMMHb7ibzhLdn9/R1+PAAFKntlF10tOw4loB8VuQkHvSrBE6IzW1rhBLsEdmLXOgi2zFbwcXFrxzSM6ybA==",
+      "path": "microsoft.extensions.logging/2.1.0",
+      "hashPath": "microsoft.extensions.logging.2.1.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/8.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RIFgaqoaINxkM2KTOw72dmilDmTrYA0ns2KW4lDz4gZ2+o6IQ894CzmdL3StM2oh7QQq44nCWiqKqc4qUI9Jmg==",
+      "path": "microsoft.extensions.logging.abstractions/8.0.1",
+      "hashPath": "microsoft.extensions.logging.abstractions.8.0.1.nupkg.sha512"
     },
     "Microsoft.Extensions.ObjectPool/2.2.0": {
       "type": "package",
