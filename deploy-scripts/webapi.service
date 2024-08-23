@@ -3,7 +3,7 @@ Description=.NET LanesBackendLauncher
 
 [Service]
 WorkingDirectory=/var/www/
-ExecStart=dotnet /var/www/LanesBackendLauncher.dll
+ExecStart=/home/ec2-user/.dotnet /var/www/LanesBackendLauncher.dll
 Restart=always
 # Restart Service after 10 seconds when dotnet service crashes:
 RestartSec=10
