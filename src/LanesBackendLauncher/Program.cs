@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Text.Json.Serialization;
-using AWS.Logger;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
 using ChessOfCards.DataAccess.Interfaces;
