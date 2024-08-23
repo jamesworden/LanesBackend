@@ -14,8 +14,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 try
 {
-  builder.Logging.AddAWSProvider();
-
   // App Settings
   builder
     .Configuration.SetBasePath(builder.Environment.ContentRootPath)
