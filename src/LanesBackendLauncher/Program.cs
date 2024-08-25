@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
@@ -9,11 +10,9 @@ using ClassroomGroups.Api.Features.Classrooms;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// App Settings
 builder
   .Configuration.SetBasePath(builder.Environment.ContentRootPath)
   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -24,13 +23,11 @@ builder
   )
   .AddEnvironmentVariables();
 
-string systemsManagerEnvPath = builder.Configuration["AppSecrets:SystemsManagerPath"] ?? "";
-string systemsManagerPath = "/aws/reference/secretsmanager/ClassroomGroups/Dev"; // + systemsManagerEnvPath;
-
+string systemsManagerSubPath = builder.Configuration["AppSecrets:SystemsManagerPath"] ?? "";
+string systemsManagerPath = "/aws/reference/secretsmanager/" + systemsManagerSubPath;
+Trace.Assert(!systemsManagerPath.Contains("null"));
 builder.Configuration.AddSystemsManager(systemsManagerPath, true).Build();
 
-// Auth | Preemptively devising authentication schemes until we need them is overkill.
-// The default one is for ClassroomGroups "sign in with google" redirection auth.
 builder
   .Services.AddAuthentication(options =>
   {
@@ -69,6 +66,7 @@ builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationContro
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder
   .Services.AddSignalR()
   .AddJsonProtocol(options =>
