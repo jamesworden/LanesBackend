@@ -44,12 +44,16 @@ try
       {
         // TODO: Figure out if builder.Configuration is sufficent.
         options.ClientId =
-          Environment.GetEnvironmentVariable("ClassroomGroups__Authentication__Google__ClientId")
+          Environment.GetEnvironmentVariable(
+            "ClassroomGroups__Authentication__Google__ClientId",
+            EnvironmentVariableTarget.Machine
+          )
           ?? builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"]
           ?? "";
         options.ClientSecret =
           Environment.GetEnvironmentVariable(
-            "ClassroomGroups__Authentication__Google__ClientSecret"
+            "ClassroomGroups__Authentication__Google__ClientSecret",
+            EnvironmentVariableTarget.Machine
           )
           ?? builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"]
           ?? "";
