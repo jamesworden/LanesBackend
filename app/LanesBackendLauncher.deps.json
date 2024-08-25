@@ -11,6 +11,7 @@
         "dependencies": {
           "AWS.Logger.AspNetCore": "3.5.3",
           "AWSSDK.CloudWatchLogs": "3.7.401",
+          "Amazon.Extensions.Configuration.SystemsManager": "6.2.1",
           "ChessOfCards.Api": "1.0.0",
           "ClassroomGroups.Api": "1.0.0",
           "MediatR": "12.3.0",
@@ -1303,6 +1304,20 @@
           }
         }
       },
+      "Amazon.Extensions.Configuration.SystemsManager/6.2.1": {
+        "dependencies": {
+          "AWSSDK.AppConfigData": "3.7.301.35",
+          "AWSSDK.Extensions.NETCore.Setup": "3.7.300",
+          "AWSSDK.SimpleSystemsManagement": "3.7.303.23",
+          "Microsoft.Extensions.Configuration": "2.1.0"
+        },
+        "runtime": {
+          "lib/net8.0/Amazon.Extensions.Configuration.SystemsManager.dll": {
+            "assemblyVersion": "6.2.1.0",
+            "fileVersion": "6.2.1.0"
+          }
+        }
+      },
       "AWS.Logger.AspNetCore/3.5.3": {
         "dependencies": {
           "AWS.Logger.Core": "3.3.3",
@@ -1328,6 +1343,17 @@
           }
         }
       },
+      "AWSSDK.AppConfigData/3.7.301.35": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.400.2"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.AppConfigData.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.301.35"
+          }
+        }
+      },
       "AWSSDK.CloudWatchLogs/3.7.401": {
         "dependencies": {
           "AWSSDK.Core": "3.7.400.2"
@@ -1344,6 +1370,31 @@
           "lib/net8.0/AWSSDK.Core.dll": {
             "assemblyVersion": "3.3.0.0",
             "fileVersion": "3.7.400.2"
+          }
+        }
+      },
+      "AWSSDK.Extensions.NETCore.Setup/3.7.300": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.400.2",
+          "Microsoft.Extensions.Configuration.Abstractions": "2.2.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "2.2.0"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.7.0"
+          }
+        }
+      },
+      "AWSSDK.SimpleSystemsManagement/3.7.303.23": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.400.2"
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.SimpleSystemsManagement.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.303.23"
           }
         }
       },
@@ -1834,6 +1885,13 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Amazon.Extensions.Configuration.SystemsManager/6.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lB8UNOr+0Iq3OXxGjsYvxrTsePUC+unhCZha/BbLr55c4HuIlWmtunb3mzbeanuxWYa9mYPm4Cy11YA1Ibvpkw==",
+      "path": "amazon.extensions.configuration.systemsmanager/6.2.1",
+      "hashPath": "amazon.extensions.configuration.systemsmanager.6.2.1.nupkg.sha512"
+    },
     "AWS.Logger.AspNetCore/3.5.3": {
       "type": "package",
       "serviceable": true,
@@ -1848,6 +1906,13 @@
       "path": "aws.logger.core/3.3.3",
       "hashPath": "aws.logger.core.3.3.3.nupkg.sha512"
     },
+    "AWSSDK.AppConfigData/3.7.301.35": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-L+PY8iEf4df1rkBKnZBo/dEJno0OkkwTJ55wO+R2Ao2lt+tV2jc6sJ50fAKq+Iw5VaC1Gzj6T/WqKIc+wSlptQ==",
+      "path": "awssdk.appconfigdata/3.7.301.35",
+      "hashPath": "awssdk.appconfigdata.3.7.301.35.nupkg.sha512"
+    },
     "AWSSDK.CloudWatchLogs/3.7.401": {
       "type": "package",
       "serviceable": true,
@@ -1861,6 +1926,20 @@
       "sha512": "sha512-Hq2GvaU4GMNJOrZfq5K5to9pXgmUvgKs2ITbLmVCs1/DtFThv8hQUmnzzONbxb0n3b7mj7Ztlp0gF6PuuSq+5A==",
       "path": "awssdk.core/3.7.400.2",
       "hashPath": "awssdk.core.3.7.400.2.nupkg.sha512"
+    },
+    "AWSSDK.Extensions.NETCore.Setup/3.7.300": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zMxAHFYSAWHsVV9Cn96nE+V40agRCjT0etF10f0d/nFMMb1z7lecVwNadq9JYyqlDj+jsVRH9ydk4Al4v/1+jg==",
+      "path": "awssdk.extensions.netcore.setup/3.7.300",
+      "hashPath": "awssdk.extensions.netcore.setup.3.7.300.nupkg.sha512"
+    },
+    "AWSSDK.SimpleSystemsManagement/3.7.303.23": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A5S4W1z9TC0cI4srpp7S48fqZqMS2Yb09nj6JsScY4jbTu8scWZpyTj35sv4OaGncBOqTSYvlR7T+TSHEFJQLg==",
+      "path": "awssdk.simplesystemsmanagement/3.7.303.23",
+      "hashPath": "awssdk.simplesystemsmanagement.3.7.303.23.nupkg.sha512"
     },
     "MediatR/12.3.0": {
       "type": "package",
