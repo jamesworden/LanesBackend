@@ -21,12 +21,8 @@ builder
     optional: true,
     reloadOnChange: true
   )
-  .AddEnvironmentVariables();
-
-string systemsManagerSubPath = builder.Configuration["AppSecrets:SystemsManagerPath"] ?? "";
-string systemsManagerPath = "/aws/reference/secretsmanager/" + systemsManagerSubPath;
-Trace.Assert(!systemsManagerPath.Contains("null"));
-builder.Configuration.AddSystemsManager(systemsManagerPath, true).Build();
+  .AddEnvironmentVariables()
+  .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
 
 builder
   .Services.AddAuthentication(options =>
@@ -43,10 +39,8 @@ builder
     GoogleDefaults.AuthenticationScheme,
     options =>
     {
-      options.ClientId =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
-      options.ClientSecret =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
+      options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+      options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     }
   );
 
