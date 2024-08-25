@@ -9,146 +9,129 @@ using ClassroomGroups.Api.Features.Classrooms;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-try
-{
-  // App Settings
-  builder
-    .Configuration.SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-    .AddJsonFile(
-      $"appsettings.{builder.Environment.EnvironmentName}.json",
-      optional: true,
-      reloadOnChange: true
-    )
-    .AddEnvironmentVariables();
+// App Settings
+builder
+  .Configuration.SetBasePath(builder.Environment.ContentRootPath)
+  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+  .AddJsonFile(
+    $"appsettings.{builder.Environment.EnvironmentName}.json",
+    optional: true,
+    reloadOnChange: true
+  )
+  .AddEnvironmentVariables();
 
-  // Auth | Preemptively devising authentication schemes until we need them is overkill.
-  // The default one is for ClassroomGroups "sign in with google" redirection auth.
-  builder
-    .Services.AddAuthentication(options =>
+string systemsManagerEnvPath = builder.Configuration["AppSecrets:SystemsManagerPath"] ?? "";
+string systemsManagerPath = "/aws/reference/secretsmanager/ClassroomGroups/Dev"; // + systemsManagerEnvPath;
+
+builder.Configuration.AddSystemsManager(systemsManagerPath, true).Build();
+
+// Auth | Preemptively devising authentication schemes until we need them is overkill.
+// The default one is for ClassroomGroups "sign in with google" redirection auth.
+builder
+  .Services.AddAuthentication(options =>
+  {
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+  })
+  .AddCookie(options =>
+  {
+    options.LoginPath = "/authentication/login";
+    options.LogoutPath = "/authentication/logout";
+  })
+  .AddGoogle(
+    GoogleDefaults.AuthenticationScheme,
+    options =>
     {
-      options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-      options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-    })
-    .AddCookie(options =>
-    {
-      options.LoginPath = "/authentication/login";
-      options.LogoutPath = "/authentication/logout";
-    })
-    .AddGoogle(
-      GoogleDefaults.AuthenticationScheme,
-      options =>
-      {
-        // TODO: Figure out if builder.Configuration is sufficent.
-        options.ClientId =
-          Environment.GetEnvironmentVariable(
-            "ClassroomGroups__Authentication__Google__ClientId",
-            EnvironmentVariableTarget.Machine
-          ) ?? "";
-        options.ClientSecret =
-          Environment.GetEnvironmentVariable(
-            "ClassroomGroups__Authentication__Google__ClientSecret",
-            EnvironmentVariableTarget.Machine
-          ) ?? "";
-      }
-    );
-
-  builder.Services.AddAuthorization();
-
-  // Register event handlers from assemblies
-  builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblies(
-      typeof(GameNameInvalidCommandHandler).GetTypeInfo().Assembly, // Represents the 'ChessOfCards.Api' project.
-      typeof(CreatePendingGameCommandHandler).GetTypeInfo().Assembly // Represents the 'ChessOfCards.Application' project.
-    )
+      options.ClientId =
+        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
+      options.ClientSecret =
+        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
+    }
   );
 
-  // Register controllers from assemblies
-  builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationController).Assembly);
+builder.Services.AddAuthorization();
 
-  builder.Services.AddControllers();
+// Register event handlers from assemblies
+builder.Services.AddMediatR(cfg =>
+  cfg.RegisterServicesFromAssemblies(
+    typeof(GameNameInvalidCommandHandler).GetTypeInfo().Assembly, // Represents the 'ChessOfCards.Api' project.
+    typeof(CreatePendingGameCommandHandler).GetTypeInfo().Assembly // Represents the 'ChessOfCards.Application' project.
+  )
+);
 
-  builder.Services.AddEndpointsApiExplorer();
-  builder
-    .Services.AddSignalR()
-    .AddJsonProtocol(options =>
-    {
-      // Helps ensure that enum values translate well when recieving websocket requests.
-      options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-  builder.Services.AddCors();
+// Register controllers from assemblies
+builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationController).Assembly);
 
-  builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
-  builder.Services.AddSingleton<IGameRepository, GameRepository>();
-  builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
+builder.Services.AddControllers();
 
-  builder.Services.AddSwaggerGen();
-
-  builder.Services.AddCors(Options =>
+builder.Services.AddEndpointsApiExplorer();
+builder
+  .Services.AddSignalR()
+  .AddJsonProtocol(options =>
   {
-    Options.AddPolicy(
-      "frontendApplications",
-      CorsPolicyBuilder =>
-      {
-        CorsPolicyBuilder
-          .WithOrigins(
-            "http://localhost:4200",
-            "https://localhost:4200",
-            "http://chessofcards.com",
-            "https://chessofcards.com",
-            "http://classroomgroups.com",
-            "https://classroomgroups.com"
-          )
-          .AllowAnyMethod()
-          .AllowAnyHeader()
-          .AllowCredentials();
-      }
-    );
+    // Helps ensure that enum values translate well when recieving websocket requests.
+    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
   });
+builder.Services.AddCors();
 
-  var app = builder.Build();
+builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
+builder.Services.AddSingleton<IGameRepository, GameRepository>();
+builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
-  app.MapHub<GameHub>("/game");
-  app.MapHub<ClassroomsHub>("/classroom-groups");
+builder.Services.AddSwaggerGen();
 
-  if (app.Environment.IsDevelopment())
-  {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-  }
-  else
-  {
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-  }
-
-  app.UseCors("frontendApplications");
-
-  app.UseRouting();
-
-  app.UseHttpsRedirection();
-
-  app.UseAuthentication();
-
-  app.UseAuthorization();
-
-  app.MapControllers();
-
-  app.Run();
-}
-catch (Exception ex)
+builder.Services.AddCors(Options =>
 {
-  var logger = LoggerFactory
-    .Create(b =>
+  Options.AddPolicy(
+    "frontendApplications",
+    CorsPolicyBuilder =>
     {
-      b.AddAWSProvider(builder.Configuration.GetAWSLoggingConfigSection());
-      b.AddConsole();
-      b.AddDebug();
-    })
-    .CreateLogger<Program>();
+      CorsPolicyBuilder
+        .WithOrigins(
+          "http://localhost:4200",
+          "https://localhost:4200",
+          "http://chessofcards.com",
+          "https://chessofcards.com",
+          "http://classroomgroups.com",
+          "https://classroomgroups.com"
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    }
+  );
+});
 
-  logger.LogError(ex, "An error occurred during startup...");
+var app = builder.Build();
+
+app.MapHub<GameHub>("/game");
+app.MapHub<ClassroomsHub>("/classroom-groups");
+
+if (app.Environment.IsDevelopment())
+{
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
+else
+{
+  app.UseExceptionHandler("/Error");
+  app.UseHsts();
+}
+
+app.UseCors("frontendApplications");
+
+app.UseRouting();
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
