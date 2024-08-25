@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// App Settings
 builder
   .Configuration.SetBasePath(builder.Environment.ContentRootPath)
   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -21,10 +21,9 @@ builder
     optional: true,
     reloadOnChange: true
   )
-  .AddEnvironmentVariables();
+  .AddEnvironmentVariables()
+  .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
 
-// Auth | Preemptively devising authentication schemes until we need them is overkill.
-// The default one is for ClassroomGroups "sign in with google" redirection auth.
 builder
   .Services.AddAuthentication(options =>
   {
@@ -40,12 +39,8 @@ builder
     GoogleDefaults.AuthenticationScheme,
     options =>
     {
-      options.ClientId =
-        builder.Configuration.GetSection("ClassroomGroups:Authentication:Google:ClientId").Value
-        ?? "";
-      options.ClientSecret =
-        builder.Configuration.GetSection("ClassroomGroups:Authentication:Google:ClientSecret").Value
-        ?? "";
+      options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+      options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     }
   );
 
@@ -65,6 +60,7 @@ builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationContro
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder
   .Services.AddSignalR()
   .AddJsonProtocol(options =>
