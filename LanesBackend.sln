@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.Domain", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.Application", "src\ClassroomGroups\ClassroomGroups.Application\ClassroomGroups.Application.csproj", "{91667DBE-874C-4EE6-B8D6-9101BF680CF6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.DataAccess", "src\ClassroomGroups\ClassroomGroups.DataAccess\ClassroomGroups.DataAccess.csproj", "{53B0B01C-520A-45B7-A7EC-160C6252E046}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{91667DBE-874C-4EE6-B8D6-9101BF680CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91667DBE-874C-4EE6-B8D6-9101BF680CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91667DBE-874C-4EE6-B8D6-9101BF680CF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{10DA4408-0A64-41C3-AB38-CEB277F86749} = {2B136715-8EA0-40B0-A3E7-3EA04E36843C}
@@ -78,5 +84,6 @@ Global
 		{7EDE1054-C46B-4EAF-A59B-9ABDDE37A551} = {8DE596F9-AE77-49B0-B70F-B3396C246EF8}
 		{64ADBF85-5DDA-4341-9601-302DD073B14B} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
 		{91667DBE-874C-4EE6-B8D6-9101BF680CF6} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
+		{53B0B01C-520A-45B7-A7EC-160C6252E046} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
 	EndGlobalSection
 EndGlobal

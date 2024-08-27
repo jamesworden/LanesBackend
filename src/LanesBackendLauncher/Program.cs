@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
@@ -7,9 +6,12 @@ using ChessOfCards.DataAccess.Interfaces;
 using ChessOfCards.DataAccess.Repositories;
 using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
+using ClassroomGroups.Application.Features.Accounts.Requests;
+using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +24,7 @@ builder
     reloadOnChange: true
   )
   .AddEnvironmentVariables()
-  .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
+  .AddSystemsManager(builder.Configuration["ClassroomGroups:AppSecrets:SystemsManagerPath"]);
 
 builder
   .Services.AddAuthentication(options =>
@@ -46,11 +48,14 @@ builder
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpContextAccessor();
+
 // Register event handlers from assemblies
 builder.Services.AddMediatR(cfg =>
   cfg.RegisterServicesFromAssemblies(
     typeof(GameNameInvalidCommandHandler).GetTypeInfo().Assembly, // Represents the 'ChessOfCards.Api' project.
-    typeof(CreatePendingGameCommandHandler).GetTypeInfo().Assembly // Represents the 'ChessOfCards.Application' project.
+    typeof(CreatePendingGameCommandHandler).GetTypeInfo().Assembly, // Represents the 'ChessOfCards.Application' project.
+    typeof(GetAccountRequest).GetTypeInfo().Assembly // Represents the 'ClassroomGroups.Application' project.
   )
 );
 
@@ -73,6 +78,12 @@ builder.Services.AddCors();
 builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
+
+var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
+
+builder.Services.AddDbContext<ClassroomGroupsContext>(options =>
+  options.UseSqlite(connectionString, b => b.MigrationsAssembly("ClassroomGroups.DataAccess"))
+);
 
 builder.Services.AddSwaggerGen();
 
