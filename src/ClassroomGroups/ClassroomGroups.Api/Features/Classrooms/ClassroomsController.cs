@@ -1,5 +1,4 @@
 using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

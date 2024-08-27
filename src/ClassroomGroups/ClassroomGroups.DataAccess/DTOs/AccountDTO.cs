@@ -1,21 +1,21 @@
 using System.ComponentModel.DataAnnotations;
-using ClassroomGroups.Domain.Features.Classrooms.Entities;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
 public class AccountDTO
 {
+  [Key]
+  public int Key { get; set; }
+
   public string? GoogleNameIdentifier { get; set; }
 
   public string PrimaryEmail { get; set; } = "";
 
-  public Guid AccountId { get; set; }
-
-  [Key]
-  public int AccountKey { get; set; }
+  public Guid Id { get; set; }
 
   public Account ToAccount()
   {
-    return new Account { PrimaryEmail = PrimaryEmail, AccountId = AccountId };
+    return new Account(Id, PrimaryEmail);
   }
 }
