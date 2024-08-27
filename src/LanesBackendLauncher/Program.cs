@@ -30,12 +30,14 @@ builder
   .Services.AddAuthentication(options =>
   {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
   })
   .AddCookie(options =>
   {
-    options.LoginPath = "/authentication/login";
-    options.LogoutPath = "/authentication/logout";
+    options.Events.OnRedirectToLogin = context =>
+    {
+      context.Response.StatusCode = StatusCodes.Status403Forbidden;
+      return Task.CompletedTask;
+    };
   })
   .AddGoogle(
     GoogleDefaults.AuthenticationScheme,
