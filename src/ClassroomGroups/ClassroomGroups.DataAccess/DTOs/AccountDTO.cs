@@ -16,11 +16,6 @@ public class AccountDTO
 
   public Account ToAccount()
   {
-    return new Account
-    {
-      GoogleNameIdentifier = GoogleNameIdentifier,
-      PrimaryEmail = PrimaryEmail,
-      AccountId = AccountId
-    };
+    return new Account { PrimaryEmail = PrimaryEmail, AccountId = AccountId };
   }
 }
