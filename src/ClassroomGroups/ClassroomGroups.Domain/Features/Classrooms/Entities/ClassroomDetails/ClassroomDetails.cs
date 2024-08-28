@@ -23,7 +23,7 @@ public class ClassroomDetails(
 
   public List<StudentField> StudentFields { get; set; } = StudentFields;
 
-  public List<Group> Group { get; set; } = Groups;
+  public List<Group> Groups { get; set; } = Groups;
 
   public List<Configuration> Configurations { get; set; } = Configurations;
 }
