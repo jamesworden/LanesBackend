@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20240828181208_Update5")]
+    partial class Update5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -47,9 +50,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("AccountKey")
                         .HasColumnType("INTEGER");
 
@@ -81,14 +81,8 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("ConfigurationKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ConfigurationId")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("FieldId")
-                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -114,9 +108,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("Key")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
@@ -147,9 +138,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
 
@@ -178,9 +166,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("Key")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ConfigurationId")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("ConfigurationKey")
                         .HasColumnType("INTEGER");
@@ -211,9 +196,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
 
@@ -238,17 +220,11 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("FieldKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("FieldId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Key")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -272,9 +248,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("GroupKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
@@ -283,9 +256,6 @@ namespace ClassroomGroups.DataAccess.Migrations
 
                     b.Property<int>("Ordinal")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("StudentKey", "GroupKey");
 

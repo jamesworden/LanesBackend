@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20240828175946_Update4")]
+    partial class Update4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -47,9 +50,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("AccountKey")
                         .HasColumnType("INTEGER");
 
@@ -75,26 +75,27 @@ namespace ClassroomGroups.DataAccess.Migrations
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ColumnDTO", b =>
                 {
-                    b.Property<int>("FieldKey")
+                    b.Property<int>("Key")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ConfigurationDTOKey")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ConfigurationKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ConfigurationId")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("FieldId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("FieldDTOKey")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FieldKey")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Key")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Ordinal")
                         .HasColumnType("INTEGER");
@@ -102,9 +103,11 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("Sort")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("FieldKey", "ConfigurationKey");
+                    b.HasKey("Key");
 
-                    b.HasIndex("ConfigurationKey");
+                    b.HasIndex("ConfigurationDTOKey");
+
+                    b.HasIndex("FieldDTOKey");
 
                     b.ToTable("Columns");
                 });
@@ -114,9 +117,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("Key")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
@@ -147,9 +147,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
 
@@ -178,9 +175,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("Key")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ConfigurationId")
-                        .HasColumnType("TEXT");
 
                     b.Property<int>("ConfigurationKey")
                         .HasColumnType("INTEGER");
@@ -211,9 +205,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ClassroomId")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
 
@@ -238,17 +229,11 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("FieldKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("FieldId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Key")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -272,9 +257,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<int>("GroupKey")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
@@ -283,9 +265,6 @@ namespace ClassroomGroups.DataAccess.Migrations
 
                     b.Property<int>("Ordinal")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("TEXT");
 
                     b.HasKey("StudentKey", "GroupKey");
 
@@ -311,14 +290,14 @@ namespace ClassroomGroups.DataAccess.Migrations
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ColumnDTO", b =>
                 {
                     b.HasOne("ClassroomGroups.DataAccess.DTOs.ConfigurationDTO", "ConfigurationDTO")
-                        .WithMany("Columns")
-                        .HasForeignKey("ConfigurationKey")
+                        .WithMany()
+                        .HasForeignKey("ConfigurationDTOKey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ClassroomGroups.DataAccess.DTOs.FieldDTO", "FieldDTO")
-                        .WithMany("Columns")
-                        .HasForeignKey("FieldKey")
+                        .WithMany()
+                        .HasForeignKey("FieldDTOKey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -425,15 +404,11 @@ namespace ClassroomGroups.DataAccess.Migrations
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ConfigurationDTO", b =>
                 {
-                    b.Navigation("Columns");
-
                     b.Navigation("Groups");
                 });
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.FieldDTO", b =>
                 {
-                    b.Navigation("Columns");
-
                     b.Navigation("StudentFields");
                 });
 

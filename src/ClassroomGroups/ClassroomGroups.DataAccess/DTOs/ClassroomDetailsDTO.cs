@@ -4,33 +4,19 @@ namespace ClassroomGroups.DataAccess.DTOs;
 
 public class ClassroomDetailsDTO
 {
-  public List<Classroom> Classrooms { get; set; } = [];
+  public List<ClassroomDTO> Classrooms { get; set; } = [];
 
-  public List<Student> Students { get; set; } = [];
+  public List<StudentDTO> Students { get; set; } = [];
 
-  public List<Field> Fields { get; set; } = [];
+  public List<FieldDTO> Fields { get; set; } = [];
 
-  public List<Column> Columns { get; set; } = [];
+  public List<ColumnDTO> Columns { get; set; } = [];
 
-  public List<StudentGroup> StudentGroups { get; set; } = [];
+  public List<StudentGroupDTO> StudentGroups { get; set; } = [];
 
-  public List<StudentField> StudentFields { get; set; } = [];
+  public List<StudentFieldDTO> StudentFields { get; set; } = [];
 
-  public List<Group> Groups { get; set; } = [];
+  public List<GroupDTO> Groups { get; set; } = [];
 
-  public List<Configuration> Configurations { get; set; } = [];
-
-  public ClassroomDetails ToClassroomDetails()
-  {
-    return new ClassroomDetails(
-      Classrooms,
-      Students,
-      Fields,
-      Columns,
-      StudentGroups,
-      StudentFields,
-      Groups,
-      Configurations
-    );
-  }
+  public List<ConfigurationDTO> Configurations { get; set; } = [];
 }

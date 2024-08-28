@@ -24,6 +24,8 @@ public class ClassroomGroupsContext : DbContext
 
   public DbSet<ConfigurationDTO> Configurations { get; set; }
 
+  public DbSet<ColumnDTO> Columns { get; set; }
+
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
@@ -69,9 +71,24 @@ public class ClassroomGroupsContext : DbContext
       .HasPrincipalKey(e => e.Key);
 
     // Many to Many
-    modelBuilder.Entity<StudentDTO>().HasIndex(studentDTO => studentDTO.Id).IsUnique();
-
     modelBuilder.Entity<FieldDTO>().HasIndex(fieldDTO => fieldDTO.Id).IsUnique();
+    modelBuilder
+      .Entity<FieldDTO>()
+      .HasMany(e => e.Configurations)
+      .WithMany(e => e.Fields)
+      .UsingEntity<ColumnDTO>(
+        j =>
+          j.HasOne(c => c.ConfigurationDTO)
+            .WithMany(c => c.Columns)
+            .HasForeignKey(c => c.ConfigurationKey),
+        j => j.HasOne(c => c.FieldDTO).WithMany(f => f.Columns).HasForeignKey(c => c.FieldKey),
+        j =>
+        {
+          j.HasKey(t => new { t.FieldKey, t.ConfigurationKey });
+        }
+      );
+
+    modelBuilder.Entity<StudentDTO>().HasIndex(studentDTO => studentDTO.Id).IsUnique();
     modelBuilder
       .Entity<StudentFieldDTO>()
       .HasIndex(studentFieldDTO => studentFieldDTO.Id)
