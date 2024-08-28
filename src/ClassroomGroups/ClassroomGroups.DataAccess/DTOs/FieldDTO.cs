@@ -23,4 +23,9 @@ public class FieldDTO
 
   public ICollection<ConfigurationDTO> Configurations { get; } = [];
   public ICollection<ColumnDTO> Columns { get; set; } = [];
+
+  public Field ToField()
+  {
+    return new Field(Id, ClassroomId, Label, Type);
+  }
 }

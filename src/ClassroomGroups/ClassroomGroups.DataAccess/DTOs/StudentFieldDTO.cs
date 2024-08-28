@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
@@ -19,4 +20,9 @@ public class StudentFieldDTO
   public FieldDTO FieldDTO = null!;
   public int FieldKey { get; private set; }
   public Guid FieldId { get; private set; }
+
+  public StudentField ToStudentField()
+  {
+    return new StudentField(Id, StudentId, FieldId, Value);
+  }
 }

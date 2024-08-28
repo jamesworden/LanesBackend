@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
@@ -19,4 +20,9 @@ public class GroupDTO
 
   public ICollection<StudentDTO> Students { get; } = [];
   public ICollection<StudentGroupDTO> StudentGroups { get; set; } = [];
+
+  public Group ToGroup()
+  {
+    return new Group(Id, ConfigurationId, Label, Ordinal);
+  }
 }

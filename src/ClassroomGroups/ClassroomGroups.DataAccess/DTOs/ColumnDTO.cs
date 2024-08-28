@@ -25,4 +25,9 @@ public class ColumnDTO
   public bool Enabled { get; private set; } = true;
 
   public ColumnSort Sort { get; private set; } = ColumnSort.ASCENDING;
+
+  public Column ToColumn()
+  {
+    return new Column(Id, ConfigurationId, FieldId, Ordinal, Enabled, Sort);
+  }
 }

@@ -43,7 +43,7 @@ public class GetClassroomDetailsRequestHandler(
       return null;
     }
 
-    // This can be optimized when people begin using this software.
+    // This can be optimized in the future.
 
     List<ClassroomDTO> classroomDTOs =
       await _dbContext
@@ -87,14 +87,24 @@ public class GetClassroomDetailsRequestHandler(
         .StudentFields.Where(sg => studentDTOs.Select(s => s.Key).Contains(sg.StudentKey))
         .ToListAsync(cancellationToken) ?? [];
 
-    var classrooms = classroomDTOs.Select(c => c.ToClassroom());
-    var students = studentDTOs.Select(s => s.ToStudent());
+    var classrooms = classroomDTOs.Select(c => c.ToClassroom()).ToList();
+    var students = studentDTOs.Select(s => s.ToStudent()).ToList();
+    var fields = fieldDTOs.Select(f => f.ToField()).ToList();
+    var columns = columnDTOs.Select(c => c.ToColumn()).ToList();
+    var groups = groupDTOs.Select(g => g.ToGroup()).ToList();
+    var configurations = configurationDTOs.Select(c => c.ToConfiguration()).ToList();
+    var studentFields = studentFieldDTOs.Select(sf => sf.ToStudentField()).ToList();
+    var studentGroups = studentGroupDTOs.Select(sg => sg.ToStudentGroup()).ToList();
 
-    // var classroomDetails = new ClassroomDetails(
-    //   classrooms,
-
-    // );
-
-    return null;
+    return new ClassroomDetails(
+      classrooms,
+      students,
+      fields,
+      columns,
+      studentGroups,
+      studentFields,
+      groups,
+      configurations
+    );
   }
 }

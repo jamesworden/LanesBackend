@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
@@ -21,4 +22,9 @@ public class ConfigurationDTO
   public ICollection<ColumnDTO> Columns { get; set; } = [];
 
   public ICollection<GroupDTO> Groups { get; } = [];
+
+  public Configuration ToConfiguration()
+  {
+    return new Configuration(Id, ClassroomId, Label, Description);
+  }
 }
