@@ -16,4 +16,6 @@ public class ClassroomDTO
   public ICollection<StudentDTO> Students { get; } = [];
 
   public ICollection<FieldDTO> Fields { get; } = [];
+
+  public ICollection<ConfigurationDTO> Configurations { get; } = [];
 }

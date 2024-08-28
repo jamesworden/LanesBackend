@@ -33,7 +33,6 @@ public class GetClassroomDetailsRequestHandler(
     {
       return null;
     }
-    var classroomDetailsDTO = _dbContext.Classrooms
-    return accountDTO?.ToAccount();
+    return null;
   }
 }

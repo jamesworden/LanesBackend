@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20240828162210_Update1")]
+    partial class Update1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -76,6 +79,9 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("ClassroomDTOKey")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("ClassroomKey")
                         .HasColumnType("INTEGER");
 
@@ -91,7 +97,7 @@ namespace ClassroomGroups.DataAccess.Migrations
 
                     b.HasKey("Key");
 
-                    b.HasIndex("ClassroomKey");
+                    b.HasIndex("ClassroomDTOKey");
 
                     b.HasIndex("Id")
                         .IsUnique();
@@ -248,8 +254,8 @@ namespace ClassroomGroups.DataAccess.Migrations
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ConfigurationDTO", b =>
                 {
                     b.HasOne("ClassroomGroups.DataAccess.DTOs.ClassroomDTO", "ClassroomDTO")
-                        .WithMany("Configurations")
-                        .HasForeignKey("ClassroomKey")
+                        .WithMany()
+                        .HasForeignKey("ClassroomDTOKey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -334,8 +340,6 @@ namespace ClassroomGroups.DataAccess.Migrations
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ClassroomDTO", b =>
                 {
-                    b.Navigation("Configurations");
-
                     b.Navigation("Fields");
 
                     b.Navigation("Students");

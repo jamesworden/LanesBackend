@@ -35,7 +35,7 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Classrooms)
       .WithOne(e => e.AccountDTO)
       .HasForeignKey(e => e.AccountKey)
-      .HasPrincipalKey(e => e.Id);
+      .HasPrincipalKey(e => e.Key);
 
     modelBuilder.Entity<ClassroomDTO>().HasIndex(classroomDTO => classroomDTO.Id).IsUnique();
     modelBuilder
@@ -43,13 +43,19 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Students)
       .WithOne(e => e.ClassroomDTO)
       .HasForeignKey(e => e.ClassroomKey)
-      .HasPrincipalKey(e => e.Id);
+      .HasPrincipalKey(e => e.Key);
     modelBuilder
       .Entity<ClassroomDTO>()
       .HasMany(e => e.Fields)
       .WithOne(e => e.ClassroomDTO)
       .HasForeignKey(e => e.ClassroomKey)
-      .HasPrincipalKey(e => e.Id);
+      .HasPrincipalKey(e => e.Key);
+    modelBuilder
+      .Entity<ClassroomDTO>()
+      .HasMany(e => e.Configurations)
+      .WithOne(e => e.ClassroomDTO)
+      .HasForeignKey(e => e.ClassroomKey)
+      .HasPrincipalKey(e => e.Key);
 
     modelBuilder
       .Entity<ConfigurationDTO>()
@@ -60,7 +66,7 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Groups)
       .WithOne(e => e.ConfigurationDTO)
       .HasForeignKey(e => e.ConfigurationKey)
-      .HasPrincipalKey(e => e.Id);
+      .HasPrincipalKey(e => e.Key);
 
     // Many to Many
     modelBuilder.Entity<StudentDTO>().HasIndex(studentDTO => studentDTO.Id).IsUnique();
