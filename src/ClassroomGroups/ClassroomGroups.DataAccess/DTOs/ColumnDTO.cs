@@ -12,20 +12,13 @@ public class ColumnDTO
 
   public ConfigurationDTO ConfigurationDTO { get; set; } = null!;
   public int ConfigurationKey { get; set; }
-  public Guid ConfigurationId { get; private set; }
 
   public FieldDTO FieldDTO { get; private set; } = null!;
   public int FieldKey { get; set; }
-  public Guid FieldId { get; private set; }
 
   public int Ordinal { get; private set; }
 
   public bool Enabled { get; private set; } = true;
 
   public ColumnSort Sort { get; private set; } = ColumnSort.ASCENDING;
-
-  public Column ToColumn()
-  {
-    return new Column(Id, ConfigurationId, FieldId, Ordinal, Enabled, Sort);
-  }
 }

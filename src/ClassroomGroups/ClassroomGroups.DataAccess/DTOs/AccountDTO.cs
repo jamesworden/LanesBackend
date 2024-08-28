@@ -7,12 +7,11 @@ public class AccountDTO
 {
   [Key]
   public int Key { get; set; }
-
   public string? GoogleNameIdentifier { get; set; }
-
   public string PrimaryEmail { get; set; } = "";
-
   public Guid Id { get; set; }
+
+  public ICollection<ClassroomDTO> Classrooms { get; } = [];
 
   public Account ToAccount()
   {

@@ -1,4 +1,6 @@
-namespace ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+
+namespace ClassroomGroups.DataAccess.DTOs;
 
 public class ClassroomDetailsDTO
 {
