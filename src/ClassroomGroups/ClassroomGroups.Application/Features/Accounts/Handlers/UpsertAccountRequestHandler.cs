@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Features.Accounts.Requests;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Classrooms.Entities;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -51,7 +51,7 @@ public class UpsertAccountRequestHandler(
     var accountDTO = await _dbContext.Accounts.AddAsync(
       new()
       {
-        AccountId = Guid.NewGuid(),
+        Id = Guid.NewGuid(),
         GoogleNameIdentifier = googleNameIdentifier,
         PrimaryEmail = primaryEmail
       },
