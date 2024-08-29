@@ -10,19 +10,19 @@ public class ClassroomDTO
   public int Key { get; set; }
 
   [InverseProperty("ClassroomId")]
-  public Guid Id { get; private set; }
-  public string Label { get; private set; } = "";
-  public string? Description { get; private set; } = "";
+  public Guid Id { get; set; }
+  public string Label { get; set; } = "";
+  public string? Description { get; set; } = "";
 
-  public AccountDTO AccountDTO { get; private set; } = null!;
+  public AccountDTO AccountDTO { get; set; } = null!;
   public int AccountKey { get; set; }
-  public Guid AccountId { get; private set; }
+  public Guid AccountId { get; set; }
 
-  public ICollection<StudentDTO> Students { get; } = [];
+  public ICollection<StudentDTO> Students { get; set; } = [];
 
-  public ICollection<FieldDTO> Fields { get; } = [];
+  public ICollection<FieldDTO> Fields { get; set; } = [];
 
-  public ICollection<ConfigurationDTO> Configurations { get; } = [];
+  public ICollection<ConfigurationDTO> Configurations { get; set; } = [];
 
   public Classroom ToClassroom()
   {

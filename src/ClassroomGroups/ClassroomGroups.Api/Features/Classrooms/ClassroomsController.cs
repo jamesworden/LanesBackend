@@ -1,3 +1,5 @@
+using ClassroomGroups.Application.Features.Accounts.Requests;
+using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
@@ -17,5 +19,14 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   public async Task<ClassroomDetails?> GetClassroomDetails()
   {
     return await _mediator.Send(new GetClassroomDetailsRequest());
+  }
+
+  [Authorize]
+  [HttpPost()]
+  public async Task<CreateClassroomResponse?> CreateClassroom(
+    [FromBody] CreateClassroomRequest request
+  )
+  {
+    return await _mediator.Send(request);
   }
 }
