@@ -6,7 +6,7 @@ using ChessOfCards.DataAccess.Interfaces;
 using ChessOfCards.DataAccess.Repositories;
 using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
-using ClassroomGroups.Application.Features.Accounts.Requests;
+using ClassroomGroups.Application.Features.Authentication.Requests;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;

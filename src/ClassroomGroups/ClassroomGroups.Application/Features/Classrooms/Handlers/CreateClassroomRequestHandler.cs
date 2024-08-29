@@ -1,15 +1,13 @@
 using System.Security.Claims;
-using ClassroomGroups.Application.Features.Accounts.Requests;
 using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Accounts.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 
 public class CreateClassroomRequestHandler(
   ClassroomGroupsContext dbContext,

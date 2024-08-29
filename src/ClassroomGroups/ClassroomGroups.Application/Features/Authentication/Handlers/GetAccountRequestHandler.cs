@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using ClassroomGroups.Application.Features.Accounts.Requests;
+using ClassroomGroups.Application.Features.Authentication.Requests;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Accounts.Handlers;
+namespace ClassroomGroups.Application.Features.Authentication.Handlers;
 
 public class GetAccountRequestHandler(
   ClassroomGroupsContext dbContext,

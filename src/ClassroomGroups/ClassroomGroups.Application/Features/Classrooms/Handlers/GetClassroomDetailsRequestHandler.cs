@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Accounts.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 
 public class GetClassroomDetailsRequestHandler(
   ClassroomGroupsContext dbContext,

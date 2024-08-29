@@ -37,7 +37,8 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Classrooms)
       .WithOne(e => e.AccountDTO)
       .HasForeignKey(e => e.AccountKey)
-      .HasPrincipalKey(e => e.Key);
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<ClassroomDTO>().HasIndex(classroomDTO => classroomDTO.Id).IsUnique();
     modelBuilder
@@ -45,19 +46,22 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Students)
       .WithOne(e => e.ClassroomDTO)
       .HasForeignKey(e => e.ClassroomKey)
-      .HasPrincipalKey(e => e.Key);
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Cascade);
     modelBuilder
       .Entity<ClassroomDTO>()
       .HasMany(e => e.Fields)
       .WithOne(e => e.ClassroomDTO)
       .HasForeignKey(e => e.ClassroomKey)
-      .HasPrincipalKey(e => e.Key);
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Cascade);
     modelBuilder
       .Entity<ClassroomDTO>()
       .HasMany(e => e.Configurations)
       .WithOne(e => e.ClassroomDTO)
       .HasForeignKey(e => e.ClassroomKey)
-      .HasPrincipalKey(e => e.Key);
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Cascade);
 
     modelBuilder
       .Entity<ConfigurationDTO>()
@@ -68,7 +72,8 @@ public class ClassroomGroupsContext : DbContext
       .HasMany(e => e.Groups)
       .WithOne(e => e.ConfigurationDTO)
       .HasForeignKey(e => e.ConfigurationKey)
-      .HasPrincipalKey(e => e.Key);
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Cascade);
 
     // Many to Many
     modelBuilder.Entity<FieldDTO>().HasIndex(fieldDTO => fieldDTO.Id).IsUnique();
@@ -131,5 +136,18 @@ public class ClassroomGroupsContext : DbContext
           j.HasKey(t => new { t.StudentKey, t.GroupKey });
         }
       );
+
+    modelBuilder
+      .Entity<ColumnDTO>()
+      .HasOne(c => c.ConfigurationDTO)
+      .WithMany(c => c.Columns)
+      .HasForeignKey(c => c.ConfigurationKey)
+      .OnDelete(DeleteBehavior.Cascade);
+    modelBuilder
+      .Entity<ColumnDTO>()
+      .HasOne(c => c.FieldDTO)
+      .WithMany(f => f.Columns)
+      .HasForeignKey(c => c.FieldKey)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

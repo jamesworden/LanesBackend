@@ -1,6 +1,6 @@
-using ClassroomGroups.Application.Features.Accounts.Requests;
 using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +25,15 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   [HttpPost()]
   public async Task<CreateClassroomResponse?> CreateClassroom(
     [FromBody] CreateClassroomRequest request
+  )
+  {
+    return await _mediator.Send(request);
+  }
+
+  [Authorize]
+  [HttpDelete()]
+  public async Task<DeleteClassroomResponse?> DeleteClassroom(
+    [FromBody] DeleteClassroomRequest request
   )
   {
     return await _mediator.Send(request);
