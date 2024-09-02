@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
 using MediatR;
@@ -11,12 +11,15 @@ namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 
 public class CreateClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor
+  IHttpContextAccessor httpContextAccessor,
+  IMediator mediator
 ) : IRequestHandler<CreateClassroomRequest, CreateClassroomResponse?>
 {
   ClassroomGroupsContext _dbContext = dbContext;
 
   IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
+  IMediator _mediator = mediator;
 
   public async Task<CreateClassroomResponse?> Handle(
     CreateClassroomRequest request,
@@ -59,56 +62,15 @@ public class CreateClassroomRequestHandler(
       return null;
     }
 
-    var configurationDTO = new ConfigurationDTO
-    {
-      Id = Guid.NewGuid(),
-      Label = request.Label,
-      ClassroomId = classroom.Id,
-      ClassroomKey = classroomDTO.Key
-    };
-    var configurationEntity = await _dbContext.Configurations.AddAsync(
-      configurationDTO,
-      cancellationToken
-    );
-    await _dbContext.SaveChangesAsync(cancellationToken);
-    var configuration = configurationEntity.Entity?.ToConfiguration();
-    if (configuration is null)
+    var createConfigurationRequest = new CreateConfigurationRequest(request.Label, classroom.Id);
+
+    var configurationRes = await _mediator.Send(createConfigurationRequest);
+
+    if (configurationRes is null)
     {
       return null;
     }
 
-    // List<FieldDTO> fieldDTOs =
-    //   await _dbContext
-    //     .Fields.Where(f => f.ClassroomKey == classroomDTO.Key)
-    //     .ToListAsync(cancellationToken) ?? [];
-
-    // List<ColumnDTO> columnDTOs = fieldDTOs
-    //   .Select(
-    //     (f, index) =>
-    //       new ColumnDTO()
-    //       {
-    //         Id = Guid.NewGuid(),
-    //         Enabled = true,
-    //         Ordinal = index,
-    //         ConfigurationId = configuration.Id,
-    //         ConfigurationKey = configurationDTO.Key,
-    //         Sort = ColumnSort.NONE,
-    //         FieldId = f.Id,
-    //         FieldKey = f.Key
-    //       }
-    //   )
-    //   .ToList();
-
-    // await _dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
-    // await _dbContext.SaveChangesAsync(cancellationToken);
-
-    // List<ColumnDTO> resultingColumnDTOs =
-    //   await _dbContext
-    //     .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
-    //     .ToListAsync(cancellationToken) ?? [];
-
-    // var columns = columnDTOs.Select(c => c.ToColumn()).ToList();
-
-    return new CreateClassroomResponse(classroom, configuration);
+    return new CreateClassroomResponse(classroom, configurationRes.Configuration);
   }
 }

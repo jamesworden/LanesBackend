@@ -1,9 +1,7 @@
 using System.Security.Claims;
-using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.DataAccess.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

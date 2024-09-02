@@ -1,4 +1,3 @@
-using ClassroomGroups.Application.Features.Accounts.Responses;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
@@ -36,6 +35,17 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     [FromBody] DeleteClassroomRequest request
   )
   {
+    return await _mediator.Send(request);
+  }
+
+  [Authorize]
+  [HttpPost("api/v1/classrooms/{classroomId}/configurations")]
+  public async Task<CreateConfigurationResponse?> CreateConfiguration(
+    [FromRoute] Guid classroomId,
+    [FromBody] CreateConfigurationRequest request
+  )
+  {
+    request.ClassroomId = classroomId;
     return await _mediator.Send(request);
   }
 }
