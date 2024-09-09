@@ -9,17 +9,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 
-public class GetClassroomDetailsRequestHandler(
+public class GetClassroomsRequestHandler(
   ClassroomGroupsContext dbContext,
   IHttpContextAccessor httpContextAccessor
-) : IRequestHandler<GetClassroomDetailRequest, List<ClassroomDetail>?>
+) : IRequestHandler<GetClassroomsRequest, List<Classroom>?>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
+  ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-  public async Task<List<ClassroomDetail>?> Handle(
-    GetClassroomDetailRequest request,
+  public async Task<List<Classroom>?> Handle(
+    GetClassroomsRequest request,
     CancellationToken cancellationToken
   )
   {
@@ -43,32 +43,15 @@ public class GetClassroomDetailsRequestHandler(
       return null;
     }
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == accountDTO.Id)
-        .ToListAsync(cancellationToken)
-    ).Select(c => c.Id);
-
-    var fieldDetails =
-      (
-        await _dbContext
-          .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
-          .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(f => f.ToFieldDetail())
-        .ToList() ?? [];
-
-    var classroomDetails =
+    var classrooms =
       (
         await _dbContext
           .Classrooms.Where(c => c.AccountKey == accountDTO.Key)
-          .Select(c => new ClassroomDetailDTO(c.Id, c.AccountId, c.Label, c.Description))
           .ToListAsync(cancellationToken)
       )
-        .Select(c => c.ToClassroomDetail(fieldDetails))
+        .Select(c => c.ToClassroom())
         .ToList() ?? [];
 
-    return classroomDetails;
+    return classrooms;
   }
 }

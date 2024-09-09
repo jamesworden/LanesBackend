@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Requests;
 
-public record GetClassroomDetailsRequest() : IRequest<ClassroomDetails?> { }
+public record GetClassroomDetailRequest() : IRequest<List<ClassroomDetail>?> { }

@@ -14,10 +14,17 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   private readonly IMediator _mediator = mediator;
 
   [Authorize]
-  [HttpGet("classroom-details")]
-  public async Task<ClassroomDetails?> GetClassroomDetails()
+  [HttpGet("configuration-detail/{configurationId}")]
+  public async Task<ConfigurationDetail?> GetConfigurationDetail([FromRoute] Guid configurationId)
   {
-    return await _mediator.Send(new GetClassroomDetailsRequest());
+    return await _mediator.Send(new GetConfigurationDetailRequest(configurationId));
+  }
+
+  [Authorize]
+  [HttpGet("classroom-details")]
+  public async Task<List<ClassroomDetail>?> GetClassroomDetails()
+  {
+    return await _mediator.Send(new GetClassroomDetailRequest());
   }
 
   [Authorize]
