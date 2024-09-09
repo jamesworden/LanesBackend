@@ -88,7 +88,9 @@ public class GetConfigurationDetailRequestHandler(
 
     var configurationDetail = (
       await _dbContext
-        .Configurations.Where(c => c.Id == request.ConfigurationId)
+        .Configurations.Where(c =>
+          c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
+        )
         .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
         .FirstOrDefaultAsync(cancellationToken)
     )?.ToConfigurationDetail(groupDetails, columnDetails);

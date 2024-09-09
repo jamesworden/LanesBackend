@@ -3,7 +3,5 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Requests;
 
-public record GetConfigurationDetailRequest(Guid ConfigurationId) : IRequest<ConfigurationDetail?>
-{
-  public Guid ConfigurationId { get; set; } = ConfigurationId;
-}
+public record GetConfigurationDetailRequest(Guid ClassroomId, Guid ConfigurationId)
+  : IRequest<ConfigurationDetail?> { }
