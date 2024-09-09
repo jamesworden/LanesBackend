@@ -20,4 +20,9 @@ public class Column(
   public bool Enabled { get; private set; } = Enabled;
 
   public ColumnSort Sort { get; private set; } = Sort;
+
+  public ColumnDetail ToColumnDetail(FieldType Type)
+  {
+    return new ColumnDetail(Id, ConfigurationId, FieldId, Ordinal, Sort, Enabled, Type);
+  }
 }

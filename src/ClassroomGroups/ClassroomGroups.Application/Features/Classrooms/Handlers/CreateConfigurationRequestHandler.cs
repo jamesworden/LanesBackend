@@ -12,12 +12,15 @@ namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 
 public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor
+  IHttpContextAccessor httpContextAccessor,
+  IMediator mediator
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse?>
 {
-  ClassroomGroupsContext _dbContext = dbContext;
+  readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
+  readonly IMediator _mediator = mediator;
 
   public async Task<CreateConfigurationResponse?> Handle(
     CreateConfigurationRequest request,
@@ -103,8 +106,16 @@ public class CreateConfigurationRequestHandler(
         .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
         .ToListAsync(cancellationToken) ?? [];
 
-    var columns = columnDTOs.Select(c => c.ToColumn()).ToList();
+    var configurationDetail = await _mediator.Send(
+      new GetConfigurationDetailRequest(configuration.ClassroomId, configuration.Id),
+      cancellationToken
+    );
 
-    return new CreateConfigurationResponse(configuration);
+    if (configurationDetail is null)
+    {
+      return null;
+    }
+
+    return new CreateConfigurationResponse(configurationDetail);
   }
 }
