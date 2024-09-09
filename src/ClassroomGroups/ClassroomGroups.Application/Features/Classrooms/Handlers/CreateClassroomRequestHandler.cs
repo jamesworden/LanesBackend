@@ -50,7 +50,7 @@ public class CreateClassroomRequestHandler(
     {
       Id = Guid.NewGuid(),
       Label = request.Label,
-      Description = "",
+      Description = request.Description,
       AccountKey = accountDTO.Key,
       AccountId = accountDTO.Id
     };
