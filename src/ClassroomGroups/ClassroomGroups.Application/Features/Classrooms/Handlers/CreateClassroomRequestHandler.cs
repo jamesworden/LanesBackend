@@ -62,15 +62,18 @@ public class CreateClassroomRequestHandler(
       return null;
     }
 
-    var createConfigurationRequest = new CreateConfigurationRequest(request.Label, classroom.Id);
+    var fieldDetails =
+      (
+        await _dbContext
+          .Fields.Where(f => f.ClassroomId == classroom.Id)
+          .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(f => f.ToFieldDetail())
+        .ToList() ?? [];
 
-    var configurationRes = await _mediator.Send(createConfigurationRequest);
+    var createdClassroomDetail = classroom.ToClassroomDetail(fieldDetails);
 
-    if (configurationRes is null)
-    {
-      return null;
-    }
-
-    return new CreateClassroomResponse(classroom, configurationRes.Configuration);
+    return new CreateClassroomResponse(createdClassroomDetail);
   }
 }

@@ -9,4 +9,9 @@ public class Classroom(Guid Id, Guid AccountId, string Label, string? Descriptio
   public string Label { get; private set; } = Label;
 
   public string? Description { get; private set; } = Description;
+
+  public ClassroomDetail ToClassroomDetail(List<FieldDetail> fieldDetails)
+  {
+    return new ClassroomDetail(Id, AccountId, Label, Description, fieldDetails);
+  }
 }
