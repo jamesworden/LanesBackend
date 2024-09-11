@@ -1,6 +1,6 @@
+using ClassroomGroups.Application.Features.Classrooms.RequestBodies;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,10 +40,10 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   [Authorize]
   [HttpPost()]
   public async Task<CreateClassroomResponse?> CreateClassroom(
-    [FromBody] CreateClassroomRequest request
+    [FromBody] CreateClassroomRequestBody body
   )
   {
-    return await _mediator.Send(request);
+    return await _mediator.Send(new CreateClassroomRequest(body.Label, body.Description));
   }
 
   [Authorize]
@@ -57,10 +57,9 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   [HttpPost("{classroomId}/configurations")]
   public async Task<CreateConfigurationResponse?> CreateConfiguration(
     [FromRoute] Guid classroomId,
-    [FromBody] CreateConfigurationRequest request
+    [FromBody] CreateConfigurationRequestBody body
   )
   {
-    request.ClassroomId = classroomId;
-    return await _mediator.Send(request);
+    return await _mediator.Send(new CreateConfigurationRequest(body.Label, classroomId));
   }
 }
