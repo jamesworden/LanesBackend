@@ -23,7 +23,7 @@ public class CreateClassroomRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = (Account)_authBehaviorCache["Account"];
+    var account = (Account)_authBehaviorCache[AuthBehaviorItem.Account];
 
     var classroomDTO = new ClassroomDTO()
     {

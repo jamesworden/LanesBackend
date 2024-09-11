@@ -43,8 +43,7 @@ public class AuthBehavior<TRequest, TResponse>(
         cancellationToken
       ) ?? throw new Exception();
 
-    _authBehaviorCache["Account"] = accountDTO.ToAccount();
-    _authBehaviorCache["User"] = _httpContextAccessor.HttpContext.User;
+    _authBehaviorCache[AuthBehaviorItem.Account] = accountDTO.ToAccount();
 
     var response = await next();
 
@@ -53,3 +52,8 @@ public class AuthBehavior<TRequest, TResponse>(
 }
 
 public class AuthBehaviorCache() : Dictionary<string, object> { }
+
+public static class AuthBehaviorItem
+{
+  public static readonly string Account = "Account";
+}

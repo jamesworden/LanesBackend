@@ -15,7 +15,7 @@ public class GetAccountRequestHandler(AuthBehaviorCache authBehaviorCache)
     CancellationToken cancellationToken
   )
   {
-    var account = (Account)_authBehaviorCache["Account"];
+    var account = (Account)_authBehaviorCache[AuthBehaviorItem.Account];
     await Task.CompletedTask;
     return account.ToAccountView();
   }
