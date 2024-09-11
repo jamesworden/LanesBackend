@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -12,13 +12,13 @@ namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 public class GetConfigurationDetailRequestHandler(
   ClassroomGroupsContext dbContext,
   IHttpContextAccessor httpContextAccessor
-) : IRequestHandler<GetConfigurationDetailRequest, ConfigurationDetail?>
+) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse?>
 {
   ClassroomGroupsContext _dbContext = dbContext;
 
   IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-  public async Task<ConfigurationDetail?> Handle(
+  public async Task<GetConfigurationDetailResponse?> Handle(
     GetConfigurationDetailRequest request,
     CancellationToken cancellationToken
   )
@@ -95,6 +95,11 @@ public class GetConfigurationDetailRequestHandler(
         .FirstOrDefaultAsync(cancellationToken)
     )?.ToConfigurationDetail(groupDetails, columnDetails);
 
-    return configurationDetail;
+    if (configurationDetail is null)
+    {
+      return null;
+    }
+
+    return new GetConfigurationDetailResponse(configurationDetail);
   }
 }

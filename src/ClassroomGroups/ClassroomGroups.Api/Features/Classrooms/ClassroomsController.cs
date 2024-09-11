@@ -15,7 +15,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
 
   [Authorize]
   [HttpGet("{classroomId}/configuration-detail/{configurationId}")]
-  public async Task<ConfigurationDetail?> GetConfigurationDetail(
+  public async Task<GetConfigurationDetailResponse?> GetConfigurationDetail(
     [FromRoute] Guid configurationId,
     [FromRoute] Guid classroomId
   )

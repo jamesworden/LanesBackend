@@ -106,10 +106,12 @@ public class CreateConfigurationRequestHandler(
         .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
         .ToListAsync(cancellationToken) ?? [];
 
-    var configurationDetail = await _mediator.Send(
-      new GetConfigurationDetailRequest(configuration.ClassroomId, configuration.Id),
-      cancellationToken
-    );
+    var configurationDetail = (
+      await _mediator.Send(
+        new GetConfigurationDetailRequest(configuration.ClassroomId, configuration.Id),
+        cancellationToken
+      )
+    )?.ConfigurationDetail;
 
     if (configurationDetail is null)
     {
