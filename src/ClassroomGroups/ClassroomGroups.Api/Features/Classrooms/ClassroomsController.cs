@@ -39,7 +39,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
 
   [Authorize]
   [HttpPost()]
-  public async Task<CreateClassroomResponse?> CreateClassroom(
+  public async Task<CreateClassroomResponse> CreateClassroom(
     [FromBody] CreateClassroomRequestBody body
   )
   {

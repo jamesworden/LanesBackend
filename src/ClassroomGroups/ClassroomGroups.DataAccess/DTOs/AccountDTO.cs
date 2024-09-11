@@ -18,6 +18,6 @@ public class AccountDTO
 
   public Account ToAccount()
   {
-    return new Account(Id, PrimaryEmail);
+    return new Account(Id, PrimaryEmail, Key);
   }
 }

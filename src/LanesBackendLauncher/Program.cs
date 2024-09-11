@@ -6,8 +6,13 @@ using ChessOfCards.DataAccess.Interfaces;
 using ChessOfCards.DataAccess.Repositories;
 using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
+using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Authentication.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -77,9 +82,22 @@ builder
   });
 builder.Services.AddCors();
 
+// ChessOfCards
 builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
+
+// ClassroomGroups
+builder.Services.AddScoped<AuthBehaviorCache>();
+
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<CreateClassroomRequest, CreateClassroomResponse?>),
+  typeof(AuthBehavior<CreateClassroomRequest, CreateClassroomResponse?>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<GetAccountRequest, AccountView>),
+  typeof(AuthBehavior<GetAccountRequest, AccountView>)
+);
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
 

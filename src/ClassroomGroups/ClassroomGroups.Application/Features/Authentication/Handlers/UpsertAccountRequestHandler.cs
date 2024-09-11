@@ -11,13 +11,13 @@ namespace ClassroomGroups.Application.Features.Authentication.Handlers;
 public class UpsertAccountRequestHandler(
   ClassroomGroupsContext dbContext,
   IHttpContextAccessor httpContextAccessor
-) : IRequestHandler<UpsertAccountRequest, Account?>
+) : IRequestHandler<UpsertAccountRequest, AccountView?>
 {
   ClassroomGroupsContext _dbContext = dbContext;
 
   IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-  public async Task<Account?> Handle(
+  public async Task<AccountView?> Handle(
     UpsertAccountRequest request,
     CancellationToken cancellationToken
   )
@@ -46,7 +46,7 @@ public class UpsertAccountRequestHandler(
     );
     if (existingAccountDTO is not null)
     {
-      return existingAccountDTO.ToAccount();
+      return existingAccountDTO.ToAccount().ToAccountView();
     }
     var accountDTO = await _dbContext.Accounts.AddAsync(
       new()
@@ -58,6 +58,6 @@ public class UpsertAccountRequestHandler(
       cancellationToken
     );
     await _dbContext.SaveChangesAsync(cancellationToken);
-    return accountDTO.Entity?.ToAccount();
+    return accountDTO.Entity?.ToAccount().ToAccountView();
   }
 }

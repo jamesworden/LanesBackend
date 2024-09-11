@@ -60,7 +60,7 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
 
   [Authorize]
   [HttpGet("get-account")]
-  public async Task<Account?> GetAccount()
+  public async Task<AccountView> GetAccount()
   {
     return await _mediator.Send(new GetAccountRequest());
   }

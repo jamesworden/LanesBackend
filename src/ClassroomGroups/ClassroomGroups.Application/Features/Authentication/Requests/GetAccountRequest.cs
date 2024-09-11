@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Authentication.Requests;
 
-public record GetAccountRequest() : IRequest<Account?> { }
+public record GetAccountRequest() : IRequest<AccountView> { }
