@@ -25,7 +25,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
 
   [Authorize]
   [HttpGet("classroom-details")]
-  public async Task<List<ClassroomDetail>?> GetClassroomDetails()
+  public async Task<GetClassroomDetailsResponse?> GetClassroomDetails()
   {
     return await _mediator.Send(new GetClassroomDetailRequest());
   }

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
+using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
@@ -12,13 +13,13 @@ namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
 public class GetClassroomDetailsRequestHandler(
   ClassroomGroupsContext dbContext,
   IHttpContextAccessor httpContextAccessor
-) : IRequestHandler<GetClassroomDetailRequest, List<ClassroomDetail>?>
+) : IRequestHandler<GetClassroomDetailRequest, GetClassroomDetailsResponse?>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-  public async Task<List<ClassroomDetail>?> Handle(
+  public async Task<GetClassroomDetailsResponse?> Handle(
     GetClassroomDetailRequest request,
     CancellationToken cancellationToken
   )
@@ -69,6 +70,6 @@ public class GetClassroomDetailsRequestHandler(
         .Select(c => c.ToClassroomDetail(fieldDetails))
         .ToList() ?? [];
 
-    return classroomDetails;
+    return new GetClassroomDetailsResponse(classroomDetails);
   }
 }
