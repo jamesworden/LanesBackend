@@ -2,7 +2,7 @@ using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 
-namespace ClassroomGroups.Application.Features.Authentication.GetAccount;
+namespace ClassroomGroups.Application.Features.Authentication;
 
 public record GetAccountRequest() : IRequest<AccountView?> { }
 

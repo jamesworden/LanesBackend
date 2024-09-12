@@ -8,7 +8,6 @@ using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Authentication;
-using ClassroomGroups.Application.Features.Authentication.GetAccount;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
