@@ -15,7 +15,7 @@ public record GetConfigurationDetailRequest(Guid ClassroomId, Guid Configuration
 public class GetConfigurationDetailRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache
-) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse?>
+) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
