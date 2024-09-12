@@ -46,14 +46,14 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
 
   [Authorize]
   [HttpDelete("{classroomId}")]
-  public async Task<DeleteClassroomResponse?> DeleteClassroom([FromRoute] Guid classroomId)
+  public async Task<DeleteClassroomResponse> DeleteClassroom([FromRoute] Guid classroomId)
   {
     return await _mediator.Send(new DeleteClassroomRequest(classroomId));
   }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations")]
-  public async Task<CreateConfigurationResponse?> CreateConfiguration(
+  public async Task<CreateConfigurationResponse> CreateConfiguration(
     [FromRoute] Guid classroomId,
     [FromBody] CreateConfigurationRequestBody body
   )
