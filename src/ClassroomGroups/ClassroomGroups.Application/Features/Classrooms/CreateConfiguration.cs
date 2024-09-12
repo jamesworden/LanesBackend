@@ -8,7 +8,19 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms;
+
+public record CreateConfigurationRequestBody(string Label) { }
+
+public record CreateConfigurationRequest(string Label, Guid ClassroomId)
+  : IRequest<CreateConfigurationResponse?>
+{
+  public string Label { get; set; } = Label;
+
+  public Guid ClassroomId { get; set; } = ClassroomId;
+}
+
+public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 
 public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
