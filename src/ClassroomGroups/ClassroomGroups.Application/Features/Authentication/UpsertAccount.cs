@@ -6,26 +6,28 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Authentication;
 
-public record UpsertAccountRequest() : IRequest<AccountView> { }
+public record UpsertAccountRequest() : IRequest<UpsertAccountResponse> { }
+
+public record UpsertAccountResponse(AccountView Account) { }
 
 public class UpsertAccountRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache
-) : IRequestHandler<UpsertAccountRequest, AccountView?>
+) : IRequestHandler<UpsertAccountRequest, UpsertAccountResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  public async Task<AccountView?> Handle(
+  public async Task<UpsertAccountResponse> Handle(
     UpsertAccountRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
-    if (account is not null)
+    var existingAccount = _authBehaviorCache.Account;
+    if (existingAccount is not null)
     {
-      return account.ToAccountView();
+      return new UpsertAccountResponse(existingAccount.ToAccountView());
     }
     var user = _authBehaviorCache.User ?? throw new Exception();
 
@@ -47,6 +49,7 @@ public class UpsertAccountRequestHandler(
       cancellationToken
     );
     await _dbContext.SaveChangesAsync(cancellationToken);
-    return accountDTO.Entity?.ToAccount().ToAccountView();
+    var account = accountDTO.Entity.ToAccount().ToAccountView() ?? throw new Exception();
+    return new UpsertAccountResponse(account);
   }
 }

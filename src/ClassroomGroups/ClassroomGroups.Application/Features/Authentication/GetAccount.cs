@@ -6,6 +6,8 @@ namespace ClassroomGroups.Application.Features.Authentication;
 
 public record GetAccountRequest() : IRequest<AccountView?> { }
 
+public record GetAccountResponse(AccountView? Account) { }
+
 public class GetAccountRequestHandler(AuthBehaviorCache authBehaviorCache)
   : IRequestHandler<GetAccountRequest, AccountView?>
 {

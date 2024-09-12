@@ -98,8 +98,8 @@ builder.Services.AddTransient(
   typeof(AuthBehavior<GetAccountRequest, AccountView?>)
 );
 builder.Services.AddTransient(
-  typeof(IPipelineBehavior<UpsertAccountRequest, AccountView>),
-  typeof(AuthBehavior<UpsertAccountRequest, AccountView>)
+  typeof(IPipelineBehavior<UpsertAccountRequest, UpsertAccountResponse>),
+  typeof(AuthBehavior<UpsertAccountRequest, UpsertAccountResponse>)
 );
 builder.Services.AddTransient(
   typeof(IPipelineBehavior<GetClassroomsRequest, GetClassroomsResponse>),
