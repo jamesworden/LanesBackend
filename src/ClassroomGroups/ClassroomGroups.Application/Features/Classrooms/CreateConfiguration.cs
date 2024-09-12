@@ -1,11 +1,8 @@
-using System.Security.Claims;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
+using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
@@ -24,13 +21,13 @@ public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurati
 
 public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor,
+  AuthBehaviorCache authBehaviorCache,
   IMediator mediator
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse?>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
   readonly IMediator _mediator = mediator;
 
@@ -39,25 +36,7 @@ public class CreateConfigurationRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    if (_httpContextAccessor.HttpContext is null)
-    {
-      return null;
-    }
-    var googleNameIdentifier = _httpContextAccessor
-      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
-      ?.Value;
-    if (googleNameIdentifier is null)
-    {
-      return null;
-    }
-    var accountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
-      a => a.GoogleNameIdentifier == googleNameIdentifier,
-      cancellationToken
-    );
-    if (accountDTO is null)
-    {
-      return null;
-    }
+    var account = authBehaviorCache.Account ?? throw new Exception();
 
     ClassroomDTO? classroomDTO = (
       await _dbContext

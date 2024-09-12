@@ -1,11 +1,9 @@
-using System.Security.Claims;
+using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
 
@@ -16,40 +14,22 @@ public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroo
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor
+  AuthBehaviorCache authBehaviorCache
 ) : IRequestHandler<DeleteClassroomRequest, DeleteClassroomResponse?>
 {
-  ClassroomGroupsContext _dbContext = dbContext;
+  readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
   public async Task<DeleteClassroomResponse?> Handle(
     DeleteClassroomRequest request,
     CancellationToken cancellationToken
   )
   {
-    if (_httpContextAccessor.HttpContext is null)
-    {
-      return null;
-    }
-    var googleNameIdentifier = _httpContextAccessor
-      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
-      ?.Value;
-    if (googleNameIdentifier is null)
-    {
-      return null;
-    }
-    var accountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
-      a => a.GoogleNameIdentifier == googleNameIdentifier,
-      cancellationToken
-    );
-    if (accountDTO is null)
-    {
-      return null;
-    }
+    var account = authBehaviorCache.Account ?? throw new Exception();
 
     var classroom = _dbContext.Classrooms.SingleOrDefault(c =>
-      c.Id == request.ClassroomId && c.AccountId == accountDTO.Id
+      c.Id == request.ClassroomId && c.AccountId == account.Id
     );
     if (classroom is null)
     {

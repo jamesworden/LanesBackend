@@ -1,7 +1,4 @@
 using ClassroomGroups.Application.Features.Classrooms;
-using ClassroomGroups.Application.Features.Classrooms.Handlers;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +25,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   [HttpGet("classroom-details")]
   public async Task<GetClassroomDetailsResponse?> GetClassroomDetails()
   {
-    return await _mediator.Send(new GetClassroomDetailRequest());
+    return await _mediator.Send(new GetClassroomDetailsRequest());
   }
 
   [Authorize]

@@ -1,47 +1,32 @@
-using System.Security.Claims;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
+using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms;
+
+public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDetail) { }
+
+public record GetConfigurationDetailRequest(Guid ClassroomId, Guid ConfigurationId)
+  : IRequest<GetConfigurationDetailResponse> { }
 
 public class GetConfigurationDetailRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor
+  AuthBehaviorCache authBehaviorCache
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse?>
 {
-  ClassroomGroupsContext _dbContext = dbContext;
+  readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  public async Task<GetConfigurationDetailResponse?> Handle(
+  public async Task<GetConfigurationDetailResponse> Handle(
     GetConfigurationDetailRequest request,
     CancellationToken cancellationToken
   )
   {
-    if (_httpContextAccessor.HttpContext is null)
-    {
-      return null;
-    }
-    var googleNameIdentifier = _httpContextAccessor
-      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
-      ?.Value;
-    if (googleNameIdentifier is null)
-    {
-      return null;
-    }
-    var accountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
-      a => a.GoogleNameIdentifier == googleNameIdentifier,
-      cancellationToken
-    );
-    if (accountDTO is null)
-    {
-      return null;
-    }
+    var account = _authBehaviorCache.Account ?? throw new Exception();
 
     var studentDetails =
       (
@@ -86,19 +71,15 @@ public class GetConfigurationDetailRequestHandler(
       .Select(c => c.ToColumnDetail())
       .ToList();
 
-    var configurationDetail = (
-      await _dbContext
-        .Configurations.Where(c =>
-          c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
-        )
-        .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
-        .FirstOrDefaultAsync(cancellationToken)
-    )?.ToConfigurationDetail(groupDetails, columnDetails);
-
-    if (configurationDetail is null)
-    {
-      return null;
-    }
+    var configurationDetail =
+      (
+        await _dbContext
+          .Configurations.Where(c =>
+            c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
+          )
+          .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
+          .FirstOrDefaultAsync(cancellationToken)
+      )?.ToConfigurationDetail(groupDetails, columnDetails) ?? throw new Exception();
 
     return new GetConfigurationDetailResponse(configurationDetail);
   }

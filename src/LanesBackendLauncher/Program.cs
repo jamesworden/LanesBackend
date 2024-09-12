@@ -9,8 +9,6 @@ using ClassroomGroups.Api.Features.Classrooms;
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
@@ -102,6 +100,18 @@ builder.Services.AddTransient(
 builder.Services.AddTransient(
   typeof(IPipelineBehavior<UpsertAccountRequest, AccountView>),
   typeof(AuthBehavior<UpsertAccountRequest, AccountView>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<GetClassroomsRequest, GetClassroomsResponse>),
+  typeof(AuthBehavior<GetClassroomsRequest, GetClassroomsResponse>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<GetClassroomDetailsRequest, GetClassroomDetailsResponse>),
+  typeof(AuthBehavior<GetClassroomDetailsRequest, GetClassroomDetailsResponse>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>),
+  typeof(AuthBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>)
 );
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
