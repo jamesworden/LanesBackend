@@ -1,5 +1,4 @@
 using ClassroomGroups.Application.Features.Authentication;
-using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
