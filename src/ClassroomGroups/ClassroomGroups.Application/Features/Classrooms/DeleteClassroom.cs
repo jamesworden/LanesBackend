@@ -7,10 +7,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
 
-public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse?>
-{
-  public Guid ClassroomId { get; set; } = ClassroomId;
-}
+public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse?> { }
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,

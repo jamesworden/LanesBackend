@@ -10,12 +10,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateConfigurationRequestBody(string Label) { }
 
 public record CreateConfigurationRequest(string Label, Guid ClassroomId)
-  : IRequest<CreateConfigurationResponse?>
-{
-  public string Label { get; set; } = Label;
-
-  public Guid ClassroomId { get; set; } = ClassroomId;
-}
+  : IRequest<CreateConfigurationResponse?> { }
 
 public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 
