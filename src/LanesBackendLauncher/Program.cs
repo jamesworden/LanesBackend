@@ -112,7 +112,8 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(CreateConfigurationRequest),
     typeof(CreateConfigurationResponse),
     [typeof(AuthBehavior<,>)]
-  )
+  ),
+  (typeof(DeleteClassroomRequest), typeof(DeleteClassroomResponse), [typeof(AuthBehavior<,>)])
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
