@@ -1,4 +1,5 @@
 using ClassroomGroups.Application.Features.Classrooms;
+using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,5 +60,18 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   )
   {
     return await _mediator.Send(new CreateConfigurationRequest(body.Label, classroomId));
+  }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}")]
+  public async Task<PatchConfigurationResponse> PatchConfiguration(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] PatchConfigurationRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new PatchConfigurationRequest(classroomId, configurationId, body.Configuration)
+    );
   }
 }

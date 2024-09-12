@@ -5,9 +5,9 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
-
 public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse> { }
+
+public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,

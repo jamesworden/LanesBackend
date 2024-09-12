@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetClassroomsResponse(List<Classroom> Classrooms) { }
-
 public record GetClassroomsRequest(Guid ConfigurationId) : IRequest<GetClassroomsResponse> { }
+
+public record GetClassroomsResponse(List<Classroom> Classrooms) { }
 
 public class GetClassroomsRequestHandler(
   ClassroomGroupsContext dbContext,

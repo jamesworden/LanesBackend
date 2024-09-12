@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetClassroomDetailsResponse(List<ClassroomDetail> ClassroomDetails) { }
-
 public record GetClassroomDetailsRequest() : IRequest<GetClassroomDetailsResponse> { }
+
+public record GetClassroomDetailsResponse(List<ClassroomDetail> ClassroomDetails) { }
 
 public class GetClassroomDetailsRequestHandler(
   ClassroomGroupsContext dbContext,

@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record CreateConfigurationRequestBody(string Label) { }
-
 public record CreateConfigurationRequest(string Label, Guid ClassroomId)
   : IRequest<CreateConfigurationResponse> { }
+
+public record CreateConfigurationRequestBody(string Label) { }
 
 public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 

@@ -5,10 +5,10 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDetail) { }
-
 public record GetConfigurationDetailRequest(Guid ClassroomId, Guid ConfigurationId)
   : IRequest<GetConfigurationDetailResponse> { }
+
+public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDetail) { }
 
 public class GetConfigurationDetailRequestHandler(
   AuthBehaviorCache authBehaviorCache,
