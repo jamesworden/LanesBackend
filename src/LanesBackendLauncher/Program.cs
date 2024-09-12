@@ -11,7 +11,6 @@ using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -118,6 +117,10 @@ builder.Services.AddTransient(
 builder.Services.AddTransient(
   typeof(IPipelineBehavior<GetConfigurationsRequest, GetConfigurationsResponse>),
   typeof(AuthBehavior<GetConfigurationsRequest, GetConfigurationsResponse>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<CreateConfigurationRequest, CreateConfigurationResponse>),
+  typeof(AuthBehavior<CreateConfigurationRequest, CreateConfigurationResponse>)
 );
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
