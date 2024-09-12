@@ -11,7 +11,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateConfigurationRequestBody(string Label) { }
 
 public record CreateConfigurationRequest(string Label, Guid ClassroomId)
-  : IRequest<CreateConfigurationResponse?> { }
+  : IRequest<CreateConfigurationResponse> { }
 
 public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 
@@ -19,7 +19,7 @@ public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
   IGetConfigurationDetailService getConfigurationDetailService
-) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse?>
+) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
@@ -28,23 +28,19 @@ public class CreateConfigurationRequestHandler(
   readonly IGetConfigurationDetailService _getConfigurationDetailService =
     getConfigurationDetailService;
 
-  public async Task<CreateConfigurationResponse?> Handle(
+  public async Task<CreateConfigurationResponse> Handle(
     CreateConfigurationRequest request,
     CancellationToken cancellationToken
   )
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    ClassroomDTO? classroomDTO = (
-      await _dbContext
-        .Classrooms.Where(c => c.Id == request.ClassroomId)
-        .ToListAsync(cancellationToken) ?? []
-    ).FirstOrDefault();
-
-    if (classroomDTO is null)
-    {
-      return null;
-    }
+    ClassroomDTO? classroomDTO =
+      (
+        await _dbContext
+          .Classrooms.Where(c => c.Id == request.ClassroomId)
+          .ToListAsync(cancellationToken) ?? []
+      ).FirstOrDefault() ?? throw new Exception();
 
     var configurationDTO = new ConfigurationDTO
     {
@@ -58,11 +54,7 @@ public class CreateConfigurationRequestHandler(
       cancellationToken
     );
     await _dbContext.SaveChangesAsync(cancellationToken);
-    var configuration = configurationEntity.Entity?.ToConfiguration();
-    if (configuration is null)
-    {
-      return null;
-    }
+    var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
 
     List<FieldDTO> fieldDTOs =
       await _dbContext
