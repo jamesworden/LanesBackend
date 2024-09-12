@@ -56,7 +56,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddHttpContextAccessor();
 
-// Register event handlers from assemblies
+// [MediatR EventHandler Registry]
 builder.Services.AddMediatR(cfg =>
   cfg.RegisterServicesFromAssemblies(
     typeof(GameNameInvalidCommandHandler).GetTypeInfo().Assembly, // Represents the 'ChessOfCards.Api' project.
@@ -65,7 +65,7 @@ builder.Services.AddMediatR(cfg =>
   )
 );
 
-// Register controllers from assemblies
+// [ClassroomGroups Controller Registry]
 builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationController).Assembly);
 
 builder.Services.AddControllers();
@@ -81,47 +81,35 @@ builder
   });
 builder.Services.AddCors();
 
-// ChessOfCards
+// [ChessOfCards Service Registry]
 builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
-// ClassroomGroups
+// [ClassroomGroups Service Regsitry]
 builder.Services.AddScoped<AuthBehaviorCache>();
 builder.Services.AddScoped<IGetConfigurationDetailService, GetConfigurationDetailService>();
 
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<CreateClassroomRequest, CreateClassroomResponse?>),
-  typeof(AuthBehavior<CreateClassroomRequest, CreateClassroomResponse?>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetAccountRequest, GetAccountResponse>),
-  typeof(AuthBehavior<GetAccountRequest, GetAccountResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<UpsertAccountRequest, UpsertAccountResponse>),
-  typeof(AuthBehavior<UpsertAccountRequest, UpsertAccountResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetClassroomsRequest, GetClassroomsResponse>),
-  typeof(AuthBehavior<GetClassroomsRequest, GetClassroomsResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetClassroomDetailsRequest, GetClassroomDetailsResponse>),
-  typeof(AuthBehavior<GetClassroomDetailsRequest, GetClassroomDetailsResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>),
-  typeof(AuthBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetConfigurationsRequest, GetConfigurationsResponse>),
-  typeof(AuthBehavior<GetConfigurationsRequest, GetConfigurationsResponse>)
-);
-builder.Services.AddTransient(
-  typeof(IPipelineBehavior<CreateConfigurationRequest, CreateConfigurationResponse>),
-  typeof(AuthBehavior<CreateConfigurationRequest, CreateConfigurationResponse>)
-);
+// [ClassroomGroups PipelineBehavior Registry]
+var pipelineBehaviors = new (Type request, Type response)[]
+{
+  (typeof(CreateClassroomRequest), typeof(CreateClassroomResponse)),
+  (typeof(GetAccountRequest), typeof(GetAccountResponse)),
+  (typeof(UpsertAccountRequest), typeof(UpsertAccountResponse)),
+  (typeof(GetClassroomsRequest), typeof(GetClassroomsResponse)),
+  (typeof(GetClassroomDetailsRequest), typeof(GetClassroomDetailsResponse)),
+  (typeof(GetConfigurationDetailRequest), typeof(GetConfigurationDetailResponse)),
+  (typeof(GetConfigurationsRequest), typeof(GetConfigurationsResponse)),
+  (typeof(CreateConfigurationRequest), typeof(CreateConfigurationResponse))
+};
+
+foreach (var (request, response) in pipelineBehaviors)
+{
+  builder.Services.AddTransient(
+    typeof(IPipelineBehavior<,>).MakeGenericType(request, response),
+    typeof(AuthBehavior<,>).MakeGenericType(request, response)
+  );
+}
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
 
