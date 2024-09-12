@@ -26,28 +26,34 @@ public class AuthBehavior<TRequest, TResponse>(
     CancellationToken cancellationToken
   )
   {
+    _authBehaviorCache[AuthBehaviorItem.Account] = GetAssociatedAccount(cancellationToken);
+    _authBehaviorCache[AuthBehaviorItem.User] = _httpContextAccessor.HttpContext.User;
+    var response = await next();
+    return response;
+  }
+
+  private async Task<Account?> GetAssociatedAccount(CancellationToken cancellationToken)
+  {
     if (_httpContextAccessor.HttpContext is null)
     {
-      throw new Exception();
+      return null;
     }
-    var googleNameIdentifier =
-      (
-        _httpContextAccessor
-          .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
-          ?.Value
-      ) ?? throw new Exception();
-
-    var accountDTO =
-      await _dbContext.Accounts.FirstOrDefaultAsync(
-        a => a.GoogleNameIdentifier == googleNameIdentifier,
-        cancellationToken
-      ) ?? throw new Exception();
-
-    _authBehaviorCache[AuthBehaviorItem.Account] = accountDTO.ToAccount();
-
-    var response = await next();
-
-    return response;
+    var googleNameIdentifier = _httpContextAccessor
+      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
+      ?.Value;
+    if (googleNameIdentifier is null)
+    {
+      return null;
+    }
+    var accountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
+      a => a.GoogleNameIdentifier == googleNameIdentifier,
+      cancellationToken
+    );
+    if (accountDTO is null)
+    {
+      return null;
+    }
+    return accountDTO.ToAccount();
   }
 }
 
@@ -56,4 +62,6 @@ public class AuthBehaviorCache() : Dictionary<string, object> { }
 public static class AuthBehaviorItem
 {
   public static readonly string Account = "Account";
+
+  public static readonly string User = "User";
 }

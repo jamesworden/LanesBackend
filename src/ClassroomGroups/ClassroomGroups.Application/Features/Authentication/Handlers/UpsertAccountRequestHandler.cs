@@ -1,53 +1,41 @@
 using System.Security.Claims;
+using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Authentication.Requests;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Authentication.Handlers;
 
 public class UpsertAccountRequestHandler(
   ClassroomGroupsContext dbContext,
-  IHttpContextAccessor httpContextAccessor
+  AuthBehaviorCache authBehaviorCache
 ) : IRequestHandler<UpsertAccountRequest, AccountView?>
 {
-  ClassroomGroupsContext _dbContext = dbContext;
+  readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
   public async Task<AccountView?> Handle(
     UpsertAccountRequest request,
     CancellationToken cancellationToken
   )
   {
-    if (_httpContextAccessor.HttpContext is null)
+    var account = (Account)_authBehaviorCache[AuthBehaviorItem.Account];
+    if (account is not null)
     {
-      return null;
+      return account.ToAccountView();
     }
-    var googleNameIdentifier = _httpContextAccessor
-      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)
-      ?.Value;
-    if (googleNameIdentifier is null)
-    {
-      return null;
-    }
-    var primaryEmail = _httpContextAccessor
-      .HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)
-      ?.Value;
-    if (primaryEmail is null)
-    {
-      return null;
-    }
-    var existingAccountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
-      a => a.GoogleNameIdentifier == googleNameIdentifier,
-      cancellationToken
-    );
-    if (existingAccountDTO is not null)
-    {
-      return existingAccountDTO.ToAccount().ToAccountView();
-    }
+    var user = (ClaimsPrincipal)_authBehaviorCache[AuthBehaviorItem.User] ?? throw new Exception();
+
+    var primaryEmail =
+      (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value)
+      ?? throw new Exception();
+
+    var googleNameIdentifier =
+      (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value)
+      ?? throw new Exception();
+
     var accountDTO = await _dbContext.Accounts.AddAsync(
       new()
       {
