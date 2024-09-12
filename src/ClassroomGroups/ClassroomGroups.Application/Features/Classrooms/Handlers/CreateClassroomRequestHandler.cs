@@ -3,7 +3,6 @@ using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +22,7 @@ public class CreateClassroomRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = (Account)_authBehaviorCache[AuthBehaviorItem.Account];
+    var account = _authBehaviorCache.Account ?? throw new Exception();
 
     var classroomDTO = new ClassroomDTO()
     {

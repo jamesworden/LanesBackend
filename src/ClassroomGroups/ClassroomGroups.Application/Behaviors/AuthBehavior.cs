@@ -26,8 +26,8 @@ public class AuthBehavior<TRequest, TResponse>(
     CancellationToken cancellationToken
   )
   {
-    _authBehaviorCache[AuthBehaviorItem.Account] = GetAssociatedAccount(cancellationToken);
-    _authBehaviorCache[AuthBehaviorItem.User] = _httpContextAccessor.HttpContext.User;
+    _authBehaviorCache.Account = await GetAssociatedAccount(cancellationToken);
+    _authBehaviorCache.User = _httpContextAccessor.HttpContext.User;
     var response = await next();
     return response;
   }
@@ -57,11 +57,9 @@ public class AuthBehavior<TRequest, TResponse>(
   }
 }
 
-public class AuthBehaviorCache() : Dictionary<string, object> { }
-
-public static class AuthBehaviorItem
+public class AuthBehaviorCache()
 {
-  public static readonly string Account = "Account";
+  public Account? Account { get; set; }
 
-  public static readonly string User = "User";
+  public ClaimsPrincipal? User { get; set; }
 }

@@ -1,4 +1,5 @@
-using ClassroomGroups.Application.Features.Authentication.Requests;
+using ClassroomGroups.Application.Features.Authentication;
+using ClassroomGroups.Application.Features.Authentication.GetAccount;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
@@ -60,7 +61,7 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
 
   [Authorize]
   [HttpGet("get-account")]
-  public async Task<AccountView> GetAccount()
+  public async Task<AccountView?> GetAccount()
   {
     return await _mediator.Send(new GetAccountRequest());
   }

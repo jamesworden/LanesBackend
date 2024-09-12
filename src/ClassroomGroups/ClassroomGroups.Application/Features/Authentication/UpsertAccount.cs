@@ -1,11 +1,12 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Behaviors;
-using ClassroomGroups.Application.Features.Authentication.Requests;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
 
-namespace ClassroomGroups.Application.Features.Authentication.Handlers;
+namespace ClassroomGroups.Application.Features.Authentication;
+
+public record UpsertAccountRequest() : IRequest<AccountView> { }
 
 public class UpsertAccountRequestHandler(
   ClassroomGroupsContext dbContext,
@@ -21,12 +22,12 @@ public class UpsertAccountRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = (Account)_authBehaviorCache[AuthBehaviorItem.Account];
+    var account = _authBehaviorCache.Account;
     if (account is not null)
     {
       return account.ToAccountView();
     }
-    var user = (ClaimsPrincipal)_authBehaviorCache[AuthBehaviorItem.User] ?? throw new Exception();
+    var user = _authBehaviorCache.User ?? throw new Exception();
 
     var primaryEmail =
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value)

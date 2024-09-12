@@ -7,7 +7,8 @@ using ChessOfCards.DataAccess.Repositories;
 using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
 using ClassroomGroups.Application.Behaviors;
-using ClassroomGroups.Application.Features.Authentication.Requests;
+using ClassroomGroups.Application.Features.Authentication;
+using ClassroomGroups.Application.Features.Authentication.GetAccount;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
@@ -95,8 +96,12 @@ builder.Services.AddTransient(
   typeof(AuthBehavior<CreateClassroomRequest, CreateClassroomResponse?>)
 );
 builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetAccountRequest, AccountView>),
-  typeof(AuthBehavior<GetAccountRequest, AccountView>)
+  typeof(IPipelineBehavior<GetAccountRequest, AccountView?>),
+  typeof(AuthBehavior<GetAccountRequest, AccountView?>)
+);
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<UpsertAccountRequest, AccountView>),
+  typeof(AuthBehavior<UpsertAccountRequest, AccountView>)
 );
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
