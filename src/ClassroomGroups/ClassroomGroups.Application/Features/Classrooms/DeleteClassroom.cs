@@ -1,12 +1,18 @@
 using System.Security.Claims;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
+
+public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
+
+public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse?>
+{
+  public Guid ClassroomId { get; set; } = ClassroomId;
+}
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
