@@ -20,12 +20,10 @@ Not many people play Lanes, or `chessofcards.com`. it's also likely that not man
 
 ### App Secrets & Environment Variables
 
-To make this repository open source, a few things need to be done:
+To make this repository open source, I had to do a few things:
 - Purge my commit history of sensitive data
 - Make sensitive data that I will not purge from commit history "un-sensitive"
 - Use enviornment variable injection to not reveal sensitive data, like connection strings or api keys.
-
-This section addresses how these issues ought to be handled.
 
 #### What is an 'App Secret' or 'Environment Variable'
 
