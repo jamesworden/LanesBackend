@@ -30,7 +30,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
 
   [Authorize]
   [HttpGet("{classroomId}/configurations")]
-  public async Task<GetConfigurationsResponse?> GetConfigurations([FromRoute] Guid classroomId)
+  public async Task<GetConfigurationsResponse> GetConfigurations([FromRoute] Guid classroomId)
   {
     return await _mediator.Send(new GetConfigurationsRequest(classroomId));
   }
