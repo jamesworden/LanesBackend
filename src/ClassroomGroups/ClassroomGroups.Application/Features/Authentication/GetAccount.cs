@@ -4,22 +4,22 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Authentication;
 
-public record GetAccountRequest() : IRequest<AccountView?> { }
+public record GetAccountRequest() : IRequest<GetAccountResponse> { }
 
 public record GetAccountResponse(AccountView? Account) { }
 
 public class GetAccountRequestHandler(AuthBehaviorCache authBehaviorCache)
-  : IRequestHandler<GetAccountRequest, AccountView?>
+  : IRequestHandler<GetAccountRequest, GetAccountResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  public async Task<AccountView?> Handle(
+  public async Task<GetAccountResponse> Handle(
     GetAccountRequest request,
     CancellationToken cancellationToken
   )
   {
     var account = _authBehaviorCache.Account;
     await Task.CompletedTask;
-    return account?.ToAccountView();
+    return new GetAccountResponse(account?.ToAccountView());
   }
 }
