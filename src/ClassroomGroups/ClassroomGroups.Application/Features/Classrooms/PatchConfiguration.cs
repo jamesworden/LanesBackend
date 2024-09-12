@@ -15,7 +15,7 @@ public record PatchConfigurationRequest(
 
 public record PatchConfigurationRequestBody(Configuration Configuration) { }
 
-public record PatchConfigurationResponse(ConfigurationDetail ConfigurationDetail) { }
+public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
 
 public class PatchConfigurationDetailRequestHandler(
   AuthBehaviorCache authBehaviorCache,
@@ -41,7 +41,9 @@ public class PatchConfigurationDetailRequestHandler(
       await _dbContext
         .Classrooms.Where(c => c.AccountId == account.Id)
         .ToListAsync(cancellationToken)
-    ).Select(c => c.Id);
+    )
+      .Select(c => c.Id)
+      .ToList();
 
     var configurationDTO =
       await _dbContext
