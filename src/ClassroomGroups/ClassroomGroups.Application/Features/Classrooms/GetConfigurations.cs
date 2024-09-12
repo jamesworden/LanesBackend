@@ -8,18 +8,18 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record GetConfigurationsResponse(List<Configuration> Configurations) { }
 
-public record GetConfigurationsRequest(Guid ClassroomId) : IRequest<GetConfigurationsResponse?> { }
+public record GetConfigurationsRequest(Guid ClassroomId) : IRequest<GetConfigurationsResponse> { }
 
 public class GetConfigurationsRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache
-) : IRequestHandler<GetConfigurationsRequest, GetConfigurationsResponse?>
+) : IRequestHandler<GetConfigurationsRequest, GetConfigurationsResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  public async Task<GetConfigurationsResponse?> Handle(
+  public async Task<GetConfigurationsResponse> Handle(
     GetConfigurationsRequest request,
     CancellationToken cancellationToken
   )

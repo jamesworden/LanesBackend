@@ -113,6 +113,10 @@ builder.Services.AddTransient(
   typeof(IPipelineBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>),
   typeof(AuthBehavior<GetConfigurationDetailRequest, GetConfigurationDetailResponse>)
 );
+builder.Services.AddTransient(
+  typeof(IPipelineBehavior<GetConfigurationsRequest, GetConfigurationsResponse>),
+  typeof(AuthBehavior<GetConfigurationsRequest, GetConfigurationsResponse>)
+);
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
 
