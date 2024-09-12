@@ -1,4 +1,5 @@
 using ClassroomGroups.Application.Behaviors;
+using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
@@ -17,14 +18,15 @@ public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurati
 public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IMediator mediator
+  IGetConfigurationDetailService getConfigurationDetailService
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse?>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
-  readonly IMediator _mediator = mediator;
+  readonly IGetConfigurationDetailService _getConfigurationDetailService =
+    getConfigurationDetailService;
 
   public async Task<CreateConfigurationResponse?> Handle(
     CreateConfigurationRequest request,
@@ -92,17 +94,13 @@ public class CreateConfigurationRequestHandler(
         .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
         .ToListAsync(cancellationToken) ?? [];
 
-    var configurationDetail = (
-      await _mediator.Send(
-        new GetConfigurationDetailRequest(configuration.ClassroomId, configuration.Id),
+    var configurationDetail =
+      await _getConfigurationDetailService.GetConfigurationDetail(
+        account.Id,
+        request.ClassroomId,
+        configuration.Id,
         cancellationToken
-      )
-    )?.ConfigurationDetail;
-
-    if (configurationDetail is null)
-    {
-      return null;
-    }
+      ) ?? throw new Exception();
 
     return new CreateConfigurationResponse(configurationDetail);
   }

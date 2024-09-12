@@ -9,6 +9,7 @@ using ClassroomGroups.Api.Features.Classrooms;
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
+using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
 using MediatR;
@@ -88,6 +89,7 @@ builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
 // ClassroomGroups
 builder.Services.AddScoped<AuthBehaviorCache>();
+builder.Services.AddScoped<IGetConfigurationDetailService, GetConfigurationDetailService>();
 
 builder.Services.AddTransient(
   typeof(IPipelineBehavior<CreateClassroomRequest, CreateClassroomResponse?>),
