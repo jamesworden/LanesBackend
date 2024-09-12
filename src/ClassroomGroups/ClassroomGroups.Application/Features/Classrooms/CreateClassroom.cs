@@ -1,12 +1,18 @@
 using ClassroomGroups.Application.Behaviors;
-using ClassroomGroups.Application.Features.Classrooms.Requests;
-using ClassroomGroups.Application.Features.Classrooms.Responses;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
+using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClassroomGroups.Application.Features.Classrooms.Handlers;
+namespace ClassroomGroups.Application.Features.Classrooms;
+
+public record CreateClassroomRequest(string Label, string? Description)
+  : IRequest<CreateClassroomResponse> { }
+
+public record CreateClassroomRequestBody(string Label, string? Description) { }
+
+public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { }
 
 public class CreateClassroomRequestHandler(
   ClassroomGroupsContext dbContext,

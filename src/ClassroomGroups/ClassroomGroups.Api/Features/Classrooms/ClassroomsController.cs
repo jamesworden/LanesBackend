@@ -1,3 +1,4 @@
+using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.RequestBodies;
 using ClassroomGroups.Application.Features.Classrooms.Requests;
 using ClassroomGroups.Application.Features.Classrooms.Responses;
