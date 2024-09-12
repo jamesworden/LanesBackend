@@ -1,4 +1,4 @@
-namespace ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 public class Configuration(Guid Id, Guid ClassroomId, string Label, string? Description)
 {

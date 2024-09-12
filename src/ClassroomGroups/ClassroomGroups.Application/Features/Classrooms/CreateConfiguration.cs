@@ -2,7 +2,7 @@ using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

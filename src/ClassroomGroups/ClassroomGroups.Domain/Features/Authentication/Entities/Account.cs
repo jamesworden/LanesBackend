@@ -1,4 +1,4 @@
-namespace ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+namespace ClassroomGroups.Domain.Features.Authentication.Entities;
 
 public class Account(Guid Id, string PrimaryEmail, int Key)
 {

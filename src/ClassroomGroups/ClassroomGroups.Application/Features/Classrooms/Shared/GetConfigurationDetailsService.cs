@@ -1,6 +1,6 @@
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Shared;

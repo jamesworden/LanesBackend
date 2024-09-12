@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

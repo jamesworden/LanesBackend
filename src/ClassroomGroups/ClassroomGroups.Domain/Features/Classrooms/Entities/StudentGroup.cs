@@ -1,4 +1,4 @@
-namespace ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 public class StudentGroup(Guid Id, Guid StudentId, Guid GroupId, int Ordinal)
 {

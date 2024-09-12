@@ -1,5 +1,5 @@
 using ClassroomGroups.Application.Features.Authentication;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -60,7 +60,7 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
 
   [Authorize]
   [HttpGet("get-account")]
-  public async Task<AccountView?> GetAccount()
+  public async Task<GetAccountResponse> GetAccount()
   {
     return await _mediator.Send(new GetAccountRequest());
   }

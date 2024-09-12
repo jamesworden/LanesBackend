@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 
 namespace ClassroomGroups.Application.Features.Authentication;

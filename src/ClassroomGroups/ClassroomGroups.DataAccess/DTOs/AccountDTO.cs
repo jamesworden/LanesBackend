@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 

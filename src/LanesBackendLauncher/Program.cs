@@ -11,7 +11,7 @@ using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.Account;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -96,8 +96,8 @@ builder.Services.AddTransient(
   typeof(AuthBehavior<CreateClassroomRequest, CreateClassroomResponse?>)
 );
 builder.Services.AddTransient(
-  typeof(IPipelineBehavior<GetAccountRequest, AccountView?>),
-  typeof(AuthBehavior<GetAccountRequest, AccountView?>)
+  typeof(IPipelineBehavior<GetAccountRequest, GetAccountResponse>),
+  typeof(AuthBehavior<GetAccountRequest, GetAccountResponse>)
 );
 builder.Services.AddTransient(
   typeof(IPipelineBehavior<UpsertAccountRequest, UpsertAccountResponse>),

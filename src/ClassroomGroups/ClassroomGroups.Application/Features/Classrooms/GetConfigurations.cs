@@ -1,6 +1,6 @@
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
-using ClassroomGroups.Domain.Features.Classrooms.Entities.ClassroomDetails;
+using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
