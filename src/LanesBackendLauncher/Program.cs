@@ -119,6 +119,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(PatchConfigurationResponse),
     [typeof(AuthBehavior<,>)]
   ),
+  (typeof(PatchClassroomRequest), typeof(PatchClassroomResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

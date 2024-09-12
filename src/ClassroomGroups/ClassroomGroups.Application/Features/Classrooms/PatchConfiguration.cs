@@ -17,7 +17,7 @@ public record PatchConfigurationRequestBody(Configuration Configuration) { }
 
 public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
 
-public class PatchConfigurationDetailRequestHandler(
+public class PatchConfigurationRequestHandler(
   AuthBehaviorCache authBehaviorCache,
   IGetConfigurationDetailService getConfigurationDetailService,
   ClassroomGroupsContext classroomGroupsContext

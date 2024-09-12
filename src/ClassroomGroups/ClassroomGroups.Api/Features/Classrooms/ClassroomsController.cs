@@ -74,4 +74,14 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new PatchConfigurationRequest(classroomId, configurationId, body.Configuration)
     );
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}")]
+  public async Task<PatchClassroomResponse> PatchClassroom(
+    [FromRoute] Guid classroomId,
+    [FromBody] PatchClassroomRequestBody body
+  )
+  {
+    return await _mediator.Send(new PatchClassroomRequest(classroomId, body.Classroom));
+  }
 }
