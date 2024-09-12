@@ -91,24 +91,38 @@ builder.Services.AddScoped<AuthBehaviorCache>();
 builder.Services.AddScoped<IGetConfigurationDetailService, GetConfigurationDetailService>();
 
 // [ClassroomGroups PipelineBehavior Registry]
-var pipelineBehaviors = new (Type request, Type response)[]
+var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
 {
-  (typeof(CreateClassroomRequest), typeof(CreateClassroomResponse)),
-  (typeof(GetAccountRequest), typeof(GetAccountResponse)),
-  (typeof(UpsertAccountRequest), typeof(UpsertAccountResponse)),
-  (typeof(GetClassroomsRequest), typeof(GetClassroomsResponse)),
-  (typeof(GetClassroomDetailsRequest), typeof(GetClassroomDetailsResponse)),
-  (typeof(GetConfigurationDetailRequest), typeof(GetConfigurationDetailResponse)),
-  (typeof(GetConfigurationsRequest), typeof(GetConfigurationsResponse)),
-  (typeof(CreateConfigurationRequest), typeof(CreateConfigurationResponse))
+  (typeof(CreateClassroomRequest), typeof(CreateClassroomResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(GetAccountRequest), typeof(GetAccountResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(UpsertAccountRequest), typeof(UpsertAccountResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(GetClassroomsRequest), typeof(GetClassroomsResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(GetClassroomDetailsRequest),
+    typeof(GetClassroomDetailsResponse),
+    [typeof(AuthBehavior<,>)]
+  ),
+  (
+    typeof(GetConfigurationDetailRequest),
+    typeof(GetConfigurationDetailResponse),
+    [typeof(AuthBehavior<,>)]
+  ),
+  (typeof(GetConfigurationsRequest), typeof(GetConfigurationsResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(CreateConfigurationRequest),
+    typeof(CreateConfigurationResponse),
+    [typeof(AuthBehavior<,>)]
+  )
 };
-
-foreach (var (request, response) in pipelineBehaviors)
+foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
-  builder.Services.AddTransient(
-    typeof(IPipelineBehavior<,>).MakeGenericType(request, response),
-    typeof(AuthBehavior<,>).MakeGenericType(request, response)
-  );
+  foreach (var behavior in behaviors)
+  {
+    builder.Services.AddTransient(
+      typeof(IPipelineBehavior<,>).MakeGenericType(request, response),
+      behavior.MakeGenericType(request, response)
+    );
+  }
 }
 
 var connectionString = builder.Configuration["ClassroomGroups:ConnectionString"] ?? "";
