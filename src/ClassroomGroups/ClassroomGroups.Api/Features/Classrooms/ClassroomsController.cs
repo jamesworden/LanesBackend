@@ -118,4 +118,18 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new CreateStudentRequest(classroomId, body.ConfigurationId, body.GroupId)
     );
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}")]
+  public async Task<PatchGroupResponse> PatchConfiguration(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId,
+    [FromBody] PatchGroupRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new PatchGroupRequest(classroomId, configurationId, groupId, body.Group)
+    );
+  }
 }
