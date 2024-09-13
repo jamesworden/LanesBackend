@@ -6,7 +6,8 @@ public class ConfigurationDetail(
   string Label,
   string? Description,
   List<GroupDetail> GroupDetails,
-  List<ColumnDetail> ColumnDetails
+  List<ColumnDetail> ColumnDetails,
+  List<StudentWithFields> UnassignedStudents
 )
 {
   public Guid Id { get; private set; } = Id;
@@ -20,4 +21,6 @@ public class ConfigurationDetail(
   public List<GroupDetail> GroupDetails { get; private set; } = GroupDetails;
 
   public List<ColumnDetail> ColumnDetails { get; private set; } = ColumnDetails;
+
+  public List<StudentWithFields> UnassignedStudents { get; private set; } = UnassignedStudents;
 }

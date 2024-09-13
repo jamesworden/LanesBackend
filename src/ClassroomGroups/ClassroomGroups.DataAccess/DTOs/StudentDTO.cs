@@ -10,11 +10,11 @@ public class StudentDTO
   public int Key { get; set; }
 
   [InverseProperty("StudentId")]
-  public Guid Id { get; private set; }
+  public Guid Id { get; set; }
 
-  public ClassroomDTO ClassroomDTO { get; private set; } = null!;
+  public ClassroomDTO ClassroomDTO { get; set; } = null!;
   public int ClassroomKey { get; set; }
-  public Guid ClassroomId { get; private set; }
+  public Guid ClassroomId { get; set; }
 
   public ICollection<FieldDTO> Fields { get; } = [];
   public ICollection<StudentFieldDTO> StudentFields { get; set; } = [];

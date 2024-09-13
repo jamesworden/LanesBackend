@@ -76,6 +76,31 @@ public class GetConfigurationDetailService(ClassroomGroupsContext dbContext)
       .Select(c => c.Id)
       .ToList();
 
+    var unassignedStudents = (
+      await _dbContext
+        .Students.Where(s =>
+          !_dbContext.StudentGroups.Any(sg =>
+            sg.StudentId == s.Id && sg.GroupDTO.ConfigurationId == configurationId
+          )
+        )
+        .Select(s => new
+        {
+          StudentDTO = s,
+          StudentFields = _dbContext
+            .StudentFields.Where(sf => sf.StudentId == s.Id)
+            .Select(sf => new { sf.FieldId, sf.Value })
+            .ToList()
+        })
+        .ToListAsync(cancellationToken)
+    )
+      .Select(s => new
+      {
+        Student = s.StudentDTO.ToStudent(),
+        Fields = s.StudentFields.ToDictionary(sf => sf.FieldId, sf => sf.Value)
+      })
+      .Select(s => s.Student.WithFields(s.Fields))
+      .ToList();
+
     var configurationDetail =
       (
         await _dbContext
@@ -86,7 +111,8 @@ public class GetConfigurationDetailService(ClassroomGroupsContext dbContext)
           )
           .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
           .FirstOrDefaultAsync(cancellationToken)
-      )?.ToConfigurationDetail(groupDetails, columnDetails) ?? throw new Exception();
+      )?.ToConfigurationDetail(groupDetails, columnDetails, unassignedStudents)
+      ?? throw new Exception();
 
     return configurationDetail;
   }

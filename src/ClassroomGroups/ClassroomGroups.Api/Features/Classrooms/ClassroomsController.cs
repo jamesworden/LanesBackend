@@ -106,4 +106,16 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new DeleteGroupRequest(classroomId, configurationId, groupId));
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}/students")]
+  public async Task<CreateStudentResponse> CreateStudent(
+    [FromRoute] Guid classroomId,
+    [FromBody] CreateStudentRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new CreateStudentRequest(classroomId, body.ConfigurationId, body.GroupId)
+    );
+  }
 }
