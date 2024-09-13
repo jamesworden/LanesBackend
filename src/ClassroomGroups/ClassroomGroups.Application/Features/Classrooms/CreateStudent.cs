@@ -76,6 +76,19 @@ public class CreateStudentRequestHandler(
 
     await _dbContext.SaveChangesAsync(cancellationToken);
 
+    var studentFieldDTOs = await _dbContext
+      .Fields.Where(f => f.ClassroomId == request.ClassroomId)
+      .Select(f => new StudentFieldDTO
+      {
+        FieldId = f.Id,
+        FieldKey = f.Key,
+        StudentId = studentEntity.Entity.Id,
+        StudentKey = studentEntity.Entity.Key,
+      })
+      .ToListAsync(cancellationToken);
+
+    await _dbContext.StudentFields.AddRangeAsync(studentFieldDTOs, cancellationToken);
+
     var configurationDetail =
       await _getConfigurationDetailService.GetConfigurationDetail(
         account.Id,
