@@ -36,6 +36,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new GetConfigurationsRequest(classroomId));
   }
 
+  public record CreateClassroomRequestBody(string Label, string? Description) { }
+
   [Authorize]
   [HttpPost()]
   public async Task<CreateClassroomResponse> CreateClassroom(
@@ -44,6 +46,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new CreateClassroomRequest(body.Label, body.Description));
   }
+
+  public record CreateConfigurationRequestBody(string Label) { }
 
   [Authorize]
   [HttpDelete("{classroomId}")]
@@ -62,6 +66,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new CreateConfigurationRequest(body.Label, classroomId));
   }
 
+  public record PatchConfigurationRequestBody(Configuration Configuration) { }
+
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}")]
   public async Task<PatchConfigurationResponse> PatchConfiguration(
@@ -75,6 +81,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     );
   }
 
+  public record PatchClassroomRequestBody(Classroom Classroom) { }
+
   [Authorize]
   [HttpPost("{classroomId}")]
   public async Task<PatchClassroomResponse> PatchClassroom(
@@ -84,6 +92,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new PatchClassroomRequest(classroomId, body.Classroom));
   }
+
+  public record CreateGroupRequestBody(string? Label) { }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}/groups")]
@@ -107,6 +117,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new DeleteGroupRequest(classroomId, configurationId, groupId));
   }
 
+  public record CreateStudentRequestBody(Guid ConfigurationId, Guid GroupId) { }
+
   [Authorize]
   [HttpPost("{classroomId}/students")]
   public async Task<CreateStudentResponse> CreateStudent(
@@ -118,6 +130,8 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new CreateStudentRequest(classroomId, body.ConfigurationId, body.GroupId)
     );
   }
+
+  public record PatchGroupRequestBody(Group Group) { }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}")]

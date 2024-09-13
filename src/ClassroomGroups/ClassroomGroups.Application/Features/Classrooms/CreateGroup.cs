@@ -11,8 +11,6 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateGroupRequest(Guid ClassroomId, Guid ConfigurationId, string? Label)
   : IRequest<CreateGroupResponse> { }
 
-public record CreateGroupRequestBody(string? Label) { }
-
 public record CreateGroupResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
 
 public class CreateGroupRequestHandler(

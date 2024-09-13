@@ -10,8 +10,6 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateClassroomRequest(string Label, string? Description)
   : IRequest<CreateClassroomResponse> { }
 
-public record CreateClassroomRequestBody(string Label, string? Description) { }
-
 public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { }
 
 public class CreateClassroomRequestHandler(

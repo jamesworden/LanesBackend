@@ -10,8 +10,6 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record PatchClassroomRequest(Guid ClassroomId, Classroom Classroom)
   : IRequest<PatchClassroomResponse> { }
 
-public record PatchClassroomRequestBody(Classroom Classroom) { }
-
 public record PatchClassroomResponse(ClassroomDetail PatchedClassroomDetail) { }
 
 public class PatchClassroomRequestHandler(

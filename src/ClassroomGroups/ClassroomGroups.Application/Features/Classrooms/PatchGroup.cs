@@ -10,8 +10,6 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, Group Group)
   : IRequest<PatchGroupResponse> { }
 
-public record PatchGroupRequestBody(Group Group) { }
-
 public record PatchGroupResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
 
 public class PatchGroupRequestHandler(

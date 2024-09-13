@@ -13,8 +13,6 @@ public record PatchConfigurationRequest(
   Configuration Configuration
 ) : IRequest<PatchConfigurationResponse> { }
 
-public record PatchConfigurationRequestBody(Configuration Configuration) { }
-
 public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
 
 public class PatchConfigurationRequestHandler(
