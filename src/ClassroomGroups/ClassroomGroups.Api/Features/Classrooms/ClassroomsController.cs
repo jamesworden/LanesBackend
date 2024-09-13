@@ -95,4 +95,15 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new CreateGroupRequest(classroomId, configurationId, body.Label));
   }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/configurations/{configurationId}/groups/{groupId}")]
+  public async Task<DeleteGroupResponse> DeleteGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId
+  )
+  {
+    return await _mediator.Send(new DeleteGroupRequest(classroomId, configurationId, groupId));
+  }
 }

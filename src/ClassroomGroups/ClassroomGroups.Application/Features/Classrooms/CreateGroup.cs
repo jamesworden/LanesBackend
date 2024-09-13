@@ -35,10 +35,20 @@ public class CreateGroupRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
+    var classroomIds = (
+      await _dbContext
+        .Classrooms.Where(c => c.AccountId == account.Id)
+        .ToListAsync(cancellationToken)
+    )
+      .Select(c => c.Id)
+      .ToList();
+
     var configurationDTO =
       await _dbContext
         .Configurations.Where(c =>
-          c.ClassroomId == request.ClassroomId && c.Id == request.ConfigurationId
+          c.ClassroomId == request.ClassroomId
+          && c.Id == request.ConfigurationId
+          && classroomIds.Contains(c.ClassroomId)
         )
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
