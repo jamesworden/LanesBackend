@@ -61,14 +61,7 @@ public class CreateGroupRequestHandler(
     };
     var groupEntity = await _dbContext.Groups.AddAsync(groupDTO, cancellationToken);
 
-    try
-    {
-      await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-    }
+    await _dbContext.SaveChangesAsync(cancellationToken);
 
     var configurationDetail =
       await _getConfigurationDetailService.GetConfigurationDetail(
