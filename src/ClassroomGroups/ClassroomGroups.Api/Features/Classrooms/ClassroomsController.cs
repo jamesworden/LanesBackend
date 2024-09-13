@@ -84,4 +84,15 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new PatchClassroomRequest(classroomId, body.Classroom));
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups")]
+  public async Task<CreateGroupResponse> CreateGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] CreateGroupRequestBody body
+  )
+  {
+    return await _mediator.Send(new CreateGroupRequest(classroomId, configurationId, body.Label));
+  }
 }

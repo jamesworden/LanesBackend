@@ -120,6 +120,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     [typeof(AuthBehavior<,>)]
   ),
   (typeof(PatchClassroomRequest), typeof(PatchClassroomResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(CreateGroupRequest), typeof(CreateGroupResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
