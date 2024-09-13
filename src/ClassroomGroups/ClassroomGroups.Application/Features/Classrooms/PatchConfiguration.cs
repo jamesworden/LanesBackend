@@ -17,14 +17,13 @@ public record PatchConfigurationResponse(ConfigurationDetail PatchedConfiguratio
 
 public class PatchConfigurationRequestHandler(
   AuthBehaviorCache authBehaviorCache,
-  IGetConfigurationDetailService getConfigurationDetailService,
+  IGetDetailService getConfigurationDetailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchConfigurationRequest, PatchConfigurationResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  readonly IGetConfigurationDetailService _getConfigurationDetailService =
-    getConfigurationDetailService;
+  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
 
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 

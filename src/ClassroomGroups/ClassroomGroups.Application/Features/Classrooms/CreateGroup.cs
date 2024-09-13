@@ -16,15 +16,14 @@ public record CreateGroupResponse(ConfigurationDetail UpdatedConfigurationDetail
 public class CreateGroupRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IGetConfigurationDetailService getConfigurationDetailService
+  IGetDetailService getConfigurationDetailService
 ) : IRequestHandler<CreateGroupRequest, CreateGroupResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
-  readonly IGetConfigurationDetailService _getConfigurationDetailService =
-    getConfigurationDetailService;
+  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
 
   public async Task<CreateGroupResponse> Handle(
     CreateGroupRequest request,

@@ -88,7 +88,7 @@ builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
 // [ClassroomGroups Service Regsitry]
 builder.Services.AddScoped<AuthBehaviorCache>();
-builder.Services.AddScoped<IGetConfigurationDetailService, GetConfigurationDetailService>();
+builder.Services.AddScoped<IGetDetailService, GetDetailService>();
 
 // [ClassroomGroups PipelineBehavior Registry]
 var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]

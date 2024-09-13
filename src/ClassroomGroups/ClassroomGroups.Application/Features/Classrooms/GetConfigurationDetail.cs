@@ -12,13 +12,12 @@ public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDe
 
 public class GetConfigurationDetailRequestHandler(
   AuthBehaviorCache authBehaviorCache,
-  IGetConfigurationDetailService getConfigurationDetailService
+  IGetDetailService getConfigurationDetailService
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  readonly IGetConfigurationDetailService _getConfigurationDetailService =
-    getConfigurationDetailService;
+  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
 
   public async Task<GetConfigurationDetailResponse> Handle(
     GetConfigurationDetailRequest request,

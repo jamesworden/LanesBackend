@@ -15,15 +15,14 @@ public record DeleteGroupResponse(ConfigurationDetail UpdatedConfigurationDetail
 public class DeleteGroupRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IGetConfigurationDetailService getConfigurationDetailService
+  IGetDetailService getConfigurationDetailService
 ) : IRequestHandler<DeleteGroupRequest, DeleteGroupResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
-  readonly IGetConfigurationDetailService _getConfigurationDetailService =
-    getConfigurationDetailService;
+  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
 
   public async Task<DeleteGroupResponse> Handle(
     DeleteGroupRequest request,

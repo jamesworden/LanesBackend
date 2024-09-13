@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Shared;
 
-public interface IGetConfigurationDetailService
+public interface IGetDetailService
 {
   public Task<ConfigurationDetail> GetConfigurationDetail(
     Guid accountId,
@@ -15,8 +15,7 @@ public interface IGetConfigurationDetailService
   );
 }
 
-public class GetConfigurationDetailService(ClassroomGroupsContext dbContext)
-  : IGetConfigurationDetailService
+public class GetDetailService(ClassroomGroupsContext dbContext) : IGetDetailService
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
