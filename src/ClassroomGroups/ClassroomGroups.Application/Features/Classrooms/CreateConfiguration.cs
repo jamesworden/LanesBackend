@@ -16,14 +16,14 @@ public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurati
 public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IGetDetailService getConfigurationDetailService
+  IDetailService detailService
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
-  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
+  readonly IDetailService _detailService = detailService;
 
   public async Task<CreateConfigurationResponse> Handle(
     CreateConfigurationRequest request,
@@ -84,7 +84,7 @@ public class CreateConfigurationRequestHandler(
         .ToListAsync(cancellationToken) ?? [];
 
     var configurationDetail =
-      await _getConfigurationDetailService.GetConfigurationDetail(
+      await _detailService.GetConfigurationDetail(
         account.Id,
         request.ClassroomId,
         configuration.Id,

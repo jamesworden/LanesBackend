@@ -10,17 +10,17 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, Group Group)
   : IRequest<PatchGroupResponse> { }
 
-public record PatchGroupResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
+public record PatchGroupResponse(GroupDetail UpdatedGroupDetail) { }
 
 public class PatchGroupRequestHandler(
   AuthBehaviorCache authBehaviorCache,
-  IGetDetailService getConfigurationDetailService,
+  IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchGroupRequest, PatchGroupResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
+  readonly IDetailService _detailService = detailService;
 
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 
@@ -41,14 +41,16 @@ public class PatchGroupRequestHandler(
     var configurationEntity = _dbContext.Groups.Update(groupDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    var configurationDetail =
-      await _getConfigurationDetailService.GetConfigurationDetail(
-        account.Id,
-        request.ClassroomId,
-        request.ConfigurationId,
-        cancellationToken
-      ) ?? throw new Exception();
+    var groupDetails = await _detailService.GetGroupDetails(
+      account.Id,
+      request.ClassroomId,
+      request.ConfigurationId,
+      cancellationToken
+    );
 
-    return new PatchGroupResponse(configurationDetail);
+    var groupDetail =
+      groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id) ?? throw new Exception();
+
+    return new PatchGroupResponse(groupDetail);
   }
 }

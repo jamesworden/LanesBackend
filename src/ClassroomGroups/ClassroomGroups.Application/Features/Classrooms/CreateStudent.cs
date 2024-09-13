@@ -16,14 +16,14 @@ public record CreateStudentResponse(ConfigurationDetail UpdatedConfigurationDeta
 public class CreateStudentRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IGetDetailService getConfigurationDetailService
+  IDetailService detailService
 ) : IRequestHandler<CreateStudentRequest, CreateStudentResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
-  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
+  readonly IDetailService _detailService = detailService;
 
   public async Task<CreateStudentResponse> Handle(
     CreateStudentRequest request,
@@ -87,7 +87,7 @@ public class CreateStudentRequestHandler(
     await _dbContext.StudentFields.AddRangeAsync(studentFieldDTOs, cancellationToken);
 
     var configurationDetail =
-      await _getConfigurationDetailService.GetConfigurationDetail(
+      await _detailService.GetConfigurationDetail(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,

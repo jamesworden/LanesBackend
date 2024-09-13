@@ -12,12 +12,12 @@ public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDe
 
 public class GetConfigurationDetailRequestHandler(
   AuthBehaviorCache authBehaviorCache,
-  IGetDetailService getConfigurationDetailService
+  IDetailService detailService
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
+  readonly IDetailService _detailService = detailService;
 
   public async Task<GetConfigurationDetailResponse> Handle(
     GetConfigurationDetailRequest request,
@@ -27,7 +27,7 @@ public class GetConfigurationDetailRequestHandler(
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
     var configurationDetail =
-      await _getConfigurationDetailService.GetConfigurationDetail(
+      await _detailService.GetConfigurationDetail(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,

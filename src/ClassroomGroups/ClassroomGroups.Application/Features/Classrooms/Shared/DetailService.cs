@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms.Shared;
 
-public interface IGetDetailService
+public interface IDetailService
 {
   public Task<ConfigurationDetail> GetConfigurationDetail(
     Guid accountId,
@@ -13,9 +13,16 @@ public interface IGetDetailService
     Guid configurationId,
     CancellationToken cancellationToken
   );
+
+  public Task<List<GroupDetail>> GetGroupDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  );
 }
 
-public class GetDetailService(ClassroomGroupsContext dbContext) : IGetDetailService
+public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
@@ -26,25 +33,12 @@ public class GetDetailService(ClassroomGroupsContext dbContext) : IGetDetailServ
     CancellationToken cancellationToken
   )
   {
-    var studentDetails =
-      (
-        await _dbContext
-          .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
-          .Select(sg => new StudentDetailDTO(sg.Id, sg.GroupId, sg.Ordinal))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(sg => sg.ToStudentDetail())
-        .ToList() ?? [];
-
-    var groupDetails =
-      (
-        await _dbContext
-          .Groups.Where(g => g.ConfigurationId == configurationId)
-          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(g => g.ToGroupDetail(studentDetails))
-        .ToList() ?? [];
+    var groupDetails = await GetGroupDetails(
+      accountId,
+      classroomId,
+      configurationId,
+      cancellationToken
+    );
 
     var columnDetails = (
       await _dbContext
@@ -114,5 +108,32 @@ public class GetDetailService(ClassroomGroupsContext dbContext) : IGetDetailServ
       ?? throw new Exception();
 
     return configurationDetail;
+  }
+
+  public async Task<List<GroupDetail>> GetGroupDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  )
+  {
+    var studentDetails =
+      (
+        await _dbContext
+          .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
+          .Select(sg => new StudentDetailDTO(sg.Id, sg.GroupId, sg.Ordinal))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(sg => sg.ToStudentDetail())
+        .ToList() ?? [];
+
+    return (
+        await _dbContext
+          .Groups.Where(g => g.ConfigurationId == configurationId)
+          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(g => g.ToGroupDetail(studentDetails))
+        .ToList() ?? [];
   }
 }

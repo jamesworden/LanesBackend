@@ -17,13 +17,13 @@ public record PatchConfigurationResponse(ConfigurationDetail PatchedConfiguratio
 
 public class PatchConfigurationRequestHandler(
   AuthBehaviorCache authBehaviorCache,
-  IGetDetailService getConfigurationDetailService,
+  IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchConfigurationRequest, PatchConfigurationResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
 
-  readonly IGetDetailService _getConfigurationDetailService = getConfigurationDetailService;
+  readonly IDetailService _detailService = detailService;
 
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 
@@ -59,7 +59,7 @@ public class PatchConfigurationRequestHandler(
     var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
 
     var configurationDetail =
-      await _getConfigurationDetailService.GetConfigurationDetail(
+      await _detailService.GetConfigurationDetail(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,
