@@ -49,7 +49,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
 
     var columnDetails = (
       await _dbContext
-        .Columns.Where(c => c.Id == configurationId)
+        .Columns.Where(c => c.ConfigurationId == configurationId)
         .Join(
           _dbContext.Fields,
           column => column.FieldId,
