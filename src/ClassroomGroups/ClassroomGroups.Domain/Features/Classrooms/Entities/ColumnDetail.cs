@@ -10,17 +10,17 @@ public class ColumnDetail(
   FieldType Type
 )
 {
-  public Guid Id = Id;
+  public Guid Id { get; private set; } = Id;
 
-  public Guid ConfigurationId = ConfigurationId;
+  public Guid ConfigurationId { get; private set; } = ConfigurationId;
 
-  public Guid FieldId = FieldId;
+  public Guid FieldId { get; private set; } = FieldId;
 
-  public int Ordinal = Ordinal;
+  public int Ordinal { get; private set; } = Ordinal;
 
-  public ColumnSort Sort = Sort;
+  public ColumnSort Sort { get; private set; } = Sort;
 
-  public bool Enabled = Enabled;
+  public bool Enabled { get; private set; } = Enabled;
 
-  public FieldType Type = Type;
+  public FieldType Type { get; private set; } = Type;
 }

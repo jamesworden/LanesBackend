@@ -147,13 +147,18 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     );
   }
 
+  public record CreateColumnRequestBody(string Label, FieldType Type) { }
+
   [Authorize]
-  [HttpDelete("{classroomId}/configurations/{configurationId}")]
-  public async Task<DeleteConfigurationResponse> DeleteConfiguration(
+  [HttpPost("{classroomId}/configurations/{configurationId}/columns")]
+  public async Task<CreateColumnResponse> CreateColumn(
     [FromRoute] Guid classroomId,
-    [FromRoute] Guid configurationId
+    [FromRoute] Guid configurationId,
+    [FromBody] CreateColumnRequestBody body
   )
   {
-    return await _mediator.Send(new DeleteConfigurationRequest(classroomId, configurationId));
+    return await _mediator.Send(
+      new CreateColumnRequest(classroomId, configurationId, body.Label, body.Type)
+    );
   }
 }

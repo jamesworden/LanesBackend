@@ -7,22 +7,22 @@ namespace ClassroomGroups.DataAccess.DTOs;
 public class FieldDTO
 {
   [Key]
-  public int Key { get; set; }
+  public int Key { get; private set; }
 
   [InverseProperty("FieldId")]
-  public Guid Id { get; private set; }
-  public FieldType Type { get; private set; } = FieldType.TEXT;
-  public string Label { get; private set; } = "";
+  public Guid Id { get; set; }
+  public FieldType Type { get; set; } = FieldType.TEXT;
+  public string Label { get; set; } = "";
 
   public ClassroomDTO ClassroomDTO { get; private set; } = null!;
-  public int ClassroomKey { get; private set; }
-  public Guid ClassroomId { get; private set; }
+  public int ClassroomKey { get; set; }
+  public Guid ClassroomId { get; set; }
 
-  public ICollection<StudentDTO> Students { get; } = [];
-  public ICollection<StudentFieldDTO> StudentFields { get; set; } = [];
+  public ICollection<StudentDTO> Students { get; private set; } = [];
+  public ICollection<StudentFieldDTO> StudentFields { get; private set; } = [];
 
-  public ICollection<ConfigurationDTO> Configurations { get; } = [];
-  public ICollection<ColumnDTO> Columns { get; set; } = [];
+  public ICollection<ConfigurationDTO> Configurations { get; private set; } = [];
+  public ICollection<ColumnDTO> Columns { get; private set; } = [];
 
   public Field ToField()
   {

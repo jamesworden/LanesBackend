@@ -64,11 +64,13 @@ builder.Services.AddMediatR(cfg =>
     typeof(GetAccountRequest).GetTypeInfo().Assembly // Represents the 'ClassroomGroups.Application' project.
   )
 );
-
-// [ClassroomGroups Controller Registry]
-builder.Services.AddControllers().AddApplicationPart(typeof(AuthenticationController).Assembly);
-
-builder.Services.AddControllers();
+builder
+  .Services.AddControllers()
+  .AddApplicationPart(typeof(AuthenticationController).Assembly) // Represents the 'ClassroomGroups.Application' project.
+  .AddJsonOptions(options =>
+  {
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+  });
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -76,7 +78,6 @@ builder
   .Services.AddSignalR()
   .AddJsonProtocol(options =>
   {
-    // Helps ensure that enum values translate well when recieving websocket requests.
     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
   });
 builder.Services.AddCors();
@@ -129,6 +130,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(DeleteConfigurationResponse),
     [typeof(AuthBehavior<,>)]
   ),
+  (typeof(CreateColumnRequest), typeof(CreateColumnResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

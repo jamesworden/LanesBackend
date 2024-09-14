@@ -9,4 +9,9 @@ public class Field(Guid Id, Guid ClassroomId, string Label, FieldType Type)
   public string Label { get; private set; } = Label;
 
   public FieldType Type { get; private set; } = Type;
+
+  public FieldDetail ToFieldDetail()
+  {
+    return new FieldDetail(Id, ClassroomId, Label, Type);
+  }
 }
