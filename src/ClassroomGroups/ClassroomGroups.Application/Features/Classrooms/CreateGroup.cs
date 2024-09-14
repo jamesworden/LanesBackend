@@ -11,7 +11,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateGroupRequest(Guid ClassroomId, Guid ConfigurationId, string? Label)
   : IRequest<CreateGroupResponse> { }
 
-public record CreateGroupResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
+public record CreateGroupResponse(GroupDetail CreatedGroupDetail) { }
 
 public class CreateGroupRequestHandler(
   ClassroomGroupsContext dbContext,
@@ -58,9 +58,11 @@ public class CreateGroupRequestHandler(
 
     var label = request.Label ?? $"Group {ordinal + 1}";
 
+    var groupId = Guid.NewGuid();
+
     var groupDTO = new GroupDTO()
     {
-      Id = Guid.NewGuid(),
+      Id = groupId,
       Label = label,
       ConfigurationId = request.ConfigurationId,
       Ordinal = ordinal,
@@ -70,14 +72,16 @@ public class CreateGroupRequestHandler(
 
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    var configurationDetail =
-      await _detailService.GetConfigurationDetail(
+    var groupDetails =
+      await _detailService.GetGroupDetails(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,
         cancellationToken
       ) ?? throw new Exception();
 
-    return new CreateGroupResponse(configurationDetail);
+    var groupDetail = groupDetails.Find(g => g.Id == groupId) ?? throw new Exception();
+
+    return new CreateGroupResponse(groupDetail);
   }
 }
