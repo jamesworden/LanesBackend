@@ -63,7 +63,8 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           c.column.Ordinal,
           c.column.Sort,
           c.column.Enabled,
-          c.field.Type
+          c.field.Type,
+          c.field.Label
         ))
         .ToListAsync(cancellationToken)
     )

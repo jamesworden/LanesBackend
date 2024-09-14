@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 namespace ClassroomGroups.DataAccess.DTOs;
@@ -9,7 +10,8 @@ public class ColumnDetailDTO(
   int Ordinal,
   ColumnSort Sort,
   bool Enabled,
-  FieldType Type
+  FieldType Type,
+  string Label
 )
 {
   public Guid Id = Id;
@@ -26,8 +28,10 @@ public class ColumnDetailDTO(
 
   public FieldType Type = Type;
 
+  public string Label = Label;
+
   public ColumnDetail ToColumnDetail()
   {
-    return new ColumnDetail(Id, ConfigurationId, FieldId, Ordinal, Sort, Enabled, Type);
+    return new ColumnDetail(Id, ConfigurationId, FieldId, Ordinal, Sort, Enabled, Type, Label);
   }
 }

@@ -82,7 +82,9 @@ public class CreateColumnRequestHandler(
 
     var fieldDetail = fieldEntity.Entity.ToField().ToFieldDetail();
 
-    var columnDetail = columnEntity.Entity.ToColumn().ToColumnDetail(fieldDetail.Type);
+    var columnDetail = columnEntity
+      .Entity.ToColumn()
+      .ToColumnDetail(fieldDetail.Type, fieldDetail.Label);
 
     return new CreateColumnResponse(columnDetail, fieldDetail);
   }

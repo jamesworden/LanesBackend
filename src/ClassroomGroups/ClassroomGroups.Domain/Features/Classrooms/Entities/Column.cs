@@ -21,8 +21,8 @@ public class Column(
 
   public ColumnSort Sort { get; private set; } = Sort;
 
-  public ColumnDetail ToColumnDetail(FieldType Type)
+  public ColumnDetail ToColumnDetail(FieldType Type, string Label)
   {
-    return new ColumnDetail(Id, ConfigurationId, FieldId, Ordinal, Sort, Enabled, Type);
+    return new ColumnDetail(Id, ConfigurationId, FieldId, Ordinal, Sort, Enabled, Type, Label);
   }
 }

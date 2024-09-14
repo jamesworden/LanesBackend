@@ -1,3 +1,5 @@
+using System.Reflection.Emit;
+
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 public class ColumnDetail(
@@ -7,7 +9,8 @@ public class ColumnDetail(
   int Ordinal,
   ColumnSort Sort,
   bool Enabled,
-  FieldType Type
+  FieldType Type,
+  string Label
 )
 {
   public Guid Id { get; private set; } = Id;
@@ -23,4 +26,6 @@ public class ColumnDetail(
   public bool Enabled { get; private set; } = Enabled;
 
   public FieldType Type { get; private set; } = Type;
+
+  public string Label { get; private set; } = Label;
 }
