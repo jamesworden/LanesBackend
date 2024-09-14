@@ -11,7 +11,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record CreateStudentRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
   : IRequest<CreateStudentResponse> { }
 
-public record CreateStudentResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
+public record CreateStudentResponse(StudentDetail CreatedStudentDetail) { }
 
 public class CreateStudentRequestHandler(
   ClassroomGroupsContext dbContext,
@@ -37,9 +37,11 @@ public class CreateStudentRequestHandler(
         .Classrooms.Where(c => c.Id == request.ClassroomId)
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
+    var studentId = Guid.NewGuid();
+
     var studentDTO = new StudentDTO()
     {
-      Id = Guid.NewGuid(),
+      Id = studentId,
       ClassroomKey = classroomDTO.Key,
       ClassroomId = classroomDTO.Id,
     };
@@ -86,14 +88,16 @@ public class CreateStudentRequestHandler(
 
     await _dbContext.StudentFields.AddRangeAsync(studentFieldDTOs, cancellationToken);
 
-    var configurationDetail =
-      await _detailService.GetConfigurationDetail(
+    var studentDetails =
+      await _detailService.GetStudentDetails(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,
         cancellationToken
       ) ?? throw new Exception();
 
-    return new CreateStudentResponse(configurationDetail);
+    var studentDetail = studentDetails.Find(s => s.Id == studentId) ?? throw new Exception();
+
+    return new CreateStudentResponse(studentDetail);
   }
 }

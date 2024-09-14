@@ -20,6 +20,13 @@ public interface IDetailService
     Guid configurationId,
     CancellationToken cancellationToken
   );
+
+  public Task<List<StudentDetail>> GetStudentDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  );
 }
 
 public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
@@ -117,15 +124,12 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     CancellationToken cancellationToken
   )
   {
-    var studentDetails =
-      (
-        await _dbContext
-          .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
-          .Select(sg => new StudentDetailDTO(sg.Id, sg.GroupId, sg.Ordinal))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(sg => sg.ToStudentDetail())
-        .ToList() ?? [];
+    var studentDetails = await GetStudentDetails(
+      accountId,
+      classroomId,
+      configurationId,
+      cancellationToken
+    );
 
     return (
         await _dbContext
@@ -134,6 +138,33 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .ToListAsync(cancellationToken)
       )
         .Select(g => g.ToGroupDetail(studentDetails))
+        .ToList() ?? [];
+  }
+
+  public async Task<List<StudentDetail>> GetStudentDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  )
+  {
+    return (
+        await _dbContext
+          .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
+          .Join(
+            _dbContext.Students,
+            sg => sg.StudentId,
+            s => s.Id,
+            (sg, s) => new { Student = s, StudentGroup = sg }
+          )
+          .Select(x => new StudentDetailDTO(
+            x.Student.Id,
+            x.StudentGroup.GroupId,
+            x.StudentGroup.Ordinal
+          ))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(sg => sg.ToStudentDetail())
         .ToList() ?? [];
   }
 }
