@@ -10,7 +10,7 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record DeleteGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
   : IRequest<DeleteGroupResponse> { }
 
-public record DeleteGroupResponse(ConfigurationDetail UpdatedConfigurationDetail) { }
+public record DeleteGroupResponse(Group DeletedGroup) { }
 
 public class DeleteGroupRequestHandler(
   ClassroomGroupsContext dbContext,
@@ -39,14 +39,6 @@ public class DeleteGroupRequestHandler(
     var groupEntity = _dbContext.Groups.Remove(groupDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    var configurationDetail =
-      await _detailService.GetConfigurationDetail(
-        account.Id,
-        request.ClassroomId,
-        request.ConfigurationId,
-        cancellationToken
-      ) ?? throw new Exception();
-
-    return new DeleteGroupResponse(configurationDetail);
+    return new DeleteGroupResponse(groupEntity.Entity.ToGroup());
   }
 }
