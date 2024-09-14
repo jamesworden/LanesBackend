@@ -146,4 +146,14 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new PatchGroupRequest(classroomId, configurationId, groupId, body.Group)
     );
   }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/configurations/{configurationId}")]
+  public async Task<DeleteConfigurationResponse> DeleteConfiguration(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId
+  )
+  {
+    return await _mediator.Send(new DeleteConfigurationRequest(classroomId, configurationId));
+  }
 }
