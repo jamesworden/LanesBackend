@@ -57,7 +57,7 @@ public class CreateClassroomRequestHandler(
     await _configurationService.CreateConfiguration(
       account.Id,
       classroom.Id,
-      classroom.Label,
+      "Configuration 1",
       cancellationToken
     );
 
