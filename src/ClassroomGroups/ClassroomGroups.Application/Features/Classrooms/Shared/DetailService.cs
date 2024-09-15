@@ -149,23 +149,28 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     CancellationToken cancellationToken
   )
   {
-    return (
-        await _dbContext
-          .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
-          .Join(
-            _dbContext.Students,
-            sg => sg.StudentId,
-            s => s.Id,
-            (sg, s) => new { Student = s, StudentGroup = sg }
-          )
-          .Select(x => new StudentDetailDTO(
-            x.Student.Id,
-            x.StudentGroup.GroupId,
-            x.StudentGroup.Ordinal
-          ))
-          .ToListAsync(cancellationToken)
+    var studentDetails = await _dbContext
+      .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
+      .Join(
+        _dbContext.Students,
+        sg => sg.StudentId,
+        s => s.Id,
+        (sg, s) => new { Student = s, StudentGroup = sg }
       )
-        .Select(sg => sg.ToStudentDetail())
-        .ToList() ?? [];
+      .ToListAsync(cancellationToken);
+
+    var studentDetailsWithFields = studentDetails
+      .Select(x => new StudentDetailDTO(
+        x.Student.Id,
+        x.StudentGroup.GroupId,
+        x.StudentGroup.Ordinal,
+        _dbContext
+          .StudentFields.Where(sf => sf.StudentId == x.Student.Id)
+          .ToDictionary(sf => sf.FieldId, sf => sf.Value)
+      ))
+      .Select(sg => sg.ToStudentDetail())
+      .ToList();
+
+    return studentDetailsWithFields;
   }
 }

@@ -2,7 +2,12 @@ using ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
-public class StudentDetailDTO(Guid Id, Guid GroupId, int StudentGroupOrdinal)
+public class StudentDetailDTO(
+  Guid Id,
+  Guid GroupId,
+  int StudentGroupOrdinal,
+  Dictionary<Guid, string> FieldIdsToValues
+)
 {
   public Guid Id = Id;
 
@@ -10,8 +15,10 @@ public class StudentDetailDTO(Guid Id, Guid GroupId, int StudentGroupOrdinal)
 
   public int StudentGroupOrdinal = StudentGroupOrdinal;
 
+  public Dictionary<Guid, string> FieldIdsToValues { get; private set; } = FieldIdsToValues;
+
   public StudentDetail ToStudentDetail()
   {
-    return new StudentDetail(Id, GroupId, StudentGroupOrdinal);
+    return new StudentDetail(Id, GroupId, StudentGroupOrdinal, FieldIdsToValues);
   }
 }
