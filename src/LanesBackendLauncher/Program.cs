@@ -132,6 +132,11 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     [typeof(AuthBehavior<,>)]
   ),
   (typeof(CreateColumnRequest), typeof(CreateColumnResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(UpsertStudentFieldRequest),
+    typeof(UpsertStudentFieldResponse),
+    [typeof(AuthBehavior<,>)]
+  ),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

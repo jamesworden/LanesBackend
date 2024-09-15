@@ -11,7 +11,7 @@ public class StudentFieldDTO
   public string Value { get; set; } = "";
 
   [InverseProperty("StudentFieldId")]
-  public Guid Id { get; private set; }
+  public Guid Id { get; set; }
 
   public StudentDTO StudentDTO = null!;
   public int StudentKey { get; set; }

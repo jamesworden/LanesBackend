@@ -171,4 +171,20 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new CreateColumnRequest(classroomId, configurationId, body.Label, body.Type)
     );
   }
+
+  public record UpsertStudentFieldRequestBody(string Value) { }
+
+  [Authorize]
+  [HttpPut("{classroomId}/students/{studentId}/fields/{fieldId}")]
+  public async Task<UpsertStudentFieldResponse> UpsertStudentField(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid studentId,
+    [FromRoute] Guid fieldId,
+    [FromBody] UpsertStudentFieldRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new UpsertStudentFieldRequest(classroomId, studentId, fieldId, body.Value)
+    );
+  }
 }
