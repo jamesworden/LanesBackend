@@ -1,4 +1,5 @@
 using ClassroomGroups.Application.Behaviors;
+using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Classrooms.Entities;
@@ -14,12 +15,15 @@ public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { 
 
 public class CreateClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AuthBehaviorCache authBehaviorCache,
+  IConfigurationService configurationService
 ) : IRequestHandler<CreateClassroomRequest, CreateClassroomResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+
+  readonly IConfigurationService _configurationService = configurationService;
 
   public async Task<CreateClassroomResponse> Handle(
     CreateClassroomRequest request,
@@ -49,6 +53,13 @@ public class CreateClassroomRequestHandler(
       )
         .Select(f => f.ToFieldDetail())
         .ToList() ?? [];
+
+    await _configurationService.CreateConfiguration(
+      account.Id,
+      classroom.Id,
+      classroom.Label,
+      cancellationToken
+    );
 
     var createdClassroomDetail = classroom.ToClassroomDetail(fieldDetails);
 
