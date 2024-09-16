@@ -166,6 +166,74 @@ public class CreateClassroomRequestHandler(
 
     await _dbContext.Columns.AddRangeAsync([columnDTO1, columnDTO2, columnDTO3], cancellationToken);
 
+    var groupId = Guid.NewGuid();
+
+    await _dbContext.Groups.AddAsync(
+      new()
+      {
+        Id = groupId,
+        Label = "Group 1",
+        Ordinal = 0,
+        ConfigurationId = configurationDTO.Id,
+        ConfigurationKey = configurationDTO.Key
+      },
+      cancellationToken
+    );
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
+
+    var groupDTO =
+      await _dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
+      ?? throw new Exception();
+
+    var studentDTO1withKey =
+      await _dbContext
+        .Students.Where(s => studentDTO1.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var studentDTO2withKey =
+      await _dbContext
+        .Students.Where(s => studentDTO2.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var studentDTO3withKey =
+      await _dbContext
+        .Students.Where(s => studentDTO3.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    await _dbContext.StudentGroups.AddRangeAsync(
+      [
+        new()
+        {
+          GroupId = groupDTO.Id,
+          GroupKey = groupDTO.Key,
+          Ordinal = 0,
+          StudentId = studentDTO1withKey.Id,
+          StudentKey = studentDTO1withKey.Key,
+          Id = Guid.NewGuid()
+        },
+        new()
+        {
+          GroupId = groupDTO.Id,
+          GroupKey = groupDTO.Key,
+          Ordinal = 0,
+          StudentId = studentDTO2withKey.Id,
+          StudentKey = studentDTO2withKey.Key,
+          Id = Guid.NewGuid()
+        },
+        new()
+        {
+          GroupId = groupDTO.Id,
+          GroupKey = groupDTO.Key,
+          Ordinal = 0,
+          StudentId = studentDTO3withKey.Id,
+          StudentKey = studentDTO3withKey.Key,
+          Id = Guid.NewGuid()
+        }
+      ],
+      cancellationToken
+    );
+
     await _dbContext.SaveChangesAsync(cancellationToken);
 
     var fieldDetails =
