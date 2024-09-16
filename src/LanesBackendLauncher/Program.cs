@@ -28,7 +28,7 @@ builder
     reloadOnChange: true
   )
   .AddEnvironmentVariables()
-  .AddSystemsManager(builder.Configuration["ClassroomGroups:AppSecrets:SystemsManagerPath"]);
+  .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
 
 builder
   .Services.AddAuthentication(options =>
@@ -47,8 +47,10 @@ builder
     GoogleDefaults.AuthenticationScheme,
     options =>
     {
-      options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
-      options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+      options.ClientId =
+        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
+      options.ClientSecret =
+        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
     }
   );
 
