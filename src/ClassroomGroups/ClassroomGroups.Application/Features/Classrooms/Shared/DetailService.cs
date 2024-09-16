@@ -79,7 +79,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       .Select(c => c.Id)
       .ToList();
 
-    var unassignedStudents = (
+    var UngroupedStudents = (
       await _dbContext
         .Students.Where(s =>
           !_dbContext.StudentGroups.Any(sg =>
@@ -115,7 +115,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           )
           .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
           .FirstOrDefaultAsync(cancellationToken)
-      )?.ToConfigurationDetail(groupDetails, columnDetails, unassignedStudents)
+      )?.ToConfigurationDetail(groupDetails, columnDetails, UngroupedStudents)
       ?? throw new Exception();
 
     return configurationDetail;

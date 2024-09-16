@@ -15,7 +15,7 @@ public class ConfigurationDetailDTO(Guid Id, Guid ClassroomId, string Label, str
   public ConfigurationDetail ToConfigurationDetail(
     List<GroupDetail> GroupDetails,
     List<ColumnDetail> ColumnDetails,
-    List<StudentWithFields> UnassignedStudents
+    List<StudentWithFields> UngroupedStudents
   )
   {
     return new ConfigurationDetail(
@@ -25,7 +25,7 @@ public class ConfigurationDetailDTO(Guid Id, Guid ClassroomId, string Label, str
       Description,
       GroupDetails,
       ColumnDetails,
-      UnassignedStudents
+      UngroupedStudents
     );
   }
 }
