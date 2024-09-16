@@ -30,7 +30,6 @@ public class ClassroomGroupsContext : DbContext
   {
     base.OnModelCreating(modelBuilder);
 
-    // One to Many
     modelBuilder.Entity<AccountDTO>().HasIndex(e => e.Id).IsUnique();
     modelBuilder
       .Entity<AccountDTO>()
@@ -38,7 +37,7 @@ public class ClassroomGroupsContext : DbContext
       .WithOne(e => e.AccountDTO)
       .HasForeignKey(e => e.AccountKey)
       .HasPrincipalKey(e => e.Key)
-      .OnDelete(DeleteBehavior.Restrict);
+      .OnDelete(DeleteBehavior.Cascade);
     modelBuilder
       .Entity<AccountDTO>()
       .HasIndex(AccountDTO => AccountDTO.GoogleNameIdentifier)
@@ -79,7 +78,6 @@ public class ClassroomGroupsContext : DbContext
       .HasPrincipalKey(e => e.Key)
       .OnDelete(DeleteBehavior.Cascade);
 
-    // Many to Many
     modelBuilder.Entity<FieldDTO>().HasIndex(fieldDTO => fieldDTO.Id).IsUnique();
     modelBuilder
       .Entity<FieldDTO>()
