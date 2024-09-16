@@ -39,6 +39,10 @@ public class ClassroomGroupsContext : DbContext
       .HasForeignKey(e => e.AccountKey)
       .HasPrincipalKey(e => e.Key)
       .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder
+      .Entity<AccountDTO>()
+      .HasIndex(AccountDTO => AccountDTO.GoogleNameIdentifier)
+      .IsUnique();
 
     modelBuilder.Entity<ClassroomDTO>().HasIndex(classroomDTO => classroomDTO.Id).IsUnique();
     modelBuilder

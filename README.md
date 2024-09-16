@@ -81,3 +81,8 @@ Private, internal primary keys of tables end with `Key` while public facing iden
 
 ##### View Models
 Often, our domain models will have properties that we don't want to expose to our API endpoints. An example of this is `Account.Key`. The only identification property that clients should have access to is `Account.Id`. For this reason, we must transform an `Account` to an `AccountView`, where every property is the same except the key property no longer exists on the view model. A domain model with "View" appended to the end of it hides properties from the initial model that the user should not see.
+
+#### Database Migrations
+Entity framework modifies the database according to a DBContext file (for example, `ClassroomGroupContext.cs`). To update the database via database migrations, make changes to your context file accordingly. Then, execute the following commands from the root directory of this repository:
+- `dotnet ef migrations add YOUR_MIGRATION_NAME --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\` 
+- `dotnet ef database update --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`
