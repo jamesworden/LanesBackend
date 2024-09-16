@@ -72,7 +72,9 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       .ToList();
 
     var classroomIds = (
-      await _dbContext.Classrooms.Where(c => c.AccountId == accountId).ToListAsync()
+      await _dbContext
+        .Classrooms.Where(c => c.AccountId == accountId)
+        .ToListAsync(cancellationToken)
     )
       .Select(c => c.Id)
       .ToList();
@@ -83,6 +85,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           !_dbContext.StudentGroups.Any(sg =>
             sg.StudentId == s.Id && sg.GroupDTO.ConfigurationId == configurationId
           )
+          && s.ClassroomId == classroomId
         )
         .Select(s => new
         {

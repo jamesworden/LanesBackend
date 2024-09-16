@@ -36,7 +36,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new GetConfigurationsRequest(classroomId));
   }
 
-  public record CreateClassroomRequestBody(string Label, string? Description) { }
+  public record CreateClassroomRequestBody(string? Label, string? Description) { }
 
   [Authorize]
   [HttpPost()]

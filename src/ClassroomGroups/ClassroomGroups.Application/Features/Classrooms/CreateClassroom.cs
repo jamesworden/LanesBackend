@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record CreateClassroomRequest(string Label, string? Description)
+public record CreateClassroomRequest(string? Label, string? Description)
   : IRequest<CreateClassroomResponse> { }
 
 public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { }
@@ -25,6 +25,10 @@ public class CreateClassroomRequestHandler(
 
   readonly IConfigurationService _configurationService = configurationService;
 
+  readonly string DEFAULT_CLASSROOM_LABEL = "Untitled";
+
+  readonly string DEFAULT_FIRST_CONFIGURATION_LABEL = "Configuration 1";
+
   public async Task<CreateClassroomResponse> Handle(
     CreateClassroomRequest request,
     CancellationToken cancellationToken
@@ -35,7 +39,7 @@ public class CreateClassroomRequestHandler(
     var classroomDTO = new ClassroomDTO()
     {
       Id = Guid.NewGuid(),
-      Label = request.Label,
+      Label = request.Label ?? DEFAULT_CLASSROOM_LABEL,
       Description = request.Description,
       AccountKey = account.Key,
       AccountId = account.Id
@@ -43,6 +47,126 @@ public class CreateClassroomRequestHandler(
     var classroomEntity = await _dbContext.Classrooms.AddAsync(classroomDTO, cancellationToken);
     await _dbContext.SaveChangesAsync(cancellationToken);
     var classroom = (classroomEntity.Entity?.ToClassroom()) ?? throw new Exception();
+
+    var configuration = await _configurationService.CreateConfiguration(
+      account.Id,
+      classroom.Id,
+      DEFAULT_FIRST_CONFIGURATION_LABEL,
+      cancellationToken
+    );
+
+    var studentDTOs = new List<StudentDTO>();
+
+    var studentDTO1 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+    var studentDTO2 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+    var studentDTO3 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+
+    await _dbContext.Students.AddRangeAsync(
+      [studentDTO1, studentDTO2, studentDTO3],
+      cancellationToken
+    );
+
+    var fieldDTO1 = new FieldDTO
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+      Label = "First Name",
+      Type = FieldType.TEXT
+    };
+    var fieldDTO2 = new FieldDTO
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+      Label = "Last Name",
+      Type = FieldType.TEXT
+    };
+    var fieldDTO3 = new FieldDTO
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+      Label = "Homework #1",
+      Type = FieldType.NUMBER
+    };
+
+    await _dbContext.Fields.AddRangeAsync([fieldDTO1, fieldDTO2, fieldDTO3], cancellationToken);
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
+
+    var configurationDTO =
+      await _dbContext
+        .Configurations.Where(c => c.Id == configuration.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var fieldDTO1withKey =
+      await _dbContext
+        .Fields.Where(f => f.Id == fieldDTO1.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var fieldDTO2withKey =
+      await _dbContext
+        .Fields.Where(f => f.Id == fieldDTO2.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var fieldDTO3withKey =
+      await _dbContext
+        .Fields.Where(f => f.Id == fieldDTO3.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var columnDTO1 = new ColumnDTO
+    {
+      ConfigurationId = configurationDTO.Id,
+      ConfigurationKey = configurationDTO.Key,
+      Id = Guid.NewGuid(),
+      Enabled = true,
+      FieldKey = fieldDTO1.Key,
+      FieldId = fieldDTO1.Id,
+      Ordinal = 0,
+      Sort = ColumnSort.NONE
+    };
+    var columnDTO2 = new ColumnDTO
+    {
+      ConfigurationId = configurationDTO.Id,
+      ConfigurationKey = configurationDTO.Key,
+      Id = Guid.NewGuid(),
+      Enabled = true,
+      FieldKey = fieldDTO2.Key,
+      FieldId = fieldDTO2.Id,
+      Ordinal = 1,
+      Sort = ColumnSort.NONE
+    };
+    var columnDTO3 = new ColumnDTO
+    {
+      ConfigurationId = configurationDTO.Id,
+      ConfigurationKey = configurationDTO.Key,
+      Id = Guid.NewGuid(),
+      Enabled = true,
+      FieldKey = fieldDTO3.Key,
+      FieldId = fieldDTO3.Id,
+      Ordinal = 2,
+      Sort = ColumnSort.NONE
+    };
+
+    await _dbContext.Columns.AddRangeAsync([columnDTO1, columnDTO2, columnDTO3], cancellationToken);
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
 
     var fieldDetails =
       (
@@ -53,13 +177,6 @@ public class CreateClassroomRequestHandler(
       )
         .Select(f => f.ToFieldDetail())
         .ToList() ?? [];
-
-    await _configurationService.CreateConfiguration(
-      account.Id,
-      classroom.Id,
-      "Configuration 1",
-      cancellationToken
-    );
 
     var createdClassroomDetail = classroom.ToClassroomDetail(fieldDetails);
 
