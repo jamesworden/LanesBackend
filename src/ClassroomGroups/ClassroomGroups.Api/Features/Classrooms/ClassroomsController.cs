@@ -184,7 +184,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   )
   {
     return await _mediator.Send(
-      new UpsertStudentFieldRequest(classroomId, studentId, fieldId, body.Value)
+      new UpsertStudentFieldRequest(classroomId, studentId, fieldId, body.Value.Trim())
     );
   }
 }
