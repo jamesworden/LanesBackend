@@ -51,8 +51,8 @@ public class PatchConfigurationRequestHandler(
         )
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    configurationDTO.Description = request.Configuration.Description;
-    configurationDTO.Label = request.Configuration.Label;
+    configurationDTO.Description = request.Configuration.Description?.Trim();
+    configurationDTO.Label = request.Configuration.Label.Trim();
 
     var configurationEntity = _dbContext.Configurations.Update(configurationDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);

@@ -39,9 +39,11 @@ public class UpsertStudentFieldRequestHandler(
       )
       .FirstOrDefaultAsync(cancellationToken);
 
+    var value = request.Value.Trim();
+
     if (studentFieldDTO != null)
     {
-      studentFieldDTO.Value = request.Value;
+      studentFieldDTO.Value = value;
       _dbContext.StudentFields.Update(studentFieldDTO);
     }
     else
@@ -62,7 +64,7 @@ public class UpsertStudentFieldRequestHandler(
         StudentKey = studentDTO.Key,
         FieldId = request.FieldId,
         FieldKey = fieldDTO.Key,
-        Value = request.Value,
+        Value = value,
         Id = Guid.NewGuid()
       };
 

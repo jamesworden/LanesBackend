@@ -41,8 +41,8 @@ public class PatchClassroomRequestHandler(
         .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    classroomDTO.Description = request.Classroom.Description;
-    classroomDTO.Label = request.Classroom.Label;
+    classroomDTO.Description = request.Classroom.Description?.Trim();
+    classroomDTO.Label = request.Classroom.Label.Trim();
 
     var configurationEntity = _dbContext.Classrooms.Update(classroomDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);
