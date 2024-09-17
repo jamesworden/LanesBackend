@@ -81,19 +81,19 @@ public class CreateClassroomRequestHandler(
       cancellationToken
     );
 
-    var ungroupedStudentDTO1 = new StudentDTO()
+    var defaultGroupStudentDTO1 = new StudentDTO()
     {
       ClassroomId = classroomDTO.Id,
       ClassroomKey = classroomDTO.Key,
       Id = Guid.NewGuid(),
     };
-    var ungroupedStudentDTO2 = new StudentDTO()
+    var defaultGroupStudentDTO2 = new StudentDTO()
     {
       ClassroomId = classroomDTO.Id,
       ClassroomKey = classroomDTO.Key,
       Id = Guid.NewGuid(),
     };
-    var ungroupedStudentDTO3 = new StudentDTO()
+    var defaultGroupStudentDTO3 = new StudentDTO()
     {
       ClassroomId = classroomDTO.Id,
       ClassroomKey = classroomDTO.Key,
@@ -101,9 +101,11 @@ public class CreateClassroomRequestHandler(
     };
 
     await _dbContext.Students.AddRangeAsync(
-      [ungroupedStudentDTO1, ungroupedStudentDTO2, ungroupedStudentDTO3],
+      [defaultGroupStudentDTO1, defaultGroupStudentDTO2, defaultGroupStudentDTO3],
       cancellationToken
     );
+
+    // Assign students to default group
 
     var fieldDTO1 = new FieldDTO
     {
@@ -225,6 +227,24 @@ public class CreateClassroomRequestHandler(
         .Students.Where(s => studentDTO3.Id == s.Id)
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
+    var defaultGroupStudentDTO1withKey =
+      await _dbContext
+        .Students.Where(s => defaultGroupStudentDTO1.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var defaultGroupStudentDTO2withKey =
+      await _dbContext
+        .Students.Where(s => defaultGroupStudentDTO2.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var defaultGroupStudentDTO3withKey =
+      await _dbContext
+        .Students.Where(s => defaultGroupStudentDTO3.Id == s.Id)
+        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+    var defaultGroupId = configurationDTO.DefaultGroupId ?? throw new Exception();
+    var defaultGroupKey = configurationDTO.DefaultGroupKey ?? throw new Exception();
+
     await _dbContext.StudentGroups.AddRangeAsync(
       [
         new()
@@ -252,6 +272,33 @@ public class CreateClassroomRequestHandler(
           Ordinal = 0,
           StudentId = studentDTO3withKey.Id,
           StudentKey = studentDTO3withKey.Key,
+          Id = Guid.NewGuid()
+        },
+        new()
+        {
+          GroupId = defaultGroupId,
+          GroupKey = defaultGroupKey,
+          Ordinal = 0,
+          StudentId = defaultGroupStudentDTO1withKey.Id,
+          StudentKey = defaultGroupStudentDTO1withKey.Key,
+          Id = Guid.NewGuid()
+        },
+        new()
+        {
+          GroupId = defaultGroupId,
+          GroupKey = defaultGroupKey,
+          Ordinal = 0,
+          StudentId = defaultGroupStudentDTO2withKey.Id,
+          StudentKey = defaultGroupStudentDTO2withKey.Key,
+          Id = Guid.NewGuid()
+        },
+        new()
+        {
+          GroupId = defaultGroupId,
+          GroupKey = defaultGroupKey,
+          Ordinal = 0,
+          StudentId = defaultGroupStudentDTO3withKey.Id,
+          StudentKey = defaultGroupStudentDTO3withKey.Key,
           Id = Guid.NewGuid()
         }
       ],

@@ -79,32 +79,6 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       .Select(c => c.Id)
       .ToList();
 
-    var UngroupedStudents = (
-      await _dbContext
-        .Students.Where(s =>
-          !_dbContext.StudentGroups.Any(sg =>
-            sg.StudentId == s.Id && sg.GroupDTO.ConfigurationId == configurationId
-          )
-          && s.ClassroomId == classroomId
-        )
-        .Select(s => new
-        {
-          StudentDTO = s,
-          StudentFields = _dbContext
-            .StudentFields.Where(sf => sf.StudentId == s.Id)
-            .Select(sf => new { sf.FieldId, sf.Value })
-            .ToList()
-        })
-        .ToListAsync(cancellationToken)
-    )
-      .Select(s => new
-      {
-        Student = s.StudentDTO.ToStudent(),
-        Fields = s.StudentFields.ToDictionary(sf => sf.FieldId, sf => sf.Value)
-      })
-      .Select(s => s.Student.WithFields(s.Fields))
-      .ToList();
-
     var configurationDetail =
       (
         await _dbContext
@@ -113,10 +87,20 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
             && c.ClassroomId == classroomId
             && classroomIds.Contains(classroomId)
           )
-          .Select(c => new ConfigurationDetailDTO(c.Id, c.ClassroomId, c.Label, c.Description))
+          .Select(c => new ConfigurationDetailDTO(
+            c.Id,
+            c.ClassroomId,
+            c.DefaultGroupId ?? Guid.Empty,
+            c.Label,
+            c.Description
+          ))
           .FirstOrDefaultAsync(cancellationToken)
-      )?.ToConfigurationDetail(groupDetails, columnDetails, UngroupedStudents)
-      ?? throw new Exception();
+      )?.ToConfigurationDetail(groupDetails, columnDetails) ?? throw new Exception();
+
+    if (configurationDetail.DefaultGroupId.Equals(Guid.Empty))
+    {
+      throw new Exception("Configuration has no default group.");
+    }
 
     return configurationDetail;
   }
@@ -141,7 +125,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
           .ToListAsync(cancellationToken)
       )
-        .Select(g => g.ToGroupDetail(studentDetails))
+        .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
         .ToList() ?? [];
   }
 

@@ -19,12 +19,20 @@ public class ConfigurationDTO
   public Guid ClassroomId { get; set; }
 
   public ICollection<FieldDTO> Fields { get; set; } = [];
+
   public ICollection<ColumnDTO> Columns { get; set; } = [];
 
   public ICollection<GroupDTO> Groups { get; set; } = [];
 
+  // Because there's a one to one relationship between configurations and their default groups,
+  // we must be able to create one entity before the other. For this reason, the default
+  // group is temporarily null so that we can create a configuration before any group exists.
+  public GroupDTO? DefaultGroupDTO { get; set; } = null!;
+  public int? DefaultGroupKey { get; set; }
+  public Guid? DefaultGroupId { get; set; }
+
   public Configuration ToConfiguration()
   {
-    return new Configuration(Id, ClassroomId, Label, Description);
+    return new Configuration(Id, ClassroomId, DefaultGroupId ?? Guid.Empty, Label, Description);
   }
 }

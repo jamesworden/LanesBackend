@@ -19,6 +19,8 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
+  readonly string DEFAULT_GROUP_LABEL = "Default Group";
+
   public async Task<Configuration> CreateConfiguration(
     Guid accountId,
     Guid classroomId,
@@ -32,9 +34,11 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
         ?? []
       ).FirstOrDefault() ?? throw new Exception();
 
+    var configurationId = Guid.NewGuid();
+
     var configurationDTO = new ConfigurationDTO
     {
-      Id = Guid.NewGuid(),
+      Id = configurationId,
       Label = label,
       ClassroomId = classroomDTO.Id,
       ClassroomKey = classroomDTO.Key
@@ -45,6 +49,25 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
     );
     await _dbContext.SaveChangesAsync(cancellationToken);
     var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
+
+    var defaultGroupDTO = new GroupDTO()
+    {
+      Id = Guid.NewGuid(),
+      Label = DEFAULT_GROUP_LABEL,
+      ConfigurationId = configurationId,
+      Ordinal = 0,
+      ConfigurationKey = configurationDTO.Key
+    };
+    var groupEntity = await _dbContext.Groups.AddAsync(defaultGroupDTO, cancellationToken);
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
+
+    configurationEntity.Entity.DefaultGroupKey = groupEntity.Entity.Key;
+    configurationEntity.Entity.DefaultGroupId = groupEntity.Entity.Id;
+
+    _dbContext.Configurations.Update(configurationEntity.Entity);
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
 
     List<FieldDTO> fieldDTOs =
       await _dbContext

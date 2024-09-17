@@ -77,6 +77,12 @@ public class ClassroomGroupsContext : DbContext
       .HasForeignKey(e => e.ConfigurationKey)
       .HasPrincipalKey(e => e.Key)
       .OnDelete(DeleteBehavior.Cascade);
+    modelBuilder
+      .Entity<ConfigurationDTO>()
+      .HasOne(c => c.DefaultGroupDTO)
+      .WithOne()
+      .HasForeignKey<ConfigurationDTO>(c => c.DefaultGroupKey)
+      .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<FieldDTO>().HasIndex(fieldDTO => fieldDTO.Id).IsUnique();
     modelBuilder
