@@ -117,7 +117,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new DeleteGroupRequest(classroomId, configurationId, groupId));
   }
 
-  public record CreateStudentRequestBody(Guid ConfigurationId, Guid GroupId) { }
+  public record CreateStudentRequestBody(Guid ConfigurationId, Guid? GroupId) { }
 
   [Authorize]
   [HttpPost("{classroomId}/students")]

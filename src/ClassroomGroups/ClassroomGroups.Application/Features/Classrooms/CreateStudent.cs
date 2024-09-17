@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record CreateStudentRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
+public record CreateStudentRequest(Guid ClassroomId, Guid ConfigurationId, Guid? GroupId)
   : IRequest<CreateStudentResponse> { }
 
 public record CreateStudentResponse(StudentDetail CreatedStudentDetail) { }
@@ -49,31 +49,34 @@ public class CreateStudentRequestHandler(
 
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    var groupDTO =
-      await _dbContext
-        .Groups.Where(g => g.Id == request.GroupId)
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-    var existingStudentGroups = await _dbContext
-      .StudentGroups.Where(sg => sg.GroupId == request.GroupId)
-      .ToListAsync(cancellationToken);
-
-    var studentGroupDTO = new StudentGroupDTO()
+    if (request.GroupId is not null)
     {
-      Id = Guid.NewGuid(),
-      GroupId = request.GroupId,
-      StudentId = studentEntity.Entity.Id,
-      GroupKey = groupDTO.Key,
-      StudentKey = studentEntity.Entity.Key,
-      Ordinal = existingStudentGroups.Count
-    };
+      var groupDTO =
+        await _dbContext
+          .Groups.Where(g => g.Id == request.GroupId)
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    var studentGroupEntity = await _dbContext.StudentGroups.AddAsync(
-      studentGroupDTO,
-      cancellationToken
-    );
+      var existingStudentGroups = await _dbContext
+        .StudentGroups.Where(sg => sg.GroupId == request.GroupId)
+        .ToListAsync(cancellationToken);
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+      var studentGroupDTO = new StudentGroupDTO()
+      {
+        Id = Guid.NewGuid(),
+        GroupId = (Guid)request.GroupId,
+        StudentId = studentEntity.Entity.Id,
+        GroupKey = groupDTO.Key,
+        StudentKey = studentEntity.Entity.Key,
+        Ordinal = existingStudentGroups.Count
+      };
+
+      var studentGroupEntity = await _dbContext.StudentGroups.AddAsync(
+        studentGroupDTO,
+        cancellationToken
+      );
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+    }
 
     var studentFieldDTOs = await _dbContext
       .Fields.Where(f => f.ClassroomId == request.ClassroomId)
