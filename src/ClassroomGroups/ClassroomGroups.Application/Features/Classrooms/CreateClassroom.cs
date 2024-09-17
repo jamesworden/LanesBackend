@@ -81,6 +81,30 @@ public class CreateClassroomRequestHandler(
       cancellationToken
     );
 
+    var ungroupedStudentDTO1 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+    var ungroupedStudentDTO2 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+    var ungroupedStudentDTO3 = new StudentDTO()
+    {
+      ClassroomId = classroomDTO.Id,
+      ClassroomKey = classroomDTO.Key,
+      Id = Guid.NewGuid(),
+    };
+
+    await _dbContext.Students.AddRangeAsync(
+      [ungroupedStudentDTO1, ungroupedStudentDTO2, ungroupedStudentDTO3],
+      cancellationToken
+    );
+
     var fieldDTO1 = new FieldDTO
     {
       ClassroomId = classroomDTO.Id,
