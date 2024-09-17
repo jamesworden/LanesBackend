@@ -136,7 +136,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   public record PatchGroupRequestBody(string Label = "") { }
 
   [Authorize]
-  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}")]
+  [HttpPatch("{classroomId}/configurations/{configurationId}/groups/{groupId}")]
   public async Task<PatchGroupResponse> PatchGroup(
     [FromRoute] Guid classroomId,
     [FromRoute] Guid configurationId,
