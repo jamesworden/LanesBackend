@@ -1,6 +1,6 @@
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
-public class Configuration(Guid Id, Guid ClassroomId, string Label, string? Description)
+public class Configuration(Guid Id, Guid ClassroomId, string Label, string Description)
 {
   public Guid Id { get; private set; } = Id;
 
@@ -8,5 +8,5 @@ public class Configuration(Guid Id, Guid ClassroomId, string Label, string? Desc
 
   public string Label { get; private set; } = Label;
 
-  public string? Description { get; private set; } = Description;
+  public string Description { get; private set; } = Description;
 }

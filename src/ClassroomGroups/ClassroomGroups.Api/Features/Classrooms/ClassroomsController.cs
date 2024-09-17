@@ -66,10 +66,10 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new CreateConfigurationRequest(body.Label, classroomId));
   }
 
-  public record PatchConfigurationRequestBody(Configuration Configuration) { }
+  public record PatchConfigurationRequestBody(string Label, string Description) { }
 
   [Authorize]
-  [HttpPost("{classroomId}/configurations/{configurationId}")]
+  [HttpPatch("{classroomId}/configurations/{configurationId}")]
   public async Task<PatchConfigurationResponse> PatchConfiguration(
     [FromRoute] Guid classroomId,
     [FromRoute] Guid configurationId,
@@ -77,23 +77,25 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   )
   {
     return await _mediator.Send(
-      new PatchConfigurationRequest(classroomId, configurationId, body.Configuration)
+      new PatchConfigurationRequest(classroomId, configurationId, body.Label, body.Description)
     );
   }
 
-  public record PatchClassroomRequestBody(Classroom Classroom) { }
+  public record PatchClassroomRequestBody(string Label, string Description) { }
 
   [Authorize]
-  [HttpPost("{classroomId}")]
+  [HttpPatch("{classroomId}")]
   public async Task<PatchClassroomResponse> PatchClassroom(
     [FromRoute] Guid classroomId,
     [FromBody] PatchClassroomRequestBody body
   )
   {
-    return await _mediator.Send(new PatchClassroomRequest(classroomId, body.Classroom));
+    return await _mediator.Send(
+      new PatchClassroomRequest(classroomId, body.Label, body.Description)
+    );
   }
 
-  public record CreateGroupRequestBody(string? Label) { }
+  public record CreateGroupRequestBody(string Label = "") { }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}/groups")]

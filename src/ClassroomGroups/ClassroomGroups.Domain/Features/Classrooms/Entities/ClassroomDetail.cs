@@ -4,7 +4,7 @@ public class ClassroomDetail(
   Guid Id,
   Guid AccountId,
   string Label,
-  string? Description,
+  string Description,
   List<FieldDetail> FieldDetails
 )
 {
@@ -14,7 +14,7 @@ public class ClassroomDetail(
 
   public string Label { get; private set; } = Label;
 
-  public string? Description { get; private set; } = Description;
+  public string Description { get; private set; } = Description;
 
   public List<FieldDetail> FieldDetails { get; private set; } = FieldDetails;
 }

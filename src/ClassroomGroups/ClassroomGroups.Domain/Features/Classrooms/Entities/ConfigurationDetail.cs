@@ -4,7 +4,7 @@ public class ConfigurationDetail(
   Guid Id,
   Guid ClassroomId,
   string Label,
-  string? Description,
+  string Description,
   List<GroupDetail> GroupDetails,
   List<ColumnDetail> ColumnDetails,
   List<StudentWithFields> UngroupedStudents
@@ -16,7 +16,7 @@ public class ConfigurationDetail(
 
   public string Label { get; private set; } = Label;
 
-  public string? Description { get; private set; } = Description;
+  public string Description { get; private set; } = Description;
 
   public List<GroupDetail> GroupDetails { get; private set; } = GroupDetails;
 

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record PatchClassroomRequest(Guid ClassroomId, Classroom Classroom)
+public record PatchClassroomRequest(Guid ClassroomId, string Label, string Description)
   : IRequest<PatchClassroomResponse> { }
 
 public record PatchClassroomResponse(ClassroomDetail PatchedClassroomDetail) { }
@@ -41,8 +41,8 @@ public class PatchClassroomRequestHandler(
         .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    classroomDTO.Description = request.Classroom.Description?.Trim();
-    classroomDTO.Label = request.Classroom.Label.Trim();
+    classroomDTO.Description = request.Description.Trim();
+    classroomDTO.Label = request.Label.Trim();
 
     var configurationEntity = _dbContext.Classrooms.Update(classroomDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);

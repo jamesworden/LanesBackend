@@ -40,7 +40,7 @@ public class CreateClassroomRequestHandler(
     {
       Id = Guid.NewGuid(),
       Label = request.Label ?? DEFAULT_CLASSROOM_LABEL,
-      Description = request.Description,
+      Description = request.Description ?? "",
       AccountKey = account.Key,
       AccountId = account.Id
     };

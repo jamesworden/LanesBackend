@@ -10,7 +10,8 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record PatchConfigurationRequest(
   Guid ClassroomId,
   Guid ConfigurationId,
-  Configuration Configuration
+  string Label,
+  string Description
 ) : IRequest<PatchConfigurationResponse> { }
 
 public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
@@ -51,8 +52,8 @@ public class PatchConfigurationRequestHandler(
         )
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    configurationDTO.Description = request.Configuration.Description?.Trim();
-    configurationDTO.Label = request.Configuration.Label.Trim();
+    configurationDTO.Description = request.Description.Trim();
+    configurationDTO.Label = request.Label.Trim();
 
     var configurationEntity = _dbContext.Configurations.Update(configurationDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);

@@ -12,7 +12,7 @@ public class ClassroomDTO
   [InverseProperty("ClassroomId")]
   public Guid Id { get; set; }
   public string Label { get; set; } = "";
-  public string? Description { get; set; } = "";
+  public string Description { get; set; } = "";
 
   public AccountDTO AccountDTO { get; set; } = null!;
   public int AccountKey { get; set; }

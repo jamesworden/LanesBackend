@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record CreateGroupRequest(Guid ClassroomId, Guid ConfigurationId, string? Label)
+public record CreateGroupRequest(Guid ClassroomId, Guid ConfigurationId, string Label)
   : IRequest<CreateGroupResponse> { }
 
 public record CreateGroupResponse(GroupDetail CreatedGroupDetail) { }

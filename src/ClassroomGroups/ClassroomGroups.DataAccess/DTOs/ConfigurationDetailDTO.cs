@@ -2,7 +2,7 @@ using ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 namespace ClassroomGroups.DataAccess.DTOs;
 
-public class ConfigurationDetailDTO(Guid Id, Guid ClassroomId, string Label, string? Description)
+public class ConfigurationDetailDTO(Guid Id, Guid ClassroomId, string Label, string Description)
 {
   public Guid Id = Id;
 
@@ -10,7 +10,7 @@ public class ConfigurationDetailDTO(Guid Id, Guid ClassroomId, string Label, str
 
   public string Label = Label;
 
-  public string? Description = Description;
+  public string Description = Description;
 
   public ConfigurationDetail ToConfigurationDetail(
     List<GroupDetail> GroupDetails,
