@@ -133,7 +133,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     );
   }
 
-  public record PatchGroupRequestBody(Group Group) { }
+  public record PatchGroupRequestBody(string Label = "") { }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}")]
@@ -145,7 +145,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   )
   {
     return await _mediator.Send(
-      new PatchGroupRequest(classroomId, configurationId, groupId, body.Group)
+      new PatchGroupRequest(classroomId, configurationId, groupId, body.Label)
     );
   }
 

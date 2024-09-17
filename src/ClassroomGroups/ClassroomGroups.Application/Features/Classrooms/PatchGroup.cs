@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, Group Group)
+public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, string Label)
   : IRequest<PatchGroupResponse> { }
 
 public record PatchGroupResponse(GroupDetail UpdatedGroupDetail) { }
@@ -36,7 +36,7 @@ public class PatchGroupRequestHandler(
         .Groups.Where(g => g.Id == request.GroupId)
         .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    groupDTO.Label = request.Group.Label;
+    groupDTO.Label = request.Label;
 
     var configurationEntity = _dbContext.Groups.Update(groupDTO);
     await _dbContext.SaveChangesAsync(cancellationToken);
