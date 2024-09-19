@@ -27,6 +27,13 @@ public interface IDetailService
     Guid configurationId,
     CancellationToken cancellationToken
   );
+
+  public Task<List<ColumnDetail>> GetColumnDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  );
 }
 
 public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
@@ -47,29 +54,12 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       cancellationToken
     );
 
-    var columnDetails = (
-      await _dbContext
-        .Columns.Where(c => c.ConfigurationId == configurationId)
-        .Join(
-          _dbContext.Fields,
-          column => column.FieldId,
-          field => field.Id,
-          (column, field) => new { column, field }
-        )
-        .Select(c => new ColumnDetailDTO(
-          c.column.Id,
-          c.column.ConfigurationId,
-          c.column.FieldId,
-          c.column.Ordinal,
-          c.column.Sort,
-          c.column.Enabled,
-          c.field.Type,
-          c.field.Label
-        ))
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.ToColumnDetail())
-      .ToList();
+    var columnDetails = await GetColumnDetails(
+      accountId,
+      classroomId,
+      configurationId,
+      cancellationToken
+    );
 
     var classroomIds = (
       await _dbContext
@@ -127,6 +117,38 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       )
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
         .ToList() ?? [];
+  }
+
+  public async Task<List<ColumnDetail>> GetColumnDetails(
+    Guid accountId,
+    Guid classroomId,
+    Guid configurationId,
+    CancellationToken cancellationToken
+  )
+  {
+    return (
+      await _dbContext
+        .Columns.Where(c => c.ConfigurationId == configurationId)
+        .Join(
+          _dbContext.Fields,
+          column => column.FieldId,
+          field => field.Id,
+          (column, field) => new { column, field }
+        )
+        .Select(c => new ColumnDetailDTO(
+          c.column.Id,
+          c.column.ConfigurationId,
+          c.column.FieldId,
+          c.column.Ordinal,
+          c.column.Sort,
+          c.column.Enabled,
+          c.field.Type,
+          c.field.Label
+        ))
+        .ToListAsync(cancellationToken)
+    )
+      .Select(c => c.ToColumnDetail())
+      .ToList();
   }
 
   public async Task<List<StudentDetail>> GetStudentDetails(
