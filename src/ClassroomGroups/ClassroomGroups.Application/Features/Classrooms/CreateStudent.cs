@@ -81,18 +81,37 @@ public class CreateStudentRequestHandler(
 
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    var studentFieldDTOs = await _dbContext
-      .Fields.Where(f => f.ClassroomId == request.ClassroomId)
-      .Select(f => new StudentFieldDTO
-      {
-        FieldId = f.Id,
-        FieldKey = f.Key,
-        StudentId = studentEntity.Entity.Id,
-        StudentKey = studentEntity.Entity.Key,
-      })
+    var otherConfigurationDTOs = await _dbContext
+      .Configurations.Where(c =>
+        c.ClassroomId == request.ClassroomId && c.Id != request.ConfigurationId
+      )
       .ToListAsync(cancellationToken);
 
-    await _dbContext.StudentFields.AddRangeAsync(studentFieldDTOs, cancellationToken);
+    var studentGroupDTOs = await Task.WhenAll(
+      otherConfigurationDTOs.Select(async c =>
+      {
+        var groupId = c.DefaultGroupId ?? throw new Exception();
+        var groupKey = c.DefaultGroupKey ?? throw new Exception();
+        var existingStudentGroups =
+          await _dbContext
+            .StudentGroups.Where(sg => sg.Id == c.DefaultGroupId)
+            .ToListAsync(cancellationToken) ?? throw new Exception();
+
+        return new StudentGroupDTO()
+        {
+          GroupId = c.DefaultGroupId ?? throw new Exception(),
+          GroupKey = c.DefaultGroupKey ?? throw new Exception(),
+          StudentId = studentDTO.Id,
+          StudentKey = studentDTO.Key,
+          Ordinal = existingStudentGroups.Count,
+          Id = Guid.NewGuid(),
+        };
+      })
+    );
+
+    await _dbContext.AddRangeAsync(studentGroupDTOs, cancellationToken);
+
+    await _dbContext.SaveChangesAsync(cancellationToken);
 
     var studentDetails =
       await _detailService.GetStudentDetails(
