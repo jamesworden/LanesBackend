@@ -155,7 +155,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .StudentFields.Where(sf => sf.StudentId == x.Student.Id)
           .ToDictionary(sf => sf.FieldId, sf => sf.Value)
       ))
-      .Select(sg => sg.ToStudentDetail())
+      .Select(s => s.ToStudentDetail())
       .ToList();
 
     return studentDetailsWithFields;

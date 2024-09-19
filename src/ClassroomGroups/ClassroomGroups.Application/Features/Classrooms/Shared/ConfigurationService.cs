@@ -58,12 +58,12 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       Ordinal = 0,
       ConfigurationKey = configurationDTO.Key
     };
-    var groupEntity = await _dbContext.Groups.AddAsync(defaultGroupDTO, cancellationToken);
+    var defaultGroupEntity = await _dbContext.Groups.AddAsync(defaultGroupDTO, cancellationToken);
 
     await _dbContext.SaveChangesAsync(cancellationToken);
 
-    configurationEntity.Entity.DefaultGroupKey = groupEntity.Entity.Key;
-    configurationEntity.Entity.DefaultGroupId = groupEntity.Entity.Id;
+    configurationEntity.Entity.DefaultGroupKey = defaultGroupEntity.Entity.Key;
+    configurationEntity.Entity.DefaultGroupId = defaultGroupEntity.Entity.Id;
 
     _dbContext.Configurations.Update(configurationEntity.Entity);
 
@@ -98,6 +98,51 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       await _dbContext
         .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
         .ToListAsync(cancellationToken) ?? [];
+
+    var studentDTOs =
+      await _dbContext.Students.Where(s => s.ClassroomId == classroomId).ToListAsync()
+      ?? throw new Exception();
+
+    var i = 0;
+
+    var studentGroups = studentDTOs
+      .Select(
+        (studentDTO) =>
+        {
+          return new StudentGroupDTO()
+          {
+            GroupId = defaultGroupEntity.Entity.Id,
+            GroupKey = defaultGroupEntity.Entity.Key,
+            StudentId = studentDTO.Id,
+            StudentKey = studentDTO.Key,
+            Ordinal = i++,
+            Id = Guid.NewGuid(),
+          };
+        }
+      )
+      .ToList();
+
+    foreach (var studentGroup in studentGroups)
+    {
+      var existingEntity = _dbContext.StudentGroups.FirstOrDefault(sg => sg.Id == studentGroup.Id);
+
+      if (existingEntity != null)
+      {
+        existingEntity.GroupId = studentGroup.GroupId;
+        existingEntity.GroupKey = studentGroup.GroupKey;
+        existingEntity.StudentId = studentGroup.StudentId;
+        existingEntity.StudentKey = studentGroup.StudentKey;
+        existingEntity.Ordinal = studentGroup.Ordinal;
+
+        _dbContext.StudentGroups.Update(existingEntity);
+      }
+      else
+      {
+        _dbContext.StudentGroups.Add(studentGroup);
+      }
+    }
+
+    _dbContext.SaveChanges();
 
     return configurationDTO.ToConfiguration();
   }
