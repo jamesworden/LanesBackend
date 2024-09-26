@@ -139,6 +139,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(UpsertStudentFieldResponse),
     [typeof(AuthBehavior<,>)]
   ),
+  (typeof(PatchFieldRequest), typeof(PatchFieldResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

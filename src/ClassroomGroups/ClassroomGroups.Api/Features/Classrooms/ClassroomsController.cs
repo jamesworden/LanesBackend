@@ -189,4 +189,17 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new UpsertStudentFieldRequest(classroomId, studentId, fieldId, body.Value)
     );
   }
+
+  public record PatchFieldRequestBody(string Label = "") { }
+
+  [Authorize]
+  [HttpPatch("{classroomId}/fields/{fieldId}")]
+  public async Task<PatchFieldResponse> PatchField(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid fieldId,
+    [FromBody] PatchFieldRequestBody body
+  )
+  {
+    return await _mediator.Send(new PatchFieldRequest(classroomId, fieldId, body.Label));
+  }
 }
