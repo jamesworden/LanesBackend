@@ -26,14 +26,26 @@ public class DeleteConfigurationRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    var configurationDTO =
-      _dbContext.Configurations.SingleOrDefault(c =>
-        c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
-      ) ?? throw new Exception();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    _dbContext.Configurations.Remove(configurationDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    try
+    {
+      var configurationDTO =
+        _dbContext.Configurations.SingleOrDefault(c =>
+          c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
+        ) ?? throw new Exception();
 
-    return new DeleteConfigurationResponse(configurationDTO.ToConfiguration());
+      _dbContext.Configurations.Remove(configurationDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      return new DeleteConfigurationResponse(configurationDTO.ToConfiguration());
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

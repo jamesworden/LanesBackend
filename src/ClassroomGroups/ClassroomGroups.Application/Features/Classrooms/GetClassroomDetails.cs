@@ -27,32 +27,44 @@ public class GetClassroomDetailsRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    ).Select(c => c.Id);
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var fieldDetails =
-      (
+    try
+    {
+      var classroomIds = (
         await _dbContext
-          .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
-          .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
+          .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
-      )
-        .Select(f => f.ToFieldDetail())
-        .ToList() ?? [];
+      ).Select(c => c.Id);
 
-    var classroomDetails =
-      (
-        await _dbContext
-          .Classrooms.Where(c => c.AccountKey == account.Key)
-          .Select(c => new ClassroomDetailDTO(c.Id, c.AccountId, c.Label, c.Description))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(c => c.ToClassroomDetail(fieldDetails))
-        .ToList() ?? [];
+      var fieldDetails =
+        (
+          await _dbContext
+            .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
+            .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
+            .ToListAsync(cancellationToken)
+        )
+          .Select(f => f.ToFieldDetail())
+          .ToList() ?? [];
 
-    return new GetClassroomDetailsResponse(classroomDetails);
+      var classroomDetails =
+        (
+          await _dbContext
+            .Classrooms.Where(c => c.AccountKey == account.Key)
+            .Select(c => new ClassroomDetailDTO(c.Id, c.AccountId, c.Label, c.Description))
+            .ToListAsync(cancellationToken)
+        )
+          .Select(c => c.ToClassroomDetail(fieldDetails))
+          .ToList() ?? [];
+
+      return new GetClassroomDetailsResponse(classroomDetails);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

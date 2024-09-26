@@ -1,5 +1,6 @@
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
+using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 
@@ -13,7 +14,8 @@ public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurati
 public class CreateConfigurationRequestHandler(
   AuthBehaviorCache authBehaviorCache,
   IDetailService detailService,
-  IConfigurationService configurationService
+  IConfigurationService configurationService,
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
@@ -22,6 +24,8 @@ public class CreateConfigurationRequestHandler(
 
   readonly IConfigurationService _configurationService = configurationService;
 
+  readonly ClassroomGroupsContext _dbContext = dbContext;
+
   public async Task<CreateConfigurationResponse> Handle(
     CreateConfigurationRequest request,
     CancellationToken cancellationToken
@@ -29,21 +33,33 @@ public class CreateConfigurationRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    var configuration = await _configurationService.CreateConfiguration(
-      account.Id,
-      request.ClassroomId,
-      request.Label,
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
 
-    var configurationDetail =
-      await _detailService.GetConfigurationDetail(
+    try
+    {
+      var configuration = await _configurationService.CreateConfiguration(
         account.Id,
         request.ClassroomId,
-        configuration.Id,
+        request.Label,
         cancellationToken
-      ) ?? throw new Exception();
+      );
 
-    return new CreateConfigurationResponse(configurationDetail);
+      var configurationDetail =
+        await _detailService.GetConfigurationDetail(
+          account.Id,
+          request.ClassroomId,
+          configuration.Id,
+          cancellationToken
+        ) ?? throw new Exception();
+
+      return new CreateConfigurationResponse(configurationDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

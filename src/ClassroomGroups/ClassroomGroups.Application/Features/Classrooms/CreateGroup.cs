@@ -32,56 +32,68 @@ public class CreateGroupRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.Id)
-      .ToList();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var configurationDTO =
-      await _dbContext
-        .Configurations.Where(c =>
-          c.ClassroomId == request.ClassroomId
-          && c.Id == request.ConfigurationId
-          && classroomIds.Contains(c.ClassroomId)
-        )
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-    var existingGroups = await _dbContext
-      .Groups.Where(g => g.ConfigurationId == configurationDTO.Id)
-      .Select(g => g.ToGroup())
-      .ToListAsync(cancellationToken);
-
-    var ordinal = existingGroups.Count;
-
-    var label = request.Label ?? $"Group {ordinal + 1}";
-
-    var groupId = Guid.NewGuid();
-
-    var groupDTO = new GroupDTO()
+    try
     {
-      Id = groupId,
-      Label = label,
-      ConfigurationId = request.ConfigurationId,
-      Ordinal = ordinal,
-      ConfigurationKey = configurationDTO.Key
-    };
-    var groupEntity = await _dbContext.Groups.AddAsync(groupDTO, cancellationToken);
+      var classroomIds = (
+        await _dbContext
+          .Classrooms.Where(c => c.AccountId == account.Id)
+          .ToListAsync(cancellationToken)
+      )
+        .Select(c => c.Id)
+        .ToList();
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+      var configurationDTO =
+        await _dbContext
+          .Configurations.Where(c =>
+            c.ClassroomId == request.ClassroomId
+            && c.Id == request.ConfigurationId
+            && classroomIds.Contains(c.ClassroomId)
+          )
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    var groupDetails =
-      await _detailService.GetGroupDetails(
-        account.Id,
-        request.ClassroomId,
-        request.ConfigurationId,
-        cancellationToken
-      ) ?? throw new Exception();
+      var existingGroups = await _dbContext
+        .Groups.Where(g => g.ConfigurationId == configurationDTO.Id)
+        .Select(g => g.ToGroup())
+        .ToListAsync(cancellationToken);
 
-    var groupDetail = groupDetails.Find(g => g.Id == groupId) ?? throw new Exception();
+      var ordinal = existingGroups.Count;
 
-    return new CreateGroupResponse(groupDetail);
+      var label = request.Label ?? $"Group {ordinal + 1}";
+
+      var groupId = Guid.NewGuid();
+
+      var groupDTO = new GroupDTO()
+      {
+        Id = groupId,
+        Label = label,
+        ConfigurationId = request.ConfigurationId,
+        Ordinal = ordinal,
+        ConfigurationKey = configurationDTO.Key
+      };
+      var groupEntity = await _dbContext.Groups.AddAsync(groupDTO, cancellationToken);
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      var groupDetails =
+        await _detailService.GetGroupDetails(
+          account.Id,
+          request.ClassroomId,
+          request.ConfigurationId,
+          cancellationToken
+        ) ?? throw new Exception();
+
+      var groupDetail = groupDetails.Find(g => g.Id == groupId) ?? throw new Exception();
+
+      return new CreateGroupResponse(groupDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

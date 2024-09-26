@@ -39,62 +39,75 @@ public class CreateColumnRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomDTO =
-      await _dbContext
-        .Classrooms.Where(c => c.Id == request.ClassroomId)
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-    var configurationDTOs = await _dbContext.Configurations.ToListAsync() ?? throw new Exception();
-
-    var fieldDTO = new FieldDTO()
-    {
-      Id = Guid.NewGuid(),
-      ClassroomId = classroomDTO.Id,
-      ClassroomKey = classroomDTO.Key,
-      Label = request.Label,
-      Type = request.Type
-    };
-
-    var fieldEntity = await _dbContext.Fields.AddAsync(fieldDTO, cancellationToken);
-
-    await _dbContext.SaveChangesAsync(cancellationToken);
-
-    var existingFieldDTOs = await _dbContext
-      .Fields.Where(c => c.ClassroomId == request.ClassroomId)
-      .ToListAsync(cancellationToken);
-
-    var ordinal = existingFieldDTOs.Count;
-
-    var columnId = Guid.NewGuid();
-
-    var columnDTOs = configurationDTOs.Select(c => new ColumnDTO()
-    {
-      Id = columnId,
-      ConfigurationId = c.Id,
-      ConfigurationKey = c.Key,
-      FieldId = fieldDTO.Id,
-      FieldKey = fieldDTO.Key,
-      Ordinal = ordinal,
-      Sort = ColumnSort.NONE,
-      Enabled = true,
-    });
-
-    await _dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
-
-    await _dbContext.SaveChangesAsync(cancellationToken);
-
-    var fieldDetail = fieldEntity.Entity.ToField().ToFieldDetail();
-
-    var columnDetails = await _detailService.GetColumnDetails(
-      account.Id,
-      request.ClassroomId,
-      request.ConfigurationId,
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
 
-    var columnDetail =
-      columnDetails.Where(c => c.Id == columnId).FirstOrDefault() ?? throw new Exception();
+    try
+    {
+      var classroomDTO =
+        await _dbContext
+          .Classrooms.Where(c => c.Id == request.ClassroomId)
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    return new CreateColumnResponse(columnDetail, fieldDetail);
+      var configurationDTOs =
+        await _dbContext.Configurations.ToListAsync() ?? throw new Exception();
+
+      var fieldDTO = new FieldDTO()
+      {
+        Id = Guid.NewGuid(),
+        ClassroomId = classroomDTO.Id,
+        ClassroomKey = classroomDTO.Key,
+        Label = request.Label,
+        Type = request.Type
+      };
+
+      var fieldEntity = await _dbContext.Fields.AddAsync(fieldDTO, cancellationToken);
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      var existingFieldDTOs = await _dbContext
+        .Fields.Where(c => c.ClassroomId == request.ClassroomId)
+        .ToListAsync(cancellationToken);
+
+      var ordinal = existingFieldDTOs.Count;
+
+      var columnId = Guid.NewGuid();
+
+      var columnDTOs = configurationDTOs.Select(c => new ColumnDTO()
+      {
+        Id = columnId,
+        ConfigurationId = c.Id,
+        ConfigurationKey = c.Key,
+        FieldId = fieldDTO.Id,
+        FieldKey = fieldDTO.Key,
+        Ordinal = ordinal,
+        Sort = ColumnSort.NONE,
+        Enabled = true,
+      });
+
+      await _dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      var fieldDetail = fieldEntity.Entity.ToField().ToFieldDetail();
+
+      var columnDetails = await _detailService.GetColumnDetails(
+        account.Id,
+        request.ClassroomId,
+        request.ConfigurationId,
+        cancellationToken
+      );
+
+      var columnDetail =
+        columnDetails.Where(c => c.Id == columnId).FirstOrDefault() ?? throw new Exception();
+
+      return new CreateColumnResponse(columnDetail, fieldDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

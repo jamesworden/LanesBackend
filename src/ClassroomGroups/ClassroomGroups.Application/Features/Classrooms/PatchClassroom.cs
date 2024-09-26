@@ -28,44 +28,56 @@ public class PatchClassroomRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.Id)
-      .ToList();
-
-    var classroomDTO =
-      await _dbContext
-        .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-    classroomDTO.Description = request.Description.Trim();
-    classroomDTO.Label = request.Label.Trim();
-
-    var configurationEntity = _dbContext.Classrooms.Update(classroomDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
-    var classroom = configurationEntity.Entity?.ToClassroom() ?? throw new Exception();
-
-    var fieldDetails =
-      (
-        await _dbContext
-          .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
-          .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
-          .ToListAsync(cancellationToken)
-      )
-        .Select(f => f.ToFieldDetail())
-        .ToList() ?? [];
-
-    var classroomDetail = new ClassroomDetail(
-      classroom.Id,
-      classroom.AccountId,
-      classroom.Label,
-      classroom.Description,
-      fieldDetails
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
     );
 
-    return new PatchClassroomResponse(classroomDetail);
+    try
+    {
+      var classroomIds = (
+        await _dbContext
+          .Classrooms.Where(c => c.AccountId == account.Id)
+          .ToListAsync(cancellationToken)
+      )
+        .Select(c => c.Id)
+        .ToList();
+
+      var classroomDTO =
+        await _dbContext
+          .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+      classroomDTO.Description = request.Description.Trim();
+      classroomDTO.Label = request.Label.Trim();
+
+      var configurationEntity = _dbContext.Classrooms.Update(classroomDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+      var classroom = configurationEntity.Entity?.ToClassroom() ?? throw new Exception();
+
+      var fieldDetails =
+        (
+          await _dbContext
+            .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
+            .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
+            .ToListAsync(cancellationToken)
+        )
+          .Select(f => f.ToFieldDetail())
+          .ToList() ?? [];
+
+      var classroomDetail = new ClassroomDetail(
+        classroom.Id,
+        classroom.AccountId,
+        classroom.Label,
+        classroom.Description,
+        fieldDetails
+      );
+
+      return new PatchClassroomResponse(classroomDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

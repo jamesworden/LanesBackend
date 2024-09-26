@@ -26,20 +26,32 @@ public class GetConfigurationsRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    ).Select(c => c.Id);
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var configurations = (
-      await _dbContext
-        .Configurations.Where(c => classroomIds.Contains(c.ClassroomId))
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.ToConfiguration())
-      .ToList();
+    try
+    {
+      var classroomIds = (
+        await _dbContext
+          .Classrooms.Where(c => c.AccountId == account.Id)
+          .ToListAsync(cancellationToken)
+      ).Select(c => c.Id);
 
-    return new GetConfigurationsResponse(configurations);
+      var configurations = (
+        await _dbContext
+          .Configurations.Where(c => classroomIds.Contains(c.ClassroomId))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(c => c.ToConfiguration())
+        .ToList();
+
+      return new GetConfigurationsResponse(configurations);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

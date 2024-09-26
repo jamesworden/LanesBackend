@@ -31,26 +31,38 @@ public class PatchGroupRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var groupDTO =
-      await _dbContext
-        .Groups.Where(g => g.Id == request.GroupId)
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-    groupDTO.Label = request.Label;
-
-    var configurationEntity = _dbContext.Groups.Update(groupDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
-
-    var groupDetails = await _detailService.GetGroupDetails(
-      account.Id,
-      request.ClassroomId,
-      request.ConfigurationId,
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
 
-    var groupDetail =
-      groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id) ?? throw new Exception();
+    try
+    {
+      var groupDTO =
+        await _dbContext
+          .Groups.Where(g => g.Id == request.GroupId)
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    return new PatchGroupResponse(groupDetail);
+      groupDTO.Label = request.Label;
+
+      var configurationEntity = _dbContext.Groups.Update(groupDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      var groupDetails = await _detailService.GetGroupDetails(
+        account.Id,
+        request.ClassroomId,
+        request.ConfigurationId,
+        cancellationToken
+      );
+
+      var groupDetail =
+        groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id) ?? throw new Exception();
+
+      return new PatchGroupResponse(groupDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

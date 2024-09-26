@@ -25,14 +25,26 @@ public class DeleteClassroomRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    var classroom =
-      _dbContext.Classrooms.SingleOrDefault(c =>
-        c.Id == request.ClassroomId && c.AccountId == account.Id
-      ) ?? throw new Exception();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    _dbContext.Classrooms.Remove(classroom);
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    try
+    {
+      var classroom =
+        _dbContext.Classrooms.SingleOrDefault(c =>
+          c.Id == request.ClassroomId && c.AccountId == account.Id
+        ) ?? throw new Exception();
 
-    return new DeleteClassroomResponse(classroom.ToClassroom());
+      _dbContext.Classrooms.Remove(classroom);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      return new DeleteClassroomResponse(classroom.ToClassroom());
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

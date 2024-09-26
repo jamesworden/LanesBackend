@@ -31,14 +31,26 @@ public class DeleteGroupRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
-    var groupDTO =
-      await _dbContext
-        .Groups.Where(g => g.Id == request.GroupId)
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var groupEntity = _dbContext.Groups.Remove(groupDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    try
+    {
+      var groupDTO =
+        await _dbContext
+          .Groups.Where(g => g.Id == request.GroupId)
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    return new DeleteGroupResponse(groupEntity.Entity.ToGroup());
+      var groupEntity = _dbContext.Groups.Remove(groupDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      return new DeleteGroupResponse(groupEntity.Entity.ToGroup());
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

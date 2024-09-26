@@ -31,48 +31,60 @@ public class UpsertStudentFieldRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var studentFieldDTO = await _dbContext
-      .StudentFields.Where(sf =>
-        sf.StudentDTO.ClassroomId == request.ClassroomId
-        && sf.StudentId == request.StudentId
-        && sf.FieldId == request.FieldId
-      )
-      .FirstOrDefaultAsync(cancellationToken);
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var value = request.Value.Trim();
-
-    if (studentFieldDTO != null)
+    try
     {
-      studentFieldDTO.Value = value;
-      _dbContext.StudentFields.Update(studentFieldDTO);
-    }
-    else
-    {
-      var studentDTO =
-        await _dbContext
-          .Students.Where(s => s.Id == request.StudentId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+      var studentFieldDTO = await _dbContext
+        .StudentFields.Where(sf =>
+          sf.StudentDTO.ClassroomId == request.ClassroomId
+          && sf.StudentId == request.StudentId
+          && sf.FieldId == request.FieldId
+        )
+        .FirstOrDefaultAsync(cancellationToken);
 
-      var fieldDTO =
-        await _dbContext
-          .Fields.Where(f => f.Id == request.FieldId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+      var value = request.Value.Trim();
 
-      studentFieldDTO = new StudentFieldDTO
+      if (studentFieldDTO != null)
       {
-        StudentId = request.StudentId,
-        StudentKey = studentDTO.Key,
-        FieldId = request.FieldId,
-        FieldKey = fieldDTO.Key,
-        Value = value,
-        Id = Guid.NewGuid()
-      };
+        studentFieldDTO.Value = value;
+        _dbContext.StudentFields.Update(studentFieldDTO);
+      }
+      else
+      {
+        var studentDTO =
+          await _dbContext
+            .Students.Where(s => s.Id == request.StudentId)
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-      _dbContext.StudentFields.Add(studentFieldDTO);
+        var fieldDTO =
+          await _dbContext
+            .Fields.Where(f => f.Id == request.FieldId)
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+        studentFieldDTO = new StudentFieldDTO
+        {
+          StudentId = request.StudentId,
+          StudentKey = studentDTO.Key,
+          FieldId = request.FieldId,
+          FieldKey = fieldDTO.Key,
+          Value = value,
+          Id = Guid.NewGuid()
+        };
+
+        _dbContext.StudentFields.Add(studentFieldDTO);
+      }
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      return new UpsertStudentFieldResponse(studentFieldDTO.Value);
     }
-
-    await _dbContext.SaveChangesAsync(cancellationToken);
-
-    return new UpsertStudentFieldResponse(studentFieldDTO.Value);
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

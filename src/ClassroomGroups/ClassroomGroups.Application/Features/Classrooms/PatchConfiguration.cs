@@ -35,38 +35,50 @@ public class PatchConfigurationRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.Id)
-      .ToList();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    var configurationDTO =
-      await _dbContext
-        .Configurations.Where(c =>
-          c.ClassroomId == request.ClassroomId
-          && c.Id == request.ConfigurationId
-          && classroomIds.Contains(c.ClassroomId)
-        )
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+    try
+    {
+      var classroomIds = (
+        await _dbContext
+          .Classrooms.Where(c => c.AccountId == account.Id)
+          .ToListAsync(cancellationToken)
+      )
+        .Select(c => c.Id)
+        .ToList();
 
-    configurationDTO.Description = request.Description.Trim();
-    configurationDTO.Label = request.Label.Trim();
+      var configurationDTO =
+        await _dbContext
+          .Configurations.Where(c =>
+            c.ClassroomId == request.ClassroomId
+            && c.Id == request.ConfigurationId
+            && classroomIds.Contains(c.ClassroomId)
+          )
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    var configurationEntity = _dbContext.Configurations.Update(configurationDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
-    var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
+      configurationDTO.Description = request.Description.Trim();
+      configurationDTO.Label = request.Label.Trim();
 
-    var configurationDetail =
-      await _detailService.GetConfigurationDetail(
-        account.Id,
-        request.ClassroomId,
-        request.ConfigurationId,
-        cancellationToken
-      ) ?? throw new Exception();
+      var configurationEntity = _dbContext.Configurations.Update(configurationDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+      var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
 
-    return new PatchConfigurationResponse(configurationDetail);
+      var configurationDetail =
+        await _detailService.GetConfigurationDetail(
+          account.Id,
+          request.ClassroomId,
+          request.ConfigurationId,
+          cancellationToken
+        ) ?? throw new Exception();
+
+      return new PatchConfigurationResponse(configurationDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }

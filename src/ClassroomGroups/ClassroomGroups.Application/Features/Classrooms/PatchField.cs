@@ -26,20 +26,20 @@ public class PatchFieldRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
-    var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == account.Id)
-        .ToListAsync(cancellationToken)
-    )
-      .Select(c => c.Id)
-      .ToList();
-
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
 
     try
     {
+      var classroomIds = (
+        await _dbContext
+          .Classrooms.Where(c => c.AccountId == account.Id)
+          .ToListAsync(cancellationToken)
+      )
+        .Select(c => c.Id)
+        .ToList();
+
       var fieldDTO =
         await _dbContext
           .Fields.Where(f =>
