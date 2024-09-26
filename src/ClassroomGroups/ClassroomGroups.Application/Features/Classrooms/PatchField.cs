@@ -17,7 +17,6 @@ public class PatchFieldRequestHandler(
 ) : IRequestHandler<PatchFieldRequest, PatchFieldResponse>
 {
   readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 
   public async Task<PatchFieldResponse> Handle(
@@ -35,21 +34,36 @@ public class PatchFieldRequestHandler(
       .Select(c => c.Id)
       .ToList();
 
-    var fieldDTO =
-      await _dbContext
-        .Fields.Where(f =>
-          f.Id == request.FieldId
-          && f.ClassroomId == request.ClassroomId
-          && classroomIds.Contains(f.ClassroomId)
-        )
-        .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+      cancellationToken
+    );
 
-    fieldDTO.Label = request.Label.Trim();
+    try
+    {
+      var fieldDTO =
+        await _dbContext
+          .Fields.Where(f =>
+            f.Id == request.FieldId
+            && f.ClassroomId == request.ClassroomId
+            && classroomIds.Contains(f.ClassroomId)
+          )
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-    var fieldEntity = _dbContext.Fields.Update(fieldDTO);
-    await _dbContext.SaveChangesAsync(cancellationToken);
-    var fieldDetail = fieldEntity.Entity?.ToField().ToFieldDetail() ?? throw new Exception();
+      fieldDTO.Label = request.Label.Trim();
 
-    return new PatchFieldResponse(fieldDetail);
+      var fieldEntity = _dbContext.Fields.Update(fieldDTO);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      var fieldDetail = fieldEntity.Entity?.ToField().ToFieldDetail() ?? throw new Exception();
+
+      await transaction.CommitAsync(cancellationToken);
+
+      return new PatchFieldResponse(fieldDetail);
+    }
+    catch (Exception)
+    {
+      await transaction.RollbackAsync(cancellationToken);
+      throw;
+    }
   }
 }
