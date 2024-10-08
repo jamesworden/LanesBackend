@@ -59,6 +59,8 @@ public class GetClassroomDetailsRequestHandler(
           .Select(c => c.ToClassroomDetail(fieldDetails))
           .ToList() ?? [];
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new GetClassroomDetailsResponse(classroomDetails);
     }
     catch (Exception)

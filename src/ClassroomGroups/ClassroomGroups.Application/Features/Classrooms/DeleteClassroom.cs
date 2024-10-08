@@ -39,6 +39,8 @@ public class DeleteClassroomRequestHandler(
       _dbContext.Classrooms.Remove(classroom);
       await _dbContext.SaveChangesAsync(cancellationToken);
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new DeleteClassroomResponse(classroom.ToClassroom());
     }
     catch (Exception)

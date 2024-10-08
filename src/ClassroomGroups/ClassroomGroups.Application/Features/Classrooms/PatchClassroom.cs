@@ -72,6 +72,8 @@ public class PatchClassroomRequestHandler(
         fieldDetails
       );
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new PatchClassroomResponse(classroomDetail);
     }
     catch (Exception)

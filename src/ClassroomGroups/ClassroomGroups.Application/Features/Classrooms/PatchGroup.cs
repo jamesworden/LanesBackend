@@ -57,6 +57,8 @@ public class PatchGroupRequestHandler(
       var groupDetail =
         groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id) ?? throw new Exception();
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new PatchGroupResponse(groupDetail);
     }
     catch (Exception)

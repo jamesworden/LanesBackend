@@ -88,6 +88,8 @@ public class CreateGroupRequestHandler(
 
       var groupDetail = groupDetails.Find(g => g.Id == groupId) ?? throw new Exception();
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new CreateGroupResponse(groupDetail);
     }
     catch (Exception)

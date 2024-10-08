@@ -129,6 +129,8 @@ public class CreateStudentRequestHandler(
 
       var studentDetail = studentDetails.Find(s => s.Id == studentId) ?? throw new Exception();
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new CreateStudentResponse(studentDetail);
     }
     catch (Exception)

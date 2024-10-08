@@ -79,6 +79,8 @@ public class UpsertStudentFieldRequestHandler(
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
+      await transaction.CommitAsync(cancellationToken);
+
       return new UpsertStudentFieldResponse(studentFieldDTO.Value);
     }
     catch (Exception)
