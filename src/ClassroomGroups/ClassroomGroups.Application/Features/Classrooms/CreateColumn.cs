@@ -102,7 +102,7 @@ public class CreateColumnRequestHandler(
       var columnDetail =
         columnDetails.Where(c => c.Id == columnId).FirstOrDefault() ?? throw new Exception();
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new CreateColumnResponse(columnDetail, fieldDetail);
     }

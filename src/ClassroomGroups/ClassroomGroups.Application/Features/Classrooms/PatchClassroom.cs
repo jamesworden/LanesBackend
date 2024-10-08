@@ -72,7 +72,7 @@ public class PatchClassroomRequestHandler(
         fieldDetails
       );
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new PatchClassroomResponse(classroomDetail);
     }

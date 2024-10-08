@@ -56,7 +56,7 @@ public class PatchFieldRequestHandler(
 
       var fieldDetail = fieldEntity.Entity?.ToField().ToFieldDetail() ?? throw new Exception();
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new PatchFieldResponse(fieldDetail);
     }

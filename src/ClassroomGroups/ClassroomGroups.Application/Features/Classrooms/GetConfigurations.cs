@@ -46,7 +46,7 @@ public class GetConfigurationsRequestHandler(
         .Select(c => c.ToConfiguration())
         .ToList();
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new GetConfigurationsResponse(configurations);
     }

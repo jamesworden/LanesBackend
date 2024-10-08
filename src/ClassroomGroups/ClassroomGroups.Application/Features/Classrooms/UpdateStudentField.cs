@@ -79,7 +79,7 @@ public class UpsertStudentFieldRequestHandler(
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new UpsertStudentFieldResponse(studentFieldDTO.Value);
     }

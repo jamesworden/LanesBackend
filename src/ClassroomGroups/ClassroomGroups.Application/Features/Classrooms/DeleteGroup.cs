@@ -45,7 +45,7 @@ public class DeleteGroupRequestHandler(
       var groupEntity = _dbContext.Groups.Remove(groupDTO);
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new DeleteGroupResponse(groupEntity.Entity.ToGroup());
     }

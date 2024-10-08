@@ -73,7 +73,7 @@ public class PatchConfigurationRequestHandler(
           cancellationToken
         ) ?? throw new Exception();
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new PatchConfigurationResponse(configurationDetail);
     }

@@ -54,7 +54,7 @@ public class CreateConfigurationRequestHandler(
           cancellationToken
         ) ?? throw new Exception();
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new CreateConfigurationResponse(configurationDetail);
     }

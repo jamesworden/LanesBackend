@@ -328,7 +328,7 @@ public class CreateClassroomRequestHandler(
 
       var createdClassroomDetail = classroom.ToClassroomDetail(fieldDetails);
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new CreateClassroomResponse(createdClassroomDetail);
     }

@@ -40,7 +40,7 @@ public class DeleteConfigurationRequestHandler(
       _dbContext.Configurations.Remove(configurationDTO);
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      await transaction.CommitAsync(cancellationToken);
+      transaction.Commit();
 
       return new DeleteConfigurationResponse(configurationDTO.ToConfiguration());
     }
