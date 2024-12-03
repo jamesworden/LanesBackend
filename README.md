@@ -12,15 +12,22 @@ Years ago, I was playing cards with my brother in law and for some reason, we de
 
 ### Why are two different applications hosted here if the project name is 'LanesBackend'?
 
-Not many people play Lanes, or `chessofcards.com`. it's also likely that not many people will use `classroomgroups.com`, a new application that I'm working on. For this reason, it doesn't make sense for me to spend money on more than one server. So my applications that need a backend server will live on this one to save money. Because I now call the original 'Lanes' card game 'Chess of Cards' and because this server now supports backend code for multiple applications, 'Lanes' is now the term used to represent this server in its entirety, that is, the APIs for my smaller projects.
+`chessofcards.com` and `classroomgroups.com` are both new applications and have few users, so it doesn't make sense for me to spend money on multiple servers. My applications that need a backend server will live on this one to save money. Because I now call the original 'Lanes' card game 'Chess of Cards' and because this server now supports backend code for multiple applications, 'Lanes' is now the term used to represent this server in its entirety, that is, the APIs for my smaller projects.
 
 ---
 
 ## Documentation
 
+### Getting Started Developing Locally
+
+1. Authenticate with the AWS CLI Locally
+2. Add the appropriate app secrets locally, addressed below.
+3. Run the database migrations using the `dotnet ef database update` command below to prepare your local database so that the server can read and write to it.
+
 ### App Secrets & Environment Variables
 
 To make this repository open source, I had to do a few things:
+
 - Purge my commit history of sensitive data
 - Make sensitive data that I will not purge from commit history "un-sensitive"
 - Use enviornment variable injection to not reveal sensitive data, like connection strings or api keys.
@@ -36,25 +43,26 @@ Microsoft provides official documentation on that [here](https://learn.microsoft
 ##### ClassroomGroups App Secret Setup
 
 To prepare yourself for local development, execute the following commands in the root directory of this repository. Note that the ALL_CAPS_SNAKE_CASE strings will need to be replaced with the real values. You can contact James Worden to find these.
+
 - `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientId" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_ID" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
 - `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientSecret" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_SECRET" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
 
 ### Deploying to production
 
--   First we must build an artifact to deploy. Start by opening the terminal and going to the following directory: `LanesBackend\LanesBackend`.
--   Here, execute this command: `dotnet publish -o ../app -r linux-x64 --self-contained`. This assumes you have the dotnet CLI tool installed. The artifact should now be built. The parameters on these commands have become necessary for our Code Deploy agent to deploy the app correctly since the advent of .Net 8.
--   You can test that this artifact works locally with `dotnet run ./app/LanesBackend.dll`. If there's any strange behavior or errors, cleaning the contents of that `app` folder before rebuilding an artifact may help.
--   Now we must deploy this artifact; push this artifact to Github directly to master or in a new branch.
--   Open a new browser tab to login to the AWS Console. Go to the Code Deploy service.
--   Select `Applications`, `lanesbackend`, `lanesbackend-dg` (Deployment Group), and then click the `Create Deployment` button
--   Fetch the latest commit id by going to the root `LanesBackend` directory and entering the command `git log -1 --format="%H"`.
--   Fill out the steps on this page using this repository (`jamesworden/LanesBackend`) and the latest commit id. Finishing this process should take the latest build that you just pushed via git and run it on the prod EC2 instance.
+- First we must build an artifact to deploy. Start by opening the terminal and going to the following directory: `LanesBackend\LanesBackend`.
+- Here, execute this command: `dotnet publish -o ../app -r linux-x64 --self-contained`. This assumes you have the dotnet CLI tool installed. The artifact should now be built. The parameters on these commands have become necessary for our Code Deploy agent to deploy the app correctly since the advent of .Net 8.
+- You can test that this artifact works locally with `dotnet run ./app/LanesBackend.dll`. If there's any strange behavior or errors, cleaning the contents of that `app` folder before rebuilding an artifact may help.
+- Now we must deploy this artifact; push this artifact to Github directly to master or in a new branch.
+- Open a new browser tab to login to the AWS Console. Go to the Code Deploy service.
+- Select `Applications`, `lanesbackend`, `lanesbackend-dg` (Deployment Group), and then click the `Create Deployment` button
+- Fetch the latest commit id by going to the root `LanesBackend` directory and entering the command `git log -1 --format="%H"`.
+- Fill out the steps on this page using this repository (`jamesworden/LanesBackend`) and the latest commit id. Finishing this process should take the latest build that you just pushed via git and run it on the prod EC2 instance.
 
 ### Powershell Commands for Local Development
 
--   `dotnet restore`: reinstalls nuget packages
--   `dotnet clean`: cleans artifacts
--   `dotnet watch`: runs application for development with hot reload
+- `dotnet restore`: reinstalls nuget packages
+- `dotnet clean`: cleans artifacts
+- `dotnet watch`: runs application for development with hot reload (If you're using VSCode, there's a `launch.json` script to run the services for you.)
 
 ### Application Architecture
 
@@ -75,14 +83,18 @@ Hosting multiple .NET applications on the same linux server is actually quite di
 #### Data Access Model Conventions
 
 ##### Key Vs. Id
+
 Private, internal primary keys of tables end with `Key` while public facing identifiers for rows of data end with `Id`. In other words, anything that is a Key is database specific and to be used internally. Alternatively, users can see Id's without an issue.
 
 #### Domain Model Conventions
 
 ##### View Models
+
 Often, our domain models will have properties that we don't want to expose to our API endpoints. An example of this is `Account.Key`. The only identification property that clients should have access to is `Account.Id`. For this reason, we must transform an `Account` to an `AccountView`, where every property is the same except the key property no longer exists on the view model. A domain model with "View" appended to the end of it hides properties from the initial model that the user should not see.
 
 #### Database Migrations
+
 Entity framework modifies the database according to a DBContext file (for example, `ClassroomGroupContext.cs`). To update the database via database migrations, make changes to your context file accordingly. Then, execute the following commands from the root directory of this repository:
-- `dotnet ef migrations add YOUR_MIGRATION_NAME --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\` 
+
+- `dotnet ef migrations add YOUR_MIGRATION_NAME --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`
 - `dotnet ef database update --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`
