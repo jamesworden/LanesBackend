@@ -20,12 +20,10 @@ Not many people play Lanes, or `chessofcards.com`. it's also likely that not man
 
 ### App Secrets & Environment Variables
 
-To make this repository open source, a few things need to be done:
+To make this repository open source, I had to do a few things:
 - Purge my commit history of sensitive data
 - Make sensitive data that I will not purge from commit history "un-sensitive"
 - Use enviornment variable injection to not reveal sensitive data, like connection strings or api keys.
-
-This section addresses how these issues ought to be handled.
 
 #### What is an 'App Secret' or 'Environment Variable'
 
@@ -72,4 +70,19 @@ All of this spawned `src/ChessOfCards` and it's different .NET projects, each of
 
 Hosting multiple .NET applications on the same linux server is actually quite difficult; i've circumnavigated this issue by hosting 1 actual .NET web API, `src/LanesBackendLauncher`, which initializes and uses the projects defined in `src/ClassroomGroups` and `src/ChessOfCards` in `src/LanesBackendLauncher/Program.cs`.
 
+### ClassroomGroups Developer Commentary
 
+#### Data Access Model Conventions
+
+##### Key Vs. Id
+Private, internal primary keys of tables end with `Key` while public facing identifiers for rows of data end with `Id`. In other words, anything that is a Key is database specific and to be used internally. Alternatively, users can see Id's without an issue.
+
+#### Domain Model Conventions
+
+##### View Models
+Often, our domain models will have properties that we don't want to expose to our API endpoints. An example of this is `Account.Key`. The only identification property that clients should have access to is `Account.Id`. For this reason, we must transform an `Account` to an `AccountView`, where every property is the same except the key property no longer exists on the view model. A domain model with "View" appended to the end of it hides properties from the initial model that the user should not see.
+
+#### Database Migrations
+Entity framework modifies the database according to a DBContext file (for example, `ClassroomGroupContext.cs`). To update the database via database migrations, make changes to your context file accordingly. Then, execute the following commands from the root directory of this repository:
+- `dotnet ef migrations add YOUR_MIGRATION_NAME --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\` 
+- `dotnet ef database update --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`

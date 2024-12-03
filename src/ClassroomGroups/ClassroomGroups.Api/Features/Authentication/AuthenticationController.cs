@@ -1,15 +1,23 @@
+using ClassroomGroups.Application.Features.Authentication;
+using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace ClassroomGroups.Api.Features.Authentication;
 
 [ApiController]
 [Route("classroom-groups/api/v1/[controller]")]
-public class AuthenticationController : ControllerBase
+public class AuthenticationController(IMediator mediator, IConfiguration configuration)
+  : ControllerBase
 {
+  private readonly IMediator _mediator = mediator;
+
+  private readonly IConfiguration _configuration = configuration;
+
   [AllowAnonymous]
   [HttpPost("login-with-google")]
   public async Task LoginWithGoogle()
@@ -37,7 +45,8 @@ public class AuthenticationController : ControllerBase
       return new EmptyResult();
     }
     await Request.HttpContext.SignInAsync("Cookies", result.Principal);
-    return Redirect("http://localhost:4200");
+    await _mediator.Send(new UpsertAccountRequest());
+    return Redirect(_configuration["ClassroomGroups:LoggedInRedirectUrl"] ?? "");
   }
 
   [Authorize]
@@ -46,5 +55,12 @@ public class AuthenticationController : ControllerBase
   {
     await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return new EmptyResult();
+  }
+
+  [Authorize]
+  [HttpGet("account")]
+  public async Task<GetAccountResponse> GetAccount()
+  {
+    return await _mediator.Send(new GetAccountRequest());
   }
 }

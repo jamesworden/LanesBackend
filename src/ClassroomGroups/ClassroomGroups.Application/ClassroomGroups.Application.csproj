@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClassroomGroups.Domain\ClassroomGroups.Domain.csproj" />
+    <ProjectReference Include="..\ClassroomGroups.DataAccess\ClassroomGroups.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
   </ItemGroup>
 </Project>
