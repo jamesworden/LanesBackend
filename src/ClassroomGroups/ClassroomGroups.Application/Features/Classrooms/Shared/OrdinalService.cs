@@ -57,7 +57,7 @@ public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService det
       _dbContext.StudentGroups.UpdateRange(releventStudentGroups);
     }
 
-    await _dbContext.SaveChangesAsync();
+    await _dbContext.SaveChangesAsync(cancellationToken);
 
     return await _detailService.GetGroupDetails(
       accountId,
