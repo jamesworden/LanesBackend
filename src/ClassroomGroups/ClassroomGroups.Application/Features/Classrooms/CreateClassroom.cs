@@ -269,7 +269,7 @@ public class CreateClassroomRequestHandler(
           {
             GroupId = groupDTO.Id,
             GroupKey = groupDTO.Key,
-            Ordinal = 0,
+            Ordinal = 1,
             StudentId = studentDTO2withKey.Id,
             StudentKey = studentDTO2withKey.Key,
             Id = Guid.NewGuid()
@@ -278,7 +278,7 @@ public class CreateClassroomRequestHandler(
           {
             GroupId = groupDTO.Id,
             GroupKey = groupDTO.Key,
-            Ordinal = 0,
+            Ordinal = 2,
             StudentId = studentDTO3withKey.Id,
             StudentKey = studentDTO3withKey.Key,
             Id = Guid.NewGuid()
@@ -296,7 +296,7 @@ public class CreateClassroomRequestHandler(
           {
             GroupId = defaultGroupId,
             GroupKey = defaultGroupKey,
-            Ordinal = 0,
+            Ordinal = 1,
             StudentId = defaultGroupStudentDTO2withKey.Id,
             StudentKey = defaultGroupStudentDTO2withKey.Key,
             Id = Guid.NewGuid()
@@ -305,7 +305,7 @@ public class CreateClassroomRequestHandler(
           {
             GroupId = defaultGroupId,
             GroupKey = defaultGroupKey,
-            Ordinal = 0,
+            Ordinal = 2,
             StudentId = defaultGroupStudentDTO3withKey.Id,
             StudentKey = defaultGroupStudentDTO3withKey.Key,
             Id = Guid.NewGuid()
