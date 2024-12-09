@@ -208,7 +208,7 @@ public class CreateClassroomRequestHandler(
         {
           Id = groupId,
           Label = "Group 1",
-          Ordinal = 0,
+          Ordinal = 1,
           ConfigurationId = configurationDTO.Id,
           ConfigurationKey = configurationDTO.Key
         },

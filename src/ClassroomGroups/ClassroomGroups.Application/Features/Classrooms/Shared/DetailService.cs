@@ -123,6 +123,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .ToListAsync(cancellationToken)
       )
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
+        .OrderBy(g => g.Ordinal)
         .ToList() ?? [];
   }
 
