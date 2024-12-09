@@ -202,4 +202,14 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new PatchFieldRequest(classroomId, fieldId, body.Label));
   }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/students/{studentId}")]
+  public async Task<DeleteStudentResponse> DeleteStudent(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid studentId
+  )
+  {
+    return await _mediator.Send(new DeleteStudentRequest(classroomId, studentId));
+  }
 }

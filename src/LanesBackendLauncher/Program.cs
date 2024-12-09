@@ -93,6 +93,7 @@ builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 builder.Services.AddScoped<AuthBehaviorCache>();
 builder.Services.AddScoped<IDetailService, DetailService>();
 builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+builder.Services.AddScoped<IOrdinalService, OrdinalService>();
 
 // [ClassroomGroups PipelineBehavior Registry]
 var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
@@ -140,6 +141,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     [typeof(AuthBehavior<,>)]
   ),
   (typeof(PatchFieldRequest), typeof(PatchFieldResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(DeleteStudentRequest), typeof(DeleteStudentResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

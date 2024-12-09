@@ -21,10 +21,17 @@ public interface IDetailService
     CancellationToken cancellationToken
   );
 
+  public Task<List<GroupDetail>> GetGroupDetails(
+    Guid accountId,
+    Guid classroomId,
+    List<Guid> groupIds,
+    CancellationToken cancellationToken
+  );
+
   public Task<List<StudentDetail>> GetStudentDetails(
     Guid accountId,
     Guid classroomId,
-    Guid configurationId,
+    Guid? configurationId,
     CancellationToken cancellationToken
   );
 
@@ -119,6 +126,25 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
         .ToList() ?? [];
   }
 
+  public async Task<List<GroupDetail>> GetGroupDetails(
+    Guid accountId,
+    Guid classroomId,
+    List<Guid> groupIds,
+    CancellationToken cancellationToken
+  )
+  {
+    var studentDetails = await GetStudentDetails(accountId, classroomId, null, cancellationToken);
+
+    return (
+        await _dbContext
+          .Groups.Where(g => groupIds.Contains(g.Id))
+          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
+          .ToListAsync(cancellationToken)
+      )
+        .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
+        .ToList() ?? [];
+  }
+
   public async Task<List<ColumnDetail>> GetColumnDetails(
     Guid accountId,
     Guid classroomId,
@@ -154,12 +180,14 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
   public async Task<List<StudentDetail>> GetStudentDetails(
     Guid accountId,
     Guid classroomId,
-    Guid configurationId,
+    Guid? configurationId,
     CancellationToken cancellationToken
   )
   {
     var studentDetails = await _dbContext
-      .StudentGroups.Where(sg => sg.GroupDTO.ConfigurationId == configurationId)
+      .StudentGroups.Where(sg =>
+        configurationId == null || sg.GroupDTO.ConfigurationId == configurationId
+      )
       .Join(
         _dbContext.Students,
         sg => sg.StudentId,
