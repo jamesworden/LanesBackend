@@ -10,12 +10,13 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 public record DeleteGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
   : IRequest<DeleteGroupResponse> { }
 
-public record DeleteGroupResponse(Group DeletedGroup) { }
+public record DeleteGroupResponse(Group DeletedGroup, GroupDetail UpdatedDefaultGroup) { }
 
 public class DeleteGroupRequestHandler(
   ClassroomGroupsContext dbContext,
   AuthBehaviorCache authBehaviorCache,
-  IDetailService detailService
+  IDetailService detailService,
+  IOrdinalService ordinalService
 ) : IRequestHandler<DeleteGroupRequest, DeleteGroupResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
@@ -23,6 +24,8 @@ public class DeleteGroupRequestHandler(
   readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
+
+  readonly IOrdinalService _ordinalService = ordinalService;
 
   public async Task<DeleteGroupResponse> Handle(
     DeleteGroupRequest request,
@@ -42,12 +45,44 @@ public class DeleteGroupRequestHandler(
           .Groups.Where(g => g.Id == request.GroupId)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
+      var displacedStudentGroups = await _dbContext
+        .StudentGroups.Where(sg => sg.GroupId == groupDTO.Id)
+        .ToListAsync(cancellationToken);
+
+      var configurationDTO =
+        await _dbContext
+          .Configurations.Where(c => c.Id == groupDTO.ConfigurationId)
+          .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
+
+      var defaultGroupId = groupDTO.ConfigurationDTO.DefaultGroupId ?? Guid.Empty;
+      var i = 0;
+      var numStudentsInDefaultGroup = await _dbContext
+        .StudentGroups.Where(sg => sg.GroupId == defaultGroupId)
+        .CountAsync(cancellationToken);
+      displacedStudentGroups.ForEach(sg =>
+      {
+        sg.GroupId = defaultGroupId;
+        sg.Ordinal = numStudentsInDefaultGroup + i;
+        i++;
+      });
+
       var groupEntity = _dbContext.Groups.Remove(groupDTO);
+
       await _dbContext.SaveChangesAsync(cancellationToken);
 
       transaction.Commit();
 
-      return new DeleteGroupResponse(groupEntity.Entity.ToGroup());
+      var defaultGroup =
+        (
+          await _detailService.GetGroupDetails(
+            account.Id,
+            request.ClassroomId,
+            [defaultGroupId],
+            cancellationToken
+          )
+        ).FirstOrDefault() ?? throw new Exception();
+
+      return new DeleteGroupResponse(groupEntity.Entity.ToGroup(), defaultGroup);
     }
     catch (Exception)
     {
