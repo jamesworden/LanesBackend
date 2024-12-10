@@ -116,7 +116,8 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       cancellationToken
     );
 
-    return (
+    var groupDetails =
+      (
         await _dbContext
           .Groups.Where(g => g.ConfigurationId == configurationId)
           .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
@@ -125,6 +126,8 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
         .OrderBy(g => g.Ordinal)
         .ToList() ?? [];
+
+    return groupDetails;
   }
 
   public async Task<List<GroupDetail>> GetGroupDetails(
@@ -143,6 +146,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .ToListAsync(cancellationToken)
       )
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
+        .OrderBy(g => g.Ordinal)
         .ToList() ?? [];
   }
 
@@ -207,6 +211,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
           .ToDictionary(sf => sf.FieldId, sf => sf.Value)
       ))
       .Select(s => s.ToStudentDetail())
+      .OrderBy(s => s.Ordinal)
       .ToList();
 
     return studentDetailsWithFields;
