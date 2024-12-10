@@ -202,4 +202,44 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new PatchFieldRequest(classroomId, fieldId, body.Label));
   }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/students/{studentId}")]
+  public async Task<DeleteStudentResponse> DeleteStudent(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid studentId
+  )
+  {
+    return await _mediator.Send(new DeleteStudentRequest(classroomId, studentId));
+  }
+
+  public record SortGroupsRequestBody(Guid[] SortedGroupIds) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/sort-groups")]
+  public async Task<SortGroupsResponse> SortGroups(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] SortGroupsRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new SortGroupsRequest(classroomId, configurationId, body.SortedGroupIds)
+    );
+  }
+
+  public record MoveStudentRequestBody(MoveStudentDetail MoveStudentDetail) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/move-student")]
+  public async Task<MoveStudentResponse> MoveStudent(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] MoveStudentRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new MoveStudentRequest(classroomId, configurationId, body.MoveStudentDetail)
+    );
+  }
 }
