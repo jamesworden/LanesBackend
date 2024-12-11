@@ -1,6 +1,7 @@
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
+using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -55,18 +56,34 @@ public class DeleteGroupRequestHandler(
           .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var defaultGroupId = groupDTO.ConfigurationDTO.DefaultGroupId ?? Guid.Empty;
-      var i = 0;
+      var defaultGroupKey = groupDTO.ConfigurationDTO.DefaultGroupKey ?? -1;
+
       var numStudentsInDefaultGroup = await _dbContext
         .StudentGroups.Where(sg => sg.GroupId == defaultGroupId)
         .CountAsync(cancellationToken);
-      displacedStudentGroups.ForEach(sg =>
+
+      List<StudentGroupDTO> newDisplacedStudentGroups = [];
+
+      for (var i = 0; i < displacedStudentGroups.Count; i++)
       {
-        sg.GroupId = defaultGroupId;
-        sg.Ordinal = numStudentsInDefaultGroup + i;
-        i++;
-      });
+        var existingStudentGroup = displacedStudentGroups[i];
+
+        var newStudentGroup = new StudentGroupDTO
+        {
+          GroupId = defaultGroupId,
+          StudentId = existingStudentGroup.StudentId,
+          Ordinal = numStudentsInDefaultGroup + i,
+          StudentKey = existingStudentGroup.StudentKey,
+          GroupKey = defaultGroupKey,
+          Id = Guid.NewGuid()
+        };
+
+        newDisplacedStudentGroups.Add(newStudentGroup);
+      }
 
       var groupEntity = _dbContext.Groups.Remove(groupDTO);
+
+      _dbContext.StudentGroups.AddRange(newDisplacedStudentGroups);
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -84,7 +101,7 @@ public class DeleteGroupRequestHandler(
 
       return new DeleteGroupResponse(groupEntity.Entity.ToGroup(), defaultGroup);
     }
-    catch (Exception)
+    catch (Exception e)
     {
       await transaction.RollbackAsync(cancellationToken);
       throw;

@@ -179,6 +179,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
         .ToListAsync(cancellationToken)
     )
       .Select(c => c.ToColumnDetail())
+      .OrderBy(c => c.Ordinal)
       .ToList();
   }
 

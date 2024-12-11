@@ -242,4 +242,19 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new MoveStudentRequest(classroomId, configurationId, body.MoveStudentDetail)
     );
   }
+
+  public record MoveColumnRequestBody(MoveColumnDetail MoveColumnDetail) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/move-column")]
+  public async Task<MoveColumnResponse> MoveColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] MoveColumnRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new MoveColumnRequest(classroomId, configurationId, body.MoveColumnDetail)
+    );
+  }
 }
