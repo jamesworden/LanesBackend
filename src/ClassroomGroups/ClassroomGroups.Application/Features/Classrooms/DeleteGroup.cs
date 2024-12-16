@@ -48,6 +48,7 @@ public class DeleteGroupRequestHandler(
 
       var displacedStudentGroups = await _dbContext
         .StudentGroups.Where(sg => sg.GroupId == groupDTO.Id)
+        .OrderBy(sg => sg.Ordinal)
         .ToListAsync(cancellationToken);
 
       var configurationDTO =
@@ -62,28 +63,14 @@ public class DeleteGroupRequestHandler(
         .StudentGroups.Where(sg => sg.GroupId == defaultGroupId)
         .CountAsync(cancellationToken);
 
-      List<StudentGroupDTO> newDisplacedStudentGroups = [];
-
       for (var i = 0; i < displacedStudentGroups.Count; i++)
       {
-        var existingStudentGroup = displacedStudentGroups[i];
-
-        var newStudentGroup = new StudentGroupDTO
-        {
-          GroupId = defaultGroupId,
-          StudentId = existingStudentGroup.StudentId,
-          Ordinal = numStudentsInDefaultGroup + i,
-          StudentKey = existingStudentGroup.StudentKey,
-          GroupKey = defaultGroupKey,
-          Id = Guid.NewGuid()
-        };
-
-        newDisplacedStudentGroups.Add(newStudentGroup);
+        displacedStudentGroups[i].GroupKey = defaultGroupKey;
+        displacedStudentGroups[i].Ordinal = numStudentsInDefaultGroup + i;
+        displacedStudentGroups[i].GroupId = defaultGroupId;
       }
 
       var groupEntity = _dbContext.Groups.Remove(groupDTO);
-
-      _dbContext.StudentGroups.AddRange(newDisplacedStudentGroups);
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
