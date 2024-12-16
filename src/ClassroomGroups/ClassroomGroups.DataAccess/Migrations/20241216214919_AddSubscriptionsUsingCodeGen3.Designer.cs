@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20241216214919_AddSubscriptionsUsingCodeGen3")]
+    partial class AddSubscriptionsUsingCodeGen3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -358,7 +361,7 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Key = 1,
+                            Key = 2,
                             DisplayName = "Free",
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
                             MaxClassrooms = 2,
@@ -369,7 +372,7 @@ namespace ClassroomGroups.DataAccess.Migrations
                         },
                         new
                         {
-                            Key = 2,
+                            Key = 1,
                             DisplayName = "Basic",
                             Id = new Guid("00000000-0000-0000-0000-000000000002"),
                             MaxClassrooms = 5,

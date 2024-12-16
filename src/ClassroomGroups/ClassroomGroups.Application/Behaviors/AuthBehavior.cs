@@ -53,7 +53,15 @@ public class AuthBehavior<TRequest, TResponse>(
     {
       return null;
     }
-    return accountDTO.ToAccount();
+    var subscription = await _dbContext.Subscriptions.FirstOrDefaultAsync(
+      (s) => s.Id == accountDTO.SubscriptionId,
+      cancellationToken
+    );
+    if (subscription is null)
+    {
+      return null;
+    }
+    return accountDTO.ToAccount(subscription.ToSubscription());
   }
 }
 

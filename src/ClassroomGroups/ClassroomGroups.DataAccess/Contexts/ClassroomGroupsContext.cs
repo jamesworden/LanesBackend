@@ -1,4 +1,5 @@
 using ClassroomGroups.DataAccess.DTOs;
+using ClassroomGroups.Domain.Features.Authentication.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.DataAccess.Contexts;
@@ -25,6 +26,8 @@ public class ClassroomGroupsContext : DbContext
   public DbSet<ConfigurationDTO> Configurations { get; set; }
 
   public DbSet<ColumnDTO> Columns { get; set; }
+
+  public DbSet<SubscriptionDTO> Subscriptions { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -157,5 +160,63 @@ public class ClassroomGroupsContext : DbContext
       .WithMany(f => f.Columns)
       .HasForeignKey(c => c.FieldKey)
       .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder
+      .Entity<SubscriptionDTO>()
+      .HasIndex(subscriptionDTO => subscriptionDTO.Id)
+      .IsUnique();
+    modelBuilder
+      .Entity<SubscriptionDTO>()
+      .Property(subscriptionDTO => subscriptionDTO.SubscriptionType)
+      .HasConversion<string>();
+    modelBuilder
+      .Entity<SubscriptionDTO>()
+      .HasMany(e => e.Accounts)
+      .WithOne(e => e.SubscriptionDTO)
+      .HasForeignKey(e => e.SubscriptionKey)
+      .HasPrincipalKey(e => e.Key)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<SubscriptionDTO>().HasData(GetSubscriptions());
+  }
+
+  private static List<SubscriptionDTO> GetSubscriptions()
+  {
+    return
+    [
+      new SubscriptionDTO
+      {
+        Id = new Guid("00000000-0000-0000-0000-000000000001"),
+        DisplayName = "Free",
+        Key = 1,
+        SubscriptionType = SubscriptionType.FREE,
+        MaxClassrooms = 2,
+        MaxStudentsPerClassroom = 30,
+        MaxFieldsPerClassroom = 5,
+        MaxConfigurationsPerClassroom = 3
+      },
+      new SubscriptionDTO
+      {
+        Id = new Guid("00000000-0000-0000-0000-000000000002"),
+        DisplayName = "Basic",
+        Key = 2,
+        SubscriptionType = SubscriptionType.BASIC,
+        MaxClassrooms = 5,
+        MaxStudentsPerClassroom = 50,
+        MaxFieldsPerClassroom = 20,
+        MaxConfigurationsPerClassroom = 20
+      },
+      new SubscriptionDTO
+      {
+        Id = new Guid("00000000-0000-0000-0000-000000000003"),
+        DisplayName = "Pro",
+        Key = 3,
+        SubscriptionType = SubscriptionType.PRO,
+        MaxClassrooms = 50,
+        MaxStudentsPerClassroom = 100,
+        MaxFieldsPerClassroom = 50,
+        MaxConfigurationsPerClassroom = 50
+      }
+    ];
   }
 }

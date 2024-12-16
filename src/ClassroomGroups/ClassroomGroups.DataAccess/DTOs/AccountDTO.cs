@@ -16,8 +16,12 @@ public class AccountDTO
 
   public ICollection<ClassroomDTO> Classrooms { get; } = [];
 
-  public Account ToAccount()
+  public SubscriptionDTO SubscriptionDTO { get; set; } = null!;
+  public int SubscriptionKey { get; set; }
+  public Guid SubscriptionId { get; set; }
+
+  public Account ToAccount(Subscription Subscription)
   {
-    return new Account(Id, PrimaryEmail, Key);
+    return new Account(Id, PrimaryEmail, Key, Subscription);
   }
 }

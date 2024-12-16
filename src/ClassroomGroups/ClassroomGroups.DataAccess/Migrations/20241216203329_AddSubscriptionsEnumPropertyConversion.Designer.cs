@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20241216203329_AddSubscriptionsEnumPropertyConversion")]
+    partial class AddSubscriptionsEnumPropertyConversion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -354,41 +357,6 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("Subscriptions");
-
-                    b.HasData(
-                        new
-                        {
-                            Key = 1,
-                            DisplayName = "Free",
-                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            MaxClassrooms = 2,
-                            MaxConfigurationsPerClassroom = 3,
-                            MaxFieldsPerClassroom = 5,
-                            MaxStudentsPerClassroom = 30,
-                            SubscriptionType = "FREE"
-                        },
-                        new
-                        {
-                            Key = 2,
-                            DisplayName = "Basic",
-                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
-                            MaxClassrooms = 5,
-                            MaxConfigurationsPerClassroom = 20,
-                            MaxFieldsPerClassroom = 20,
-                            MaxStudentsPerClassroom = 50,
-                            SubscriptionType = "BASIC"
-                        },
-                        new
-                        {
-                            Key = 3,
-                            DisplayName = "Pro",
-                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                            MaxClassrooms = 50,
-                            MaxConfigurationsPerClassroom = 50,
-                            MaxFieldsPerClassroom = 50,
-                            MaxStudentsPerClassroom = 100,
-                            SubscriptionType = "PRO"
-                        });
                 });
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.AccountDTO", b =>

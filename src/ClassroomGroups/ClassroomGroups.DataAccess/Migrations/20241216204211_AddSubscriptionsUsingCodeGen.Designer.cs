@@ -3,6 +3,7 @@ using System;
 using ClassroomGroups.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    partial class ClassroomGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20241216204211_AddSubscriptionsUsingCodeGen")]
+    partial class AddSubscriptionsUsingCodeGen
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -359,34 +362,34 @@ namespace ClassroomGroups.DataAccess.Migrations
                         new
                         {
                             Key = 1,
-                            DisplayName = "Free",
-                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            MaxClassrooms = 2,
-                            MaxConfigurationsPerClassroom = 3,
-                            MaxFieldsPerClassroom = 5,
-                            MaxStudentsPerClassroom = 30,
-                            SubscriptionType = "FREE"
+                            DisplayName = "Basic",
+                            Id = new Guid("bfc89c04-7dbe-4bf6-b3f9-9413f7d55996"),
+                            MaxClassrooms = 1,
+                            MaxConfigurationsPerClassroom = 5,
+                            MaxFieldsPerClassroom = 30,
+                            MaxStudentsPerClassroom = 5,
+                            SubscriptionType = "BASIC"
                         },
                         new
                         {
                             Key = 2,
-                            DisplayName = "Basic",
-                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            DisplayName = "Free",
+                            Id = new Guid("45eea37b-1ffb-49be-9fb6-540a11dcd3ff"),
                             MaxClassrooms = 5,
-                            MaxConfigurationsPerClassroom = 20,
+                            MaxConfigurationsPerClassroom = 1,
                             MaxFieldsPerClassroom = 20,
-                            MaxStudentsPerClassroom = 50,
-                            SubscriptionType = "BASIC"
+                            MaxStudentsPerClassroom = 20,
+                            SubscriptionType = "FREE"
                         },
                         new
                         {
                             Key = 3,
                             DisplayName = "Pro",
-                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                            MaxClassrooms = 50,
-                            MaxConfigurationsPerClassroom = 50,
-                            MaxFieldsPerClassroom = 50,
-                            MaxStudentsPerClassroom = 100,
+                            Id = new Guid("06466377-2145-4658-84d7-8cbf7e0f0d48"),
+                            MaxClassrooms = 10,
+                            MaxConfigurationsPerClassroom = 5,
+                            MaxFieldsPerClassroom = 20,
+                            MaxStudentsPerClassroom = 500,
                             SubscriptionType = "PRO"
                         });
                 });

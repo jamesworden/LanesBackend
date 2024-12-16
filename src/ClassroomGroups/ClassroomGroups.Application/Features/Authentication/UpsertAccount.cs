@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using ClassroomGroups.Application.Behaviors;
 using ClassroomGroups.DataAccess.Contexts;
+using ClassroomGroups.DataAccess.DTOs;
 using ClassroomGroups.Domain.Features.Authentication.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Authentication;
 
@@ -39,17 +41,42 @@ public class UpsertAccountRequestHandler(
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value)
       ?? throw new Exception();
 
-    var accountDTO = await _dbContext.Accounts.AddAsync(
-      new()
-      {
-        Id = Guid.NewGuid(),
-        GoogleNameIdentifier = googleNameIdentifier,
-        PrimaryEmail = primaryEmail
-      },
-      cancellationToken
-    );
+    var freeSubscriptionDTO =
+      await _dbContext.Subscriptions.FirstOrDefaultAsync(
+        s => s.SubscriptionType == SubscriptionType.FREE,
+        cancellationToken
+      ) ?? throw new Exception();
+
+    var accountId = Guid.NewGuid();
+
+    var upsertedAccountDTO =
+      (
+        await _dbContext.AddAsync(
+          new AccountDTO
+          {
+            Id = accountId,
+            GoogleNameIdentifier = googleNameIdentifier,
+            PrimaryEmail = primaryEmail,
+            SubscriptionKey = freeSubscriptionDTO.Key,
+            SubscriptionId = freeSubscriptionDTO.Id,
+            SubscriptionDTO = freeSubscriptionDTO
+          },
+          cancellationToken
+        )
+      )?.Entity ?? throw new Exception();
+
+    var subscriptionDTO =
+      await _dbContext.Subscriptions.FirstOrDefaultAsync(
+        (s) => s.Id == upsertedAccountDTO.SubscriptionId,
+        cancellationToken
+      ) ?? throw new Exception();
+
     await _dbContext.SaveChangesAsync(cancellationToken);
-    var account = accountDTO.Entity.ToAccount().ToAccountView() ?? throw new Exception();
+
+    var account =
+      upsertedAccountDTO.ToAccount(subscriptionDTO.ToSubscription()).ToAccountView()
+      ?? throw new Exception();
+
     return new UpsertAccountResponse(account);
   }
 }
