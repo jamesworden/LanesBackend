@@ -65,9 +65,19 @@ public class DeleteGroupRequestHandler(
 
       for (var i = 0; i < displacedStudentGroups.Count; i++)
       {
-        displacedStudentGroups[i].GroupKey = defaultGroupKey;
-        displacedStudentGroups[i].Ordinal = numStudentsInDefaultGroup + i;
-        displacedStudentGroups[i].GroupId = defaultGroupId;
+        _dbContext.Remove(displacedStudentGroups[i]);
+
+        var studentGroupDTO = new StudentGroupDTO()
+        {
+          Id = Guid.NewGuid(),
+          GroupId = defaultGroupId,
+          GroupKey = defaultGroupKey,
+          StudentId = displacedStudentGroups[i].StudentId,
+          StudentKey = displacedStudentGroups[i].StudentKey,
+          Ordinal = numStudentsInDefaultGroup + i
+        };
+
+        _dbContext.Add(studentGroupDTO);
       }
 
       var groupEntity = _dbContext.Groups.Remove(groupDTO);
