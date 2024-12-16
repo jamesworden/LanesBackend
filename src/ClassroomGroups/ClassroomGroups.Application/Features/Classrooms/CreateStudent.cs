@@ -100,7 +100,7 @@ public class CreateStudentRequestHandler(
           var groupKey = c.DefaultGroupKey ?? throw new Exception();
           var existingStudentGroups =
             await _dbContext
-              .StudentGroups.Where(sg => sg.Id == c.DefaultGroupId)
+              .StudentGroups.Where(sg => sg.GroupId == c.DefaultGroupId)
               .ToListAsync(cancellationToken) ?? throw new Exception();
 
           return new StudentGroupDTO()
