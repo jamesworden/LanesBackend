@@ -32,6 +32,16 @@ public class CreateGroupRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
+    var existingGroups = await _dbContext
+      .Groups.Where(g => g.ConfigurationId == request.ConfigurationId)
+      .Select(g => g.ToGroup())
+      .ToListAsync(cancellationToken);
+
+    if (existingGroups.Count >= account.Subscription.MaxStudentsPerClassroom)
+    {
+      throw new Exception();
+    }
+
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
@@ -54,11 +64,6 @@ public class CreateGroupRequestHandler(
             && classroomIds.Contains(c.ClassroomId)
           )
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
-
-      var existingGroups = await _dbContext
-        .Groups.Where(g => g.ConfigurationId == configurationDTO.Id)
-        .Select(g => g.ToGroup())
-        .ToListAsync(cancellationToken);
 
       var ordinal = existingGroups.Count;
 
