@@ -32,6 +32,15 @@ public class CreateStudentRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
+    var existingStudentDTOs = await _dbContext
+      .Students.Where(s => s.ClassroomId == request.ClassroomId)
+      .ToListAsync(cancellationToken);
+
+    if (existingStudentDTOs.Count >= account.Subscription.MaxStudentsPerClassroom)
+    {
+      throw new Exception();
+    }
+
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );

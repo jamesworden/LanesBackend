@@ -3,6 +3,7 @@ using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
 using ClassroomGroups.Domain.Features.Classrooms.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
@@ -32,6 +33,15 @@ public class CreateConfigurationRequestHandler(
   )
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
+
+    var existingConfigurationDTOs = await _dbContext
+      .Configurations.Where(c => c.ClassroomId == request.ClassroomId)
+      .ToListAsync(cancellationToken);
+
+    if (existingConfigurationDTOs.Count >= account.Subscription.MaxConfigurationsPerClassroom)
+    {
+      throw new Exception();
+    }
 
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
