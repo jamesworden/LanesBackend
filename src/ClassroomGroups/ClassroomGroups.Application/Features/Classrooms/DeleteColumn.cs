@@ -13,7 +13,7 @@ public record DeleteColumnRequest(Guid ClassroomId, Guid ConfigurationId, Guid C
 public record DeleteColumnResponse(
   Column DeletedColumn,
   Field DeletedField,
-  List<ColumnDetail> UpdatedColumnDetails
+  Dictionary<Guid, List<ColumnDetail>> ConfigurationIdsColumnDetails
 );
 
 public class DeleteColumnRequestHandler(
@@ -61,16 +61,30 @@ public class DeleteColumnRequestHandler(
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      var columnDetails = await _detailService.GetColumnDetails(
-        account.Id,
-        request.ClassroomId,
-        request.ConfigurationId,
-        cancellationToken
-      );
+      var configurations = await _dbContext
+        .Configurations.Where(c => c.ClassroomId == request.ClassroomId)
+        .ToListAsync();
+
+      var ConfigurationIdsColumnDetails = new Dictionary<Guid, List<ColumnDetail>>();
+
+      var tasks = configurations
+        .Select(async configuration =>
+        {
+          var columnDetails = await _detailService.GetColumnDetails(
+            account.Id,
+            request.ClassroomId,
+            configuration.Id,
+            cancellationToken
+          );
+          ConfigurationIdsColumnDetails[configuration.Id] = columnDetails;
+        })
+        .ToArray();
+
+      await Task.WhenAll(tasks);
 
       await transaction.CommitAsync(cancellationToken);
 
-      return new DeleteColumnResponse(deletedColumn, deletedField, columnDetails);
+      return new DeleteColumnResponse(deletedColumn, deletedField, ConfigurationIdsColumnDetails);
     }
     catch (Exception)
     {
