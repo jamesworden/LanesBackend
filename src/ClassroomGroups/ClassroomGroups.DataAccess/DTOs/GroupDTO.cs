@@ -11,8 +11,12 @@ public class GroupDTO
 
   [InverseProperty("GroupId")]
   public Guid Id { get; set; }
+
   public string Label { get; set; } = "";
+
   public int Ordinal { get; set; }
+
+  public bool IsLocked { get; set; } = false;
 
   public ConfigurationDTO ConfigurationDTO { get; set; } = null!;
   public int ConfigurationKey { get; set; }
@@ -23,6 +27,6 @@ public class GroupDTO
 
   public Group ToGroup()
   {
-    return new Group(Id, ConfigurationId, Label, Ordinal);
+    return new Group(Id, ConfigurationId, Label, Ordinal, IsLocked);
   }
 }

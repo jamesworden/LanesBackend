@@ -268,4 +268,26 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new DeleteColumnRequest(classroomId, configurationId, columnId));
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}/lock")]
+  public async Task<LockGroupResponse> LockGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId
+  )
+  {
+    return await _mediator.Send(new LockGroupRequest(classroomId, configurationId, groupId));
+  }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}/unlock")]
+  public async Task<UnlockGroupResponse> UnlockGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId
+  )
+  {
+    return await _mediator.Send(new UnlockGroupRequest(classroomId, configurationId, groupId));
+  }
 }

@@ -120,7 +120,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
       (
         await _dbContext
           .Groups.Where(g => g.ConfigurationId == configurationId)
-          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
+          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal, g.IsLocked))
           .ToListAsync(cancellationToken)
       )
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))
@@ -142,7 +142,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     return (
         await _dbContext
           .Groups.Where(g => groupIds.Contains(g.Id))
-          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal))
+          .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal, g.IsLocked))
           .ToListAsync(cancellationToken)
       )
         .Select(g => g.ToGroupDetail(studentDetails.Where(s => s.GroupId == g.Id).ToList()))

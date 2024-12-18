@@ -5,7 +5,8 @@ public class GroupDetail(
   Guid ConfigurationId,
   string Label,
   int Ordinal,
-  List<StudentDetail> StudentDetails
+  List<StudentDetail> StudentDetails,
+  bool IsLocked
 )
 {
   public Guid Id { get; private set; } = Id;
@@ -17,4 +18,6 @@ public class GroupDetail(
   public int Ordinal { get; private set; } = Ordinal;
 
   public List<StudentDetail> StudentDetails { get; private set; } = StudentDetails;
+
+  public bool IsLocked { get; private set; } = IsLocked;
 }
