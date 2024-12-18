@@ -145,6 +145,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
   (typeof(SortGroupsRequest), typeof(SortGroupsResponse), [typeof(AuthBehavior<,>)]),
   (typeof(MoveStudentRequest), typeof(MoveStudentResponse), [typeof(AuthBehavior<,>)]),
   (typeof(MoveColumnRequest), typeof(MoveColumnResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(DeleteColumnRequest), typeof(DeleteColumnResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

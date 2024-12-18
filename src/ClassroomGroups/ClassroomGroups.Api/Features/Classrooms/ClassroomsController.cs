@@ -257,4 +257,15 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new MoveColumnRequest(classroomId, configurationId, body.MoveColumnDetail)
     );
   }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/configurations/{configurationId}/columns/{columnId}")]
+  public async Task<DeleteColumnResponse> DeleteColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid columnId
+  )
+  {
+    return await _mediator.Send(new DeleteColumnRequest(classroomId, configurationId, columnId));
+  }
 }
