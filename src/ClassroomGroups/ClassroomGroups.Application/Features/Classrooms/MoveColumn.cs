@@ -7,11 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record MoveColumnDetail(int PrevIndex, int CurrIndex, Guid ColumnId) { }
+public record MoveColumnDetail(int PrevIndex, int CurrIndex) { }
 
 public record MoveColumnRequest(
   Guid ClassroomId,
   Guid ConfigurationId,
+  Guid ColumnId,
   MoveColumnDetail MoveColumnDetail
 ) : IRequest<MoveColumnResponse> { }
 
@@ -46,7 +47,7 @@ public class MoveColumnRequestHandler(
         .ToListAsync(cancellationToken);
 
       var column =
-        columns.FirstOrDefault(c => c.Id == request.MoveColumnDetail.ColumnId)
+        columns.FirstOrDefault(c => c.Id == request.ColumnId)
         ?? throw new Exception("Column not found in the group");
 
       columns.Remove(column);
