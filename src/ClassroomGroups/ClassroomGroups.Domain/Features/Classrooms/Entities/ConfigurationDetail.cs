@@ -106,7 +106,7 @@ public class ConfigurationDetail(
     var numNewGroupsToDisregard = newGroups.Count - numAffectedCandidateGroups;
     if (numNewGroupsToDisregard > 0)
     {
-      newGroups = newGroups.Take(numNewGroupsToDisregard).ToList();
+      newGroups = newGroups.Take(numAffectedCandidateGroups).ToList();
     }
     var usedGroupIds = newGroups.Select(g => g.Id);
     var unusedGroupIds = oldGroups.Select(g => g.Id).Except(usedGroupIds).ToList();
