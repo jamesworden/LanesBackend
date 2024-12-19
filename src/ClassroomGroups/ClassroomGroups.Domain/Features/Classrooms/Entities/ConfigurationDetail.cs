@@ -81,21 +81,21 @@ public class ConfigurationDetail(
       return new GroupStudentsResult(defaultStudentGroups, [], sgIdsToDelete, unpopulatedGroupIds);
     }
 
-    var numAffectedCandidateGroups = 0;
+    var numGroupsToUse = 0;
 
     if (numberOfGroups is not null)
     {
-      numAffectedCandidateGroups = (int)numberOfGroups;
+      numGroupsToUse = (int)numberOfGroups;
     }
     else if (studentsPerGroup is not null)
     {
-      numAffectedCandidateGroups = (int)
+      numGroupsToUse = (int)
         Math.Ceiling((decimal)(candidateStudentDetails.Count() / studentsPerGroup));
     }
     var newGroups = new List<Group>(oldGroups);
     var createdGroups = new List<Group>();
 
-    var numGroupsToCreate = Math.Max(numAffectedCandidateGroups - newGroups.Count(), 0);
+    var numGroupsToCreate = Math.Max(numGroupsToUse - newGroups.Count(), 0);
     for (var i = 0; i < numGroupsToCreate; i++)
     {
       var ordinal = GroupDetails.Count - 1 + i;
@@ -103,10 +103,10 @@ public class ConfigurationDetail(
       newGroups.Add(newGroup);
       createdGroups.Add(newGroup);
     }
-    var numNewGroupsToDisregard = newGroups.Count - numAffectedCandidateGroups;
+    var numNewGroupsToDisregard = newGroups.Count - numGroupsToUse;
     if (numNewGroupsToDisregard > 0)
     {
-      newGroups = newGroups.Take(numAffectedCandidateGroups).ToList();
+      newGroups = newGroups.Take(numGroupsToUse).ToList();
     }
     var usedGroupIds = newGroups.Select(g => g.Id);
     var unusedGroupIds = oldGroups.Select(g => g.Id).Except(usedGroupIds).ToList();
