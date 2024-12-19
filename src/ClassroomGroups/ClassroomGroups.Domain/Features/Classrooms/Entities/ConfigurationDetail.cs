@@ -89,8 +89,8 @@ public class ConfigurationDetail(
     }
     else if (studentsPerGroup is not null)
     {
-      numGroupsToUse = (int)
-        Math.Ceiling((decimal)(candidateStudentDetails.Count() / studentsPerGroup));
+      var exactStudentsPerGroup = (decimal)candidateStudentDetails.Count() / studentsPerGroup;
+      numGroupsToUse = (int)Math.Ceiling((decimal)exactStudentsPerGroup);
     }
     var newGroups = new List<Group>(oldGroups);
     var createdGroups = new List<Group>();
