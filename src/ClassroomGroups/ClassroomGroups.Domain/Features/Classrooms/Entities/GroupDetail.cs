@@ -20,4 +20,9 @@ public class GroupDetail(
   public List<StudentDetail> StudentDetails { get; private set; } = StudentDetails;
 
   public bool IsLocked { get; private set; } = IsLocked;
+
+  public Group ToGroup()
+  {
+    return new Group(Id, ConfigurationId, Label, Ordinal, IsLocked);
+  }
 }

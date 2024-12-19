@@ -148,6 +148,7 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
   (typeof(DeleteColumnRequest), typeof(DeleteColumnResponse), [typeof(AuthBehavior<,>)]),
   (typeof(LockGroupRequest), typeof(LockGroupResponse), [typeof(AuthBehavior<,>)]),
   (typeof(UnlockGroupRequest), typeof(UnlockGroupResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(GroupStudentsRequest), typeof(GroupStudentsResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

@@ -207,6 +207,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
         x.Student.Id,
         x.StudentGroup.GroupId,
         x.StudentGroup.Ordinal,
+        x.StudentGroup.Id,
         _dbContext
           .StudentFields.Where(sf => sf.StudentId == x.Student.Id)
           .ToDictionary(sf => sf.FieldId, sf => sf.Value)

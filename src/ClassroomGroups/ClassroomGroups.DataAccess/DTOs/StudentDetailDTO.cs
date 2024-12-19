@@ -6,6 +6,7 @@ public class StudentDetailDTO(
   Guid Id,
   Guid GroupId,
   int StudentGroupOrdinal,
+  Guid StudentGroupId,
   Dictionary<Guid, string> FieldIdsToValues
 )
 {
@@ -15,10 +16,12 @@ public class StudentDetailDTO(
 
   public int StudentGroupOrdinal = StudentGroupOrdinal;
 
+  public Guid StudentGroupId = StudentGroupId;
+
   public Dictionary<Guid, string> FieldIdsToValues { get; private set; } = FieldIdsToValues;
 
   public StudentDetail ToStudentDetail()
   {
-    return new StudentDetail(Id, GroupId, StudentGroupOrdinal, FieldIdsToValues);
+    return new StudentDetail(Id, GroupId, StudentGroupOrdinal, StudentGroupId, FieldIdsToValues);
   }
 }

@@ -291,4 +291,29 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new UnlockGroupRequest(classroomId, configurationId, groupId));
   }
+
+  public record GroupStudentsRequestBody(
+    StudentGroupingStrategy Strategy,
+    int? NumberOfGroups,
+    int? StudentsPerGroup
+  ) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/group-students")]
+  public async Task<GroupStudentsResponse> GroupStudents(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] GroupStudentsRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new GroupStudentsRequest(
+        classroomId,
+        configurationId,
+        body.Strategy,
+        body.NumberOfGroups,
+        body.StudentsPerGroup
+      )
+    );
+  }
 }
