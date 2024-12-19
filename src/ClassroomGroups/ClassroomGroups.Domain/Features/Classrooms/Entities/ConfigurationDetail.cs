@@ -3,8 +3,9 @@ using ClassroomGroups.Domain.Features.Classrooms.Extensions;
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
 public record GroupStudentsResult(
-  List<StudentGroup> UpdatedStudentGroups,
-  List<Group> CreatedGroups
+  List<StudentGroup> StudentGroupsToCreate,
+  List<Group> GroupsToCreate,
+  List<Guid> StudentGroupIdsToDelete
 );
 
 public class ConfigurationDetail(
@@ -67,9 +68,10 @@ public class ConfigurationDetail(
     if (numberOfGroups <= 0 || studentsPerGroup <= 0)
     {
       var defaultStudentGroups = candidateStudentDetails
-        .Select(s => new StudentGroup(s.StudentGroupId, s.Id, DefaultGroupId, s.Ordinal))
+        .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
         .ToList();
-      return new GroupStudentsResult(defaultStudentGroups, []);
+      var sgIdsToDelete = candidateStudentDetails.Select(s => s.StudentGroupId).ToList();
+      return new GroupStudentsResult(defaultStudentGroups, [], sgIdsToDelete);
     }
 
     var existingCandidateGroups = GroupDetails
@@ -85,16 +87,12 @@ public class ConfigurationDetail(
     }
     else if (studentsPerGroup is not null)
     {
-      // Why aren't candidate student details populating correctly?
-      // 2 students per group mixed with default group only - numAffectedCandidateGroups should be 2! existing should be 0.
       numAffectedCandidateGroups = (int)
         Math.Ceiling((decimal)(candidateStudentDetails.Count() / studentsPerGroup));
     }
-
     var candidateGroups = new List<Group>(existingCandidateGroups);
     var createdGroups = new List<Group>();
 
-    // Add groups if necessary
     var numGroupsToCreate = Math.Max(numAffectedCandidateGroups - candidateGroups.Count(), 0);
     for (var i = 0; i < numGroupsToCreate; i++)
     {
@@ -103,35 +101,32 @@ public class ConfigurationDetail(
       candidateGroups.Add(newGroup);
       createdGroups.Add(newGroup);
     }
-
-    // Remove groups if necessary
-    var numCandidateGroupsToShed = candidateGroups.Count - numAffectedCandidateGroups;
-    if (numCandidateGroupsToShed > 0)
+    var numGroupsToDelete = candidateGroups.Count - numAffectedCandidateGroups;
+    if (numGroupsToDelete > 0)
     {
-      candidateGroups = candidateGroups.Take(numCandidateGroupsToShed).ToList();
+      candidateGroups = candidateGroups.Take(numGroupsToDelete).ToList();
     }
-
-    // Generate accurate StudentGroups
-    var updatedStudentGroups = GenerateStudentGroups(
+    var (studentGroupsToCreate, studentGroupIdsToDelete) = GenerateNewStudentGroups(
       candidateGroups,
       candidateStudentDetails,
       strategy
     );
 
-    return new GroupStudentsResult(updatedStudentGroups, createdGroups);
+    return new GroupStudentsResult(studentGroupsToCreate, createdGroups, studentGroupIdsToDelete);
   }
 
-  private static List<StudentGroup> GenerateStudentGroups(
+  private static (List<StudentGroup>, List<Guid>) GenerateNewStudentGroups(
     IEnumerable<Group> groups,
     IEnumerable<StudentDetail> studentDetails,
     StudentGroupingStrategy strategy
   )
   {
-    List<StudentGroup> updatedStudentGroups = [];
+    List<StudentGroup> studentGroupsToCreate = [];
+    List<Guid> studentGroupIdsToDelete = [];
 
     if (!groups.Any())
     {
-      return updatedStudentGroups;
+      return (studentGroupsToCreate, studentGroupIdsToDelete);
     }
 
     var studentPartsPlaced = 0;
@@ -156,15 +151,16 @@ public class ConfigurationDetail(
           : studentPartsPlaced;
 
       var studentGroup = new StudentGroup(
-        studentDetail.StudentGroupId,
+        Guid.NewGuid(),
         studentDetail.Id,
         groups.ElementAt(groupIndex).Id,
         ordinal
       );
 
-      updatedStudentGroups.Add(studentGroup);
+      studentGroupsToCreate.Add(studentGroup);
+      studentGroupIdsToDelete.Add(studentDetail.StudentGroupId);
     }
 
-    return updatedStudentGroups;
+    return (studentGroupsToCreate, studentGroupIdsToDelete);
   }
 }

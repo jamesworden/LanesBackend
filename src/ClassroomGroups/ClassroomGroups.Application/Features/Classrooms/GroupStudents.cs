@@ -53,7 +53,7 @@ public class GroupStudentsRequestHandler(
         .Select(f => f.ToField())
         .ToListAsync(cancellationToken);
 
-      var (updatedStudentGroups, createdGroups) = configurationDetail.GroupStudents(
+      var result = configurationDetail.GroupStudents(
         fields,
         request.Strategy,
         request.NumberOfGroups,
@@ -63,9 +63,9 @@ public class GroupStudentsRequestHandler(
       var configurationDTO =
         await _dbContext
           .Configurations.Where(c => c.Id == configurationDetail.Id)
-          .FirstOrDefaultAsync() ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-      var createGroupDTOs = createdGroups.Select(g => new GroupDTO()
+      var groupDTOsToCreate = result.GroupsToCreate.Select(g => new GroupDTO()
       {
         ConfigurationId = configurationDetail.Id,
         ConfigurationKey = configurationDTO.Key,
@@ -75,43 +75,37 @@ public class GroupStudentsRequestHandler(
         Ordinal = g.Ordinal,
       });
 
-      await _dbContext.Groups.AddRangeAsync(createGroupDTOs, cancellationToken);
+      await _dbContext.Groups.AddRangeAsync(groupDTOsToCreate, cancellationToken);
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      var studentDTOs = await _dbContext
-        .Students.Where(s => s.ClassroomId == request.ClassroomId)
+      var studentGroupDTOsToDelete = await _dbContext
+        .StudentGroups.Where(sg => result.StudentGroupIdsToDelete.Contains(sg.Id))
         .ToListAsync(cancellationToken);
 
-      var studentGroupsByIds = updatedStudentGroups.ToDictionary(sg => sg.Id);
+      _dbContext.StudentGroups.RemoveRange(studentGroupDTOsToDelete);
+      await _dbContext.SaveChangesAsync(cancellationToken);
 
-      var studentIds = studentDTOs.Select(s => s.Id);
+      var relevantGroupDTOs = _dbContext.Groups.Where(g =>
+        g.ConfigurationId == configurationDTO.Id
+      );
+      var groupIdsToKeys = relevantGroupDTOs.ToDictionary((g) => g.Id, g => g.Key);
 
-      var existingStudentGroupDTOs = await _dbContext
-        .StudentGroups.Where(sg => studentIds.Contains(sg.StudentId))
-        .ToListAsync(cancellationToken);
+      var relevantStudentIds = result.StudentGroupsToCreate.Select(sg => sg.StudentId);
+      var relevantStudentDTOs = _dbContext.Students.Where(s => relevantStudentIds.Contains(s.Id));
+      var studentIdsToKeys = relevantStudentDTOs.ToDictionary(s => s.Id, s => s.Key);
 
-      var groupDTOs = await _dbContext
-        .Groups.Where(g => g.ConfigurationId == request.ConfigurationId)
-        .ToListAsync(cancellationToken);
-
-      var groupDTOsByIds = groupDTOs.ToDictionary(g => g.Id);
-
-      var studentDTOsByIds = studentDTOs.ToDictionary(g => g.Id);
-
-      var updatedStudentGroupDTOs = existingStudentGroupDTOs.Select(sg =>
+      var studentGroupDTOsToCreate = result.StudentGroupsToCreate.Select(sg => new StudentGroupDTO()
       {
-        if (studentGroupsByIds.TryGetValue(sg.Id, out var studentGroup))
-        {
-          sg.GroupId = studentGroup.GroupId;
-          sg.GroupKey = groupDTOsByIds[studentGroup.GroupId].Key;
-          sg.StudentId = studentGroup.StudentId;
-          sg.StudentKey = studentDTOsByIds[studentGroup.StudentId].Key;
-          sg.Ordinal = sg.Ordinal;
-        }
-        return sg;
+        Id = sg.Id,
+        GroupId = sg.GroupId,
+        GroupKey = groupIdsToKeys[sg.GroupId],
+        StudentId = sg.StudentId,
+        StudentKey = studentIdsToKeys[sg.StudentId],
+        Ordinal = sg.Ordinal,
       });
 
-      _dbContext.StudentGroups.UpdateRange(updatedStudentGroupDTOs);
+      _dbContext.StudentGroups.AddRange(studentGroupDTOsToCreate);
+      await _dbContext.SaveChangesAsync(cancellationToken);
 
       await transaction.CommitAsync(cancellationToken);
 
