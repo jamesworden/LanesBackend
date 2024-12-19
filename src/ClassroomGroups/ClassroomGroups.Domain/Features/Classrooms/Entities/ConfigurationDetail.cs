@@ -5,7 +5,8 @@ namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 public record GroupStudentsResult(
   List<StudentGroup> StudentGroupsToCreate,
   List<Group> GroupsToCreate,
-  List<Guid> StudentGroupIdsToDelete
+  List<Guid> StudentGroupIdsToDelete,
+  List<Guid> UnpopulatedGroupIds
 );
 
 public class ConfigurationDetail(
@@ -65,19 +66,20 @@ public class ConfigurationDetail(
       .SelectMany(g => g.StudentDetails)
       .OrderByAverage(fields);
 
+    var oldGroups = GroupDetails
+      .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
+      .Select(g => g.ToGroup())
+      .OrderBy(g => g.Ordinal);
+
     if (numberOfGroups <= 0 || studentsPerGroup <= 0)
     {
       var defaultStudentGroups = candidateStudentDetails
         .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
         .ToList();
       var sgIdsToDelete = candidateStudentDetails.Select(s => s.StudentGroupId).ToList();
-      return new GroupStudentsResult(defaultStudentGroups, [], sgIdsToDelete);
+      var unpopulatedGroupIds = oldGroups.Select(g => g.Id).ToList();
+      return new GroupStudentsResult(defaultStudentGroups, [], sgIdsToDelete, unpopulatedGroupIds);
     }
-
-    var existingCandidateGroups = GroupDetails
-      .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
-      .Select(g => g.ToGroup())
-      .OrderBy(g => g.Ordinal);
 
     var numAffectedCandidateGroups = 0;
 
@@ -90,29 +92,36 @@ public class ConfigurationDetail(
       numAffectedCandidateGroups = (int)
         Math.Ceiling((decimal)(candidateStudentDetails.Count() / studentsPerGroup));
     }
-    var candidateGroups = new List<Group>(existingCandidateGroups);
+    var newGroups = new List<Group>(oldGroups);
     var createdGroups = new List<Group>();
 
-    var numGroupsToCreate = Math.Max(numAffectedCandidateGroups - candidateGroups.Count(), 0);
+    var numGroupsToCreate = Math.Max(numAffectedCandidateGroups - newGroups.Count(), 0);
     for (var i = 0; i < numGroupsToCreate; i++)
     {
       var ordinal = GroupDetails.Count - 1 + i;
       var newGroup = new Group(Guid.NewGuid(), Id, $"Group {ordinal}", ordinal, false);
-      candidateGroups.Add(newGroup);
+      newGroups.Add(newGroup);
       createdGroups.Add(newGroup);
     }
-    var numGroupsToDelete = candidateGroups.Count - numAffectedCandidateGroups;
-    if (numGroupsToDelete > 0)
+    var numNewGroupsToDisregard = newGroups.Count - numAffectedCandidateGroups;
+    if (numNewGroupsToDisregard > 0)
     {
-      candidateGroups = candidateGroups.Take(numGroupsToDelete).ToList();
+      newGroups = newGroups.Take(numNewGroupsToDisregard).ToList();
     }
+    var usedGroupIds = newGroups.Select(g => g.Id);
+    var unusedGroupIds = oldGroups.Select(g => g.Id).Except(usedGroupIds).ToList();
     var (studentGroupsToCreate, studentGroupIdsToDelete) = GenerateNewStudentGroups(
-      candidateGroups,
+      newGroups,
       candidateStudentDetails,
       strategy
     );
 
-    return new GroupStudentsResult(studentGroupsToCreate, createdGroups, studentGroupIdsToDelete);
+    return new GroupStudentsResult(
+      studentGroupsToCreate,
+      createdGroups,
+      studentGroupIdsToDelete,
+      unusedGroupIds
+    );
   }
 
   private static (List<StudentGroup>, List<Guid>) GenerateNewStudentGroups(

@@ -107,6 +107,14 @@ public class GroupStudentsRequestHandler(
       _dbContext.StudentGroups.AddRange(studentGroupDTOsToCreate);
       await _dbContext.SaveChangesAsync(cancellationToken);
 
+      var unusedGroupDTOs = await _dbContext
+        .Groups.Where(g => result.UnpopulatedGroupIds.Contains(g.Id))
+        .ToListAsync(cancellationToken);
+
+      _dbContext.Groups.RemoveRange(unusedGroupDTOs);
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
       await transaction.CommitAsync(cancellationToken);
 
       var groupDetails = await _detailService.GetGroupDetails(
