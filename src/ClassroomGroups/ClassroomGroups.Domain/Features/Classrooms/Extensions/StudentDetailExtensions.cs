@@ -33,9 +33,19 @@ namespace ClassroomGroups.Domain.Features.Classrooms.Extensions
       bool descending = true
     )
     {
-      return descending
-        ? students.OrderByDescending(s => s.CalculateAverage(fields))
-        : students.OrderBy(s => s.CalculateAverage(fields));
+      return (
+        descending
+          ? students.OrderByDescending(s => s.CalculateAverage(fields))
+          : students.OrderBy(s => s.CalculateAverage(fields))
+      )
+        .Select(
+          (s, i) =>
+          {
+            s.Ordinal = i;
+            return s;
+          }
+        )
+        .OrderBy(s => s.Ordinal);
     }
   }
 }

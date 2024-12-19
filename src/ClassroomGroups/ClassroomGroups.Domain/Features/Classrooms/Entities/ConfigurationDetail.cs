@@ -45,13 +45,6 @@ public class ConfigurationDetail(
       throw new Exception("You must specify a group count less than the number of students");
     }
 
-    if (numberOfGroups <= 0 || studentsPerGroup <= 0)
-    {
-      throw new Exception(
-        "Students per group or numbers of groups must be greater than or equal to zero."
-      );
-    }
-
     if (numberOfGroups is not null && studentsPerGroup is not null)
     {
       throw new Exception(
@@ -70,6 +63,15 @@ public class ConfigurationDetail(
       .Where(g => !g.IsLocked)
       .SelectMany(g => g.StudentDetails)
       .OrderByAverage(fields);
+
+    if (numberOfGroups <= 0 || studentsPerGroup <= 0)
+    {
+      var defaultStudentGroups = candidateStudentDetails
+        .Select(s => new StudentGroup(s.StudentGroupId, s.Id, DefaultGroupId, s.Ordinal))
+        .ToList();
+      return new GroupStudentsResult(defaultStudentGroups, []);
+    }
+
     var existingCandidateGroups = GroupDetails
       .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
       .Select(g => g.ToGroup())
@@ -110,41 +112,59 @@ public class ConfigurationDetail(
     }
 
     // Generate accurate StudentGroups
-    List<StudentGroup> updatedStudentGroups = [];
-    var studentPartsPlaced = 0;
-
-    if (candidateGroups.Any())
-    {
-      for (var i = 0; i < candidateStudentDetails.Count(); i++)
-      {
-        var studentPartPosition = i % candidateGroups.Count;
-        if (i != 0 && studentPartPosition == 0)
-        {
-          studentPartsPlaced++;
-        }
-        var studentDetail = candidateStudentDetails.ElementAt(i);
-
-        var groupIndex =
-          strategy == StudentGroupingStrategy.SimilarAbilities
-            ? studentPartsPlaced
-            : studentPartPosition;
-
-        var ordinal =
-          strategy == StudentGroupingStrategy.SimilarAbilities
-            ? studentPartPosition
-            : studentPartsPlaced;
-
-        var studentGroup = new StudentGroup(
-          studentDetail.StudentGroupId,
-          studentDetail.Id,
-          candidateGroups[groupIndex].Id,
-          ordinal
-        );
-
-        updatedStudentGroups.Add(studentGroup);
-      }
-    }
+    var updatedStudentGroups = GenerateStudentGroups(
+      candidateGroups,
+      candidateStudentDetails,
+      strategy
+    );
 
     return new GroupStudentsResult(updatedStudentGroups, createdGroups);
+  }
+
+  private static List<StudentGroup> GenerateStudentGroups(
+    IEnumerable<Group> groups,
+    IEnumerable<StudentDetail> studentDetails,
+    StudentGroupingStrategy strategy
+  )
+  {
+    List<StudentGroup> updatedStudentGroups = [];
+
+    if (!groups.Any())
+    {
+      return updatedStudentGroups;
+    }
+
+    var studentPartsPlaced = 0;
+
+    for (var i = 0; i < studentDetails.Count(); i++)
+    {
+      var studentPartPosition = i % groups.Count();
+      if (i != 0 && studentPartPosition == 0)
+      {
+        studentPartsPlaced++;
+      }
+      var studentDetail = studentDetails.ElementAt(i);
+
+      var groupIndex =
+        strategy == StudentGroupingStrategy.SimilarAbilities
+          ? studentPartsPlaced
+          : studentPartPosition;
+
+      var ordinal =
+        strategy == StudentGroupingStrategy.SimilarAbilities
+          ? studentPartPosition
+          : studentPartsPlaced;
+
+      var studentGroup = new StudentGroup(
+        studentDetail.StudentGroupId,
+        studentDetail.Id,
+        groups.ElementAt(groupIndex).Id,
+        ordinal
+      );
+
+      updatedStudentGroups.Add(studentGroup);
+    }
+
+    return updatedStudentGroups;
   }
 }
