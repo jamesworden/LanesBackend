@@ -115,7 +115,7 @@ public class ConfigurationDetail(
     var newGroups = new List<Group>(oldGroups);
     var createdGroups = new List<Group>();
 
-    var numGroupsToCreate = Math.Max(numGroupsToUse - newGroups.Count(), 0);
+    var numGroupsToCreate = Math.Max(numGroupsToUse - newGroups.Count, 0);
     for (var i = 0; i < numGroupsToCreate; i++)
     {
       var ordinal = GroupDetails.Count - 1 + i;
