@@ -119,7 +119,7 @@ public class ConfigurationDetail(
     for (var i = 0; i < numGroupsToCreate; i++)
     {
       var ordinal = GroupDetails.Count - 1 + i;
-      var newGroup = new Group(Guid.NewGuid(), Id, $"Group {ordinal}", ordinal, false);
+      var newGroup = new Group(Guid.NewGuid(), Id, $"Group {ordinal + 1}", ordinal, false);
       newGroups.Add(newGroup);
       createdGroups.Add(newGroup);
     }
