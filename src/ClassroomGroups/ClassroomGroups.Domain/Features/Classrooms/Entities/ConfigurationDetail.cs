@@ -2,11 +2,16 @@ using ClassroomGroups.Domain.Features.Classrooms.Extensions;
 
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
-public record GroupStudentsResult(
+public record GroupStudentsResultDetails(
   List<StudentGroup> StudentGroupsToCreate,
   List<Group> GroupsToCreate,
   List<Guid> StudentGroupIdsToDelete,
   List<Guid> UnpopulatedGroupIds
+);
+
+public record GroupStudentsResult(
+  GroupStudentsResultDetails ResultDetails,
+  string? ErrorMessage = null
 );
 
 public class ConfigurationDetail(
@@ -19,6 +24,9 @@ public class ConfigurationDetail(
   List<ColumnDetail> ColumnDetails
 )
 {
+  private static readonly GroupStudentsResultDetails EMPTY_GROUP_STUDENT_RESULT_DETAILS =
+    new([], [], [], []);
+
   public Guid Id { get; private set; } = Id;
 
   public Guid ClassroomId { get; private set; } = ClassroomId;
@@ -44,20 +52,23 @@ public class ConfigurationDetail(
 
     if (numberOfGroups >= allStudents.Count() || studentsPerGroup >= allStudents.Count())
     {
-      throw new Exception("You must specify a group count less than the number of students");
-    }
-
-    if (numberOfGroups is not null && studentsPerGroup is not null)
-    {
-      throw new Exception(
-        "Unable to group students by number of students per group and number of groups simultaneously."
+      return new GroupStudentsResult(
+        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
+        "Group count must be less than the student count"
       );
     }
-
+    if (numberOfGroups is not null && studentsPerGroup is not null)
+    {
+      return new GroupStudentsResult(
+        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
+        "Cannot group by students per group and group count at the same time."
+      );
+    }
     if (numberOfGroups is null && studentsPerGroup is null)
     {
-      throw new Exception(
-        "You must group students by the number of groups or by the number of students per group."
+      return new GroupStudentsResult(
+        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
+        "Group by either number of groups or students per group."
       );
     }
 
@@ -78,7 +89,9 @@ public class ConfigurationDetail(
         .ToList();
       var sgIdsToDelete = rankedCandidateStudentDetails.Select(s => s.StudentGroupId).ToList();
       var unpopulatedGroupIds = oldGroups.Select(g => g.Id).ToList();
-      return new GroupStudentsResult(defaultStudentGroups, [], sgIdsToDelete, unpopulatedGroupIds);
+      return new GroupStudentsResult(
+        new GroupStudentsResultDetails(defaultStudentGroups, [], sgIdsToDelete, unpopulatedGroupIds)
+      );
     }
 
     var numGroupsToUse = 0;
@@ -117,10 +130,12 @@ public class ConfigurationDetail(
         : GenerateSimilarAbilityStudentGroups(newGroups, rankedCandidateStudentDetails);
 
     return new GroupStudentsResult(
-      studentGroupsToCreate,
-      createdGroups,
-      studentGroupIdsToDelete,
-      unusedGroupIds
+      new GroupStudentsResultDetails(
+        studentGroupsToCreate,
+        createdGroups,
+        studentGroupIdsToDelete,
+        unusedGroupIds
+      )
     );
   }
 

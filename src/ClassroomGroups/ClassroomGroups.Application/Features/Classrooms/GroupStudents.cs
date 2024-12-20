@@ -16,7 +16,10 @@ public record GroupStudentsRequest(
   int? StudentsPerGroup = null
 ) : IRequest<GroupStudentsResponse>;
 
-public record GroupStudentsResponse(List<GroupDetail> UpdatedGroupDetails);
+public record GroupStudentsResponse(
+  List<GroupDetail> UpdatedGroupDetails,
+  string? ErrorMessage = null
+);
 
 public class GroupStudentsRequestHandler(
   ClassroomGroupsContext dbContext,
@@ -53,12 +56,17 @@ public class GroupStudentsRequestHandler(
         .Select(f => f.ToField())
         .ToListAsync(cancellationToken);
 
-      var result = configurationDetail.GroupStudents(
+      var (result, errorMessage) = configurationDetail.GroupStudents(
         fields,
         request.Strategy,
         request.NumberOfGroups,
         request.StudentsPerGroup
       );
+
+      if (errorMessage is not null)
+      {
+        return new GroupStudentsResponse([], errorMessage);
+      }
 
       var configurationDTO =
         await _dbContext
