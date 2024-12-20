@@ -114,7 +114,7 @@ public class ConfigurationDetail(
     var (studentGroupsToCreate, studentGroupIdsToDelete) =
       strategy == StudentGroupingStrategy.MixedAbilities
         ? GenerateMixedAbilityStudentGroups(newGroups, rankedCandidateStudentDetails)
-        : GenerateMixedAbilityStudentGroups(newGroups, rankedCandidateStudentDetails);
+        : GenerateSimilarAbilityStudentGroups(newGroups, rankedCandidateStudentDetails);
 
     return new GroupStudentsResult(
       studentGroupsToCreate,
@@ -145,6 +145,48 @@ public class ConfigurationDetail(
       if (studentIndex != 0 && groupIndex == 0)
       {
         ordinal++;
+      }
+      var studentDetail = rankedStudentDetails.ElementAt(studentIndex);
+
+      var studentGroup = new StudentGroup(
+        Guid.NewGuid(),
+        studentDetail.Id,
+        groups.ElementAt(groupIndex).Id,
+        ordinal
+      );
+
+      studentGroupsToCreate.Add(studentGroup);
+      studentGroupIdsToDelete.Add(studentDetail.StudentGroupId);
+    }
+
+    return (studentGroupsToCreate, studentGroupIdsToDelete);
+  }
+
+  private static (List<StudentGroup>, List<Guid>) GenerateSimilarAbilityStudentGroups(
+    IEnumerable<Group> groups,
+    IEnumerable<StudentDetail> rankedStudentDetails
+  )
+  {
+    List<StudentGroup> studentGroupsToCreate = [];
+    List<Guid> studentGroupIdsToDelete = [];
+
+    if (!groups.Any())
+    {
+      return (studentGroupsToCreate, studentGroupIdsToDelete);
+    }
+
+    var maxNumberStudentsPerGroup = (int)
+      Math.Ceiling((decimal)rankedStudentDetails.Count() / groups.Count());
+
+    var groupIndex = 0;
+
+    for (var studentIndex = 0; studentIndex < rankedStudentDetails.Count(); studentIndex++)
+    {
+      var ordinal = studentIndex % maxNumberStudentsPerGroup;
+
+      if (studentIndex != 0 && ordinal == 0)
+      {
+        groupIndex++;
       }
       var studentDetail = rankedStudentDetails.ElementAt(studentIndex);
 
