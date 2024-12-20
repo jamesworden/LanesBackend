@@ -37,6 +37,8 @@ builder
   })
   .AddCookie(options =>
   {
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Events.OnRedirectToLogin = context =>
     {
       context.Response.StatusCode = StatusCodes.Status403Forbidden;
