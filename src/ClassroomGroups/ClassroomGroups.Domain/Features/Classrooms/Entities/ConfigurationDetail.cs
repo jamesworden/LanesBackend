@@ -50,6 +50,13 @@ public class ConfigurationDetail(
   {
     var allStudents = GroupDetails.SelectMany(g => g.StudentDetails);
 
+    if (numberOfGroups < 0 || studentsPerGroup < 0)
+    {
+      return new GroupStudentsResult(
+        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
+        "Group count must be a positive number"
+      );
+    }
     if (numberOfGroups >= allStudents.Count() || studentsPerGroup >= allStudents.Count())
     {
       return new GroupStudentsResult(
