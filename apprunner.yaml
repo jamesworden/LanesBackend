@@ -1,8 +1,0 @@
-version: 1.0
-runtime: dotnet9
-build:
-  commands:
-    build:
-      - dotnet publish -c Release -o out
-run:
-  command: dotnet src/LanesBackendLauncher/out/LanesBackendLauncher.dll
