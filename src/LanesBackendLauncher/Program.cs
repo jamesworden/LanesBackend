@@ -198,7 +198,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
   var dbContext = scope.ServiceProvider.GetRequiredService<ClassroomGroupsContext>();
-  dbContext.Database.Migrate();
+  dbContext.Database.EnsureCreated();
 }
 
 app.MapHub<GameHub>("/game");
