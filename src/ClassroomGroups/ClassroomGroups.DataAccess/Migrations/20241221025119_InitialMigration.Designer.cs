@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     [DbContext(typeof(ClassroomGroupsContext))]
-    [Migration("20241216220242_InitialMigrations")]
-    partial class InitialMigrations
+    [Migration("20241221025119_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -213,6 +213,9 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -378,7 +381,7 @@ namespace ClassroomGroups.DataAccess.Migrations
                             MaxClassrooms = 5,
                             MaxConfigurationsPerClassroom = 20,
                             MaxFieldsPerClassroom = 20,
-                            MaxStudentsPerClassroom = 50,
+                            MaxStudentsPerClassroom = 40,
                             SubscriptionType = "BASIC"
                         },
                         new
@@ -389,7 +392,7 @@ namespace ClassroomGroups.DataAccess.Migrations
                             MaxClassrooms = 50,
                             MaxConfigurationsPerClassroom = 50,
                             MaxFieldsPerClassroom = 50,
-                            MaxStudentsPerClassroom = 100,
+                            MaxStudentsPerClassroom = 50,
                             SubscriptionType = "PRO"
                         });
                 });

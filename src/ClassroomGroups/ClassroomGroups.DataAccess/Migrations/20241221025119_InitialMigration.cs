@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ClassroomGroups.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigrations : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -210,6 +210,7 @@ namespace ClassroomGroups.DataAccess.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Label = table.Column<string>(type: "TEXT", nullable: false),
                     Ordinal = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsLocked = table.Column<bool>(type: "INTEGER", nullable: false),
                     ConfigurationKey = table.Column<int>(type: "INTEGER", nullable: false),
                     ConfigurationId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
@@ -259,8 +260,8 @@ namespace ClassroomGroups.DataAccess.Migrations
                 values: new object[,]
                 {
                     { 1, "Free", new Guid("00000000-0000-0000-0000-000000000001"), 2, 3, 5, 30, "FREE" },
-                    { 2, "Basic", new Guid("00000000-0000-0000-0000-000000000002"), 5, 20, 20, 50, "BASIC" },
-                    { 3, "Pro", new Guid("00000000-0000-0000-0000-000000000003"), 50, 50, 50, 100, "PRO" }
+                    { 2, "Basic", new Guid("00000000-0000-0000-0000-000000000002"), 5, 20, 20, 40, "BASIC" },
+                    { 3, "Pro", new Guid("00000000-0000-0000-0000-000000000003"), 50, 50, 50, 50, "PRO" }
                 });
 
             migrationBuilder.CreateIndex(
