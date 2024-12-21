@@ -202,7 +202,7 @@ public class ClassroomGroupsContext : DbContext
         Key = 2,
         SubscriptionType = SubscriptionType.BASIC,
         MaxClassrooms = 5,
-        MaxStudentsPerClassroom = 50,
+        MaxStudentsPerClassroom = 40,
         MaxFieldsPerClassroom = 20,
         MaxConfigurationsPerClassroom = 20
       },
@@ -213,7 +213,7 @@ public class ClassroomGroupsContext : DbContext
         Key = 3,
         SubscriptionType = SubscriptionType.PRO,
         MaxClassrooms = 50,
-        MaxStudentsPerClassroom = 100,
+        MaxStudentsPerClassroom = 50,
         MaxFieldsPerClassroom = 50,
         MaxConfigurationsPerClassroom = 50
       }
