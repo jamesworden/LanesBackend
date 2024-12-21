@@ -37,6 +37,8 @@ builder
   })
   .AddCookie(options =>
   {
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Events.OnRedirectToLogin = context =>
     {
       context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -144,6 +146,11 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
   (typeof(DeleteStudentRequest), typeof(DeleteStudentResponse), [typeof(AuthBehavior<,>)]),
   (typeof(SortGroupsRequest), typeof(SortGroupsResponse), [typeof(AuthBehavior<,>)]),
   (typeof(MoveStudentRequest), typeof(MoveStudentResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(MoveColumnRequest), typeof(MoveColumnResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(DeleteColumnRequest), typeof(DeleteColumnResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(LockGroupRequest), typeof(LockGroupResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(UnlockGroupRequest), typeof(UnlockGroupResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(GroupStudentsRequest), typeof(GroupStudentsResponse), [typeof(AuthBehavior<,>)]),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
@@ -187,6 +194,12 @@ builder.Services.AddCors(Options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+  var dbContext = scope.ServiceProvider.GetRequiredService<ClassroomGroupsContext>();
+  dbContext.Database.EnsureCreated();
+}
 
 app.MapHub<GameHub>("/game");
 app.MapHub<ClassroomsHub>("/classroom-groups");

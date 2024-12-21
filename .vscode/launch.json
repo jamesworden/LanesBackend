@@ -1,20 +1,20 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-	  {
-		"name": "LanesBackendLauncher",
-		"type": "coreclr",
-		"request": "launch",
-		"preLaunchTask": "build",
-		"program": "${workspaceFolder}/src/LanesBackendLauncher/bin/Debug/net8.0/LanesBackendLauncher.dll",
-		"launchSettingsFilePath": "${workspaceFolder}/src/LanesBackendLauncher/Properties/launchSettings.json",
-		"launchSettingsProfile": "LanesBackendLauncher",
-		"args": [],
-		"cwd": "${workspaceFolder}/src/LanesBackendLauncher",
-		"env": {
-		  "ASPNETCORE_ENVIRONMENT": "Development",
-		  "DOTNET_HOTRELOAD": "1"
-		}
-	  }
-	]
-  }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Local API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/LanesBackendLauncher/bin/Debug/net9.0/LanesBackendLauncher.dll",
+      "launchSettingsFilePath": "${workspaceFolder}/src/LanesBackendLauncher/Properties/launchSettings.json",
+      "launchSettingsProfile": "LanesBackendLauncher",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/LanesBackendLauncher",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_HOTRELOAD": "1"
+      }
+    }
+  ]
+}

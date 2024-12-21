@@ -32,6 +32,15 @@ public class CreateStudentRequestHandler(
   {
     var account = authBehaviorCache.Account ?? throw new Exception();
 
+    var existingStudentDTOs = await _dbContext
+      .Students.Where(s => s.ClassroomId == request.ClassroomId)
+      .ToListAsync(cancellationToken);
+
+    if (existingStudentDTOs.Count >= account.Subscription.MaxStudentsPerClassroom)
+    {
+      throw new Exception();
+    }
+
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
@@ -100,7 +109,7 @@ public class CreateStudentRequestHandler(
           var groupKey = c.DefaultGroupKey ?? throw new Exception();
           var existingStudentGroups =
             await _dbContext
-              .StudentGroups.Where(sg => sg.Id == c.DefaultGroupId)
+              .StudentGroups.Where(sg => sg.GroupId == c.DefaultGroupId)
               .ToListAsync(cancellationToken) ?? throw new Exception();
 
           return new StudentGroupDTO()

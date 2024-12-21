@@ -33,6 +33,12 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SubscriptionKey")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Key");
 
                     b.HasIndex("GoogleNameIdentifier")
@@ -40,6 +46,8 @@ namespace ClassroomGroups.DataAccess.Migrations
 
                     b.HasIndex("Id")
                         .IsUnique();
+
+                    b.HasIndex("SubscriptionKey");
 
                     b.ToTable("Accounts");
                 });
@@ -202,6 +210,9 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsLocked")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -309,6 +320,89 @@ namespace ClassroomGroups.DataAccess.Migrations
                         .IsUnique();
 
                     b.ToTable("StudentGroups");
+                });
+
+            modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.SubscriptionDTO", b =>
+                {
+                    b.Property<int>("Key")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxClassrooms")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxConfigurationsPerClassroom")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxFieldsPerClassroom")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxStudentsPerClassroom")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SubscriptionType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("Subscriptions");
+
+                    b.HasData(
+                        new
+                        {
+                            Key = 1,
+                            DisplayName = "Free",
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            MaxClassrooms = 2,
+                            MaxConfigurationsPerClassroom = 3,
+                            MaxFieldsPerClassroom = 5,
+                            MaxStudentsPerClassroom = 30,
+                            SubscriptionType = "FREE"
+                        },
+                        new
+                        {
+                            Key = 2,
+                            DisplayName = "Basic",
+                            Id = new Guid("00000000-0000-0000-0000-000000000002"),
+                            MaxClassrooms = 5,
+                            MaxConfigurationsPerClassroom = 20,
+                            MaxFieldsPerClassroom = 20,
+                            MaxStudentsPerClassroom = 40,
+                            SubscriptionType = "BASIC"
+                        },
+                        new
+                        {
+                            Key = 3,
+                            DisplayName = "Pro",
+                            Id = new Guid("00000000-0000-0000-0000-000000000003"),
+                            MaxClassrooms = 50,
+                            MaxConfigurationsPerClassroom = 50,
+                            MaxFieldsPerClassroom = 50,
+                            MaxStudentsPerClassroom = 50,
+                            SubscriptionType = "PRO"
+                        });
+                });
+
+            modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.AccountDTO", b =>
+                {
+                    b.HasOne("ClassroomGroups.DataAccess.DTOs.SubscriptionDTO", "SubscriptionDTO")
+                        .WithMany("Accounts")
+                        .HasForeignKey("SubscriptionKey")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SubscriptionDTO");
                 });
 
             modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.ClassroomDTO", b =>
@@ -468,6 +562,11 @@ namespace ClassroomGroups.DataAccess.Migrations
                     b.Navigation("StudentFields");
 
                     b.Navigation("StudentGroups");
+                });
+
+            modelBuilder.Entity("ClassroomGroups.DataAccess.DTOs.SubscriptionDTO", b =>
+                {
+                    b.Navigation("Accounts");
                 });
 #pragma warning restore 612, 618
         }

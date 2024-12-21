@@ -39,6 +39,15 @@ public class CreateColumnRequestHandler(
   {
     var account = _authBehaviorCache.Account ?? throw new Exception();
 
+    var existingFieldDTOs = await _dbContext
+      .Fields.Where(c => c.ClassroomId == request.ClassroomId)
+      .ToListAsync(cancellationToken);
+
+    if (existingFieldDTOs.Count >= account.Subscription.MaxFieldsPerClassroom)
+    {
+      throw new Exception();
+    }
+
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
     );
@@ -51,7 +60,7 @@ public class CreateColumnRequestHandler(
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var configurationDTOs =
-        await _dbContext.Configurations.ToListAsync() ?? throw new Exception();
+        await _dbContext.Configurations.ToListAsync(cancellationToken) ?? throw new Exception();
 
       var fieldDTO = new FieldDTO()
       {
@@ -66,11 +75,7 @@ public class CreateColumnRequestHandler(
 
       await _dbContext.SaveChangesAsync(cancellationToken);
 
-      var existingFieldDTOs = await _dbContext
-        .Fields.Where(c => c.ClassroomId == request.ClassroomId)
-        .ToListAsync(cancellationToken);
-
-      var ordinal = existingFieldDTOs.Count;
+      var ordinal = existingFieldDTOs.Count + 1;
 
       var columnId = Guid.NewGuid();
 

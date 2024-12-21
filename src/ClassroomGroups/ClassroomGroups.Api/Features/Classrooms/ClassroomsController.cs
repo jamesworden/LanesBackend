@@ -242,4 +242,78 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       new MoveStudentRequest(classroomId, configurationId, body.MoveStudentDetail)
     );
   }
+
+  public record MoveColumnRequestBody(MoveColumnDetail MoveColumnDetail) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/columns/{columnId}/move")]
+  public async Task<MoveColumnResponse> MoveColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid columnId,
+    [FromBody] MoveColumnRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new MoveColumnRequest(classroomId, configurationId, columnId, body.MoveColumnDetail)
+    );
+  }
+
+  [Authorize]
+  [HttpDelete("{classroomId}/configurations/{configurationId}/columns/{columnId}")]
+  public async Task<DeleteColumnResponse> DeleteColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid columnId
+  )
+  {
+    return await _mediator.Send(new DeleteColumnRequest(classroomId, configurationId, columnId));
+  }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}/lock")]
+  public async Task<LockGroupResponse> LockGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId
+  )
+  {
+    return await _mediator.Send(new LockGroupRequest(classroomId, configurationId, groupId));
+  }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/groups/{groupId}/unlock")]
+  public async Task<UnlockGroupResponse> UnlockGroup(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid groupId
+  )
+  {
+    return await _mediator.Send(new UnlockGroupRequest(classroomId, configurationId, groupId));
+  }
+
+  public record GroupStudentsRequestBody(
+    StudentGroupingStrategy Strategy,
+    int? NumberOfGroups,
+    int? StudentsPerGroup
+  ) { }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/group-students")]
+  public async Task<GroupStudentsResponse> GroupStudents(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromBody] GroupStudentsRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new GroupStudentsRequest(
+        classroomId,
+        configurationId,
+        body.Strategy,
+        body.NumberOfGroups,
+        body.StudentsPerGroup
+      )
+    );
+  }
 }
