@@ -195,6 +195,12 @@ builder.Services.AddCors(Options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+  var dbContext = scope.ServiceProvider.GetRequiredService<ClassroomGroupsContext>();
+  dbContext.Database.Migrate();
+}
+
 app.MapHub<GameHub>("/game");
 app.MapHub<ClassroomsHub>("/classroom-groups");
 
