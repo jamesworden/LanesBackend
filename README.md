@@ -103,7 +103,7 @@ Entity framework modifies the database according to a DBContext file (for exampl
 
 #### Sending Logs to Cloudwatch
 
-On an Amazon Linux EC2 Instance, the (log files that we want to monitor are located here)[https://stackoverflow.com/questions/38060534/where-are-aws-codedeploy-deployment-logs-found]:
+On an Amazon Linux EC2 Instance, the (log files that we want to monitor are located here)[https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-cloudwatch-agent.html]:
 
 - /opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log
 - /opt/codedeploy-agent/deployment-root/<DEPLOYMENT_GROUP_ID>/<DEPLOYMENT_ID>/logs/script.log
