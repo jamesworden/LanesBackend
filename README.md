@@ -98,12 +98,3 @@ Entity framework modifies the database according to a DBContext file (for exampl
 
 - `dotnet ef migrations add YOUR_MIGRATION_NAME --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`
 - `dotnet ef database update --startup-project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj --project .\src\ClassroomGroups\ClassroomGroups.DataAccess\`
-
-### Initializing the Code Deploy Agent
-
-#### Sending Logs to Cloudwatch
-
-On an Amazon Linux EC2 Instance, the (log files that we want to monitor are located here)[https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-cloudwatch-agent.html]:
-
-- /opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log
-- /opt/codedeploy-agent/deployment-root/<DEPLOYMENT_GROUP_ID>/<DEPLOYMENT_ID>/logs/script.log
