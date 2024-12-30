@@ -55,7 +55,7 @@
     {
       "label": "Publish Dotnet App",
       "type": "shell",
-      "command": "dotnet publish -c Release -o app -r linux-arm64 --self-contained",
+      "command": "dotnet publish -c Release -o app -r linux-x64 --self-contained",
       "problemMatcher": []
     }
   ],
