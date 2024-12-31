@@ -30,6 +30,8 @@ builder
   .AddEnvironmentVariables()
   .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
 
+builder.Logging.AddAWSProvider();
+
 builder
   .Services.AddAuthentication(options =>
   {

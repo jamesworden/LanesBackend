@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/LanesBackendLauncher/bin/Debug/net9.0/LanesBackendLauncher.dll",
+      "program": "${workspaceFolder}/src/LanesBackendLauncher/bin/Debug/net8.0/LanesBackendLauncher.dll",
       "launchSettingsFilePath": "${workspaceFolder}/src/LanesBackendLauncher/Properties/launchSettings.json",
       "launchSettingsProfile": "LanesBackendLauncher",
       "args": [],
