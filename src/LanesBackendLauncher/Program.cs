@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json.Serialization;
+using Amazon.S3;
 using ChessOfCards.Api.Features.Games;
 using ChessOfCards.Application.Features.Games;
 using ChessOfCards.DataAccess.Interfaces;
@@ -11,6 +12,7 @@ using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
+using LanesBackendLauncher.Util;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -31,6 +33,14 @@ builder
   .AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"]);
 
 builder.Logging.AddAWSProvider();
+
+builder.Services.Configure<DatabaseBackupSettings>(
+  builder.Configuration.GetSection("DatabaseBackup")
+);
+
+builder.Services.AddAWSService<IAmazonS3>();
+
+builder.Services.AddHostedService<DatabaseBackupService>();
 
 builder
   .Services.AddAuthentication(options =>
