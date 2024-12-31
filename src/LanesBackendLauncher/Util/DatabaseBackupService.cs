@@ -34,7 +34,7 @@ public class DatabaseBackupService(
         _logger.LogError(ex, "An error occurred while uploading the file to S3");
       }
 
-      await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+      await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
     }
   }
 
