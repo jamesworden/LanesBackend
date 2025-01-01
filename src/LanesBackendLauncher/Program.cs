@@ -205,6 +205,14 @@ builder.Services.AddCors(Options =>
   );
 });
 
+if (!builder.Environment.IsDevelopment())
+{
+  builder.Services.AddHttpsRedirection(options =>
+  {
+    options.HttpsPort = 443;
+  });
+}
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
