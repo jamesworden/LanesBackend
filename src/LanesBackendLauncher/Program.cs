@@ -24,32 +24,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (!builder.Environment.IsDevelopment())
-{
-  builder.Services.Configure<KestrelServerOptions>(options =>
-  {
-    options.ConfigureHttpsDefaults(options =>
-      options.ClientCertificateMode = ClientCertificateMode.RequireCertificate
-    );
-  });
-
-  builder.WebHost.ConfigureKestrel(options =>
-  {
-    var port = 443;
-    var pfxFilePath = "/home/ec2-user/certificate.pfx";
-
-    options.Listen(
-      IPAddress.Any,
-      port,
-      listenOptions =>
-      {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-        listenOptions.UseHttps(pfxFilePath);
-      }
-    );
-  });
-}
-
 builder
   .Configuration.SetBasePath(builder.Environment.ContentRootPath)
   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
