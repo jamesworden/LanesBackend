@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.S3;
 using ChessOfCards.Api.Features.Games;
@@ -18,8 +17,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -208,14 +205,6 @@ builder.Services.AddCors(Options =>
   );
 });
 
-if (!builder.Environment.IsDevelopment())
-{
-  builder.Services.AddHttpsRedirection(options =>
-  {
-    options.HttpsPort = 443;
-  });
-}
-
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -241,8 +230,6 @@ else
 app.UseCors("frontendApplications");
 
 app.UseRouting();
-
-app.UseHttpsRedirection();
 
 app.UseCookiePolicy(new CookiePolicyOptions { Secure = CookieSecurePolicy.Always });
 
