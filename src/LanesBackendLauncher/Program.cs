@@ -205,7 +205,11 @@ builder.Services.AddCors(Options =>
   );
 });
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
+
+app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
 {
