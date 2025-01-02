@@ -238,6 +238,8 @@ else
   app.UseHsts();
 }
 
+app.MapHealthChecks("/api/health");
+
 app.UseCors("frontendApplications");
 
 app.UseRouting();
