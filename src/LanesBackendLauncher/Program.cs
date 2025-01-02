@@ -195,6 +195,8 @@ builder.Services.AddCors(Options =>
           "https://localhost:4200",
           "http://chessofcards.com",
           "https://chessofcards.com",
+          "http://www.classroomgroups.com",
+          "https://www.classroomgroups.com",
           "http://classroomgroups.com",
           "https://classroomgroups.com"
         )
