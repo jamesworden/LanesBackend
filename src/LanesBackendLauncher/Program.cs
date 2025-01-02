@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using Amazon.S3;
 using ChessOfCards.Api.Features.Games;
@@ -17,9 +18,37 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (!builder.Environment.IsDevelopment())
+{
+  builder.Services.Configure<KestrelServerOptions>(options =>
+  {
+    options.ConfigureHttpsDefaults(options =>
+      options.ClientCertificateMode = ClientCertificateMode.RequireCertificate
+    );
+  });
+
+  builder.WebHost.ConfigureKestrel(options =>
+  {
+    var port = 443;
+    var pfxFilePath = "/home/ec2-user/certificate.pfx";
+
+    options.Listen(
+      IPAddress.Any,
+      port,
+      listenOptions =>
+      {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(pfxFilePath);
+      }
+    );
+  });
+}
 
 builder
   .Configuration.SetBasePath(builder.Environment.ContentRootPath)
