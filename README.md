@@ -8,7 +8,7 @@ This repository contains 1 .NET web API for 2 of my applications, namely `ChessO
 
 ### What does "Lanes" mean?
 
-Years ago, I was playing cards with my brother in law and for some reason, we decided to make our own card game. Our creation involved 5 lanes of cards on the table, so we decided to call this game 'Lanes'. This was eventually renamed to 'Chess of Cards' as the domain name `lanes.com` was taken, but `chessofcards.com` was not. So Lanes is the original term we used to represent the game that we made. My nerdiness took over and I decided to turn our game into a web application, whose backend server lives here.
+Years ago, I was playing cards with my brother in law and for some reason, we decided to make our own card game. Our creation involved 5 lanes of cards on the table, so we decided to call this game 'Lanes'. This was eventually renamed to 'Chess of Cards' as the domain name `lanes.com` was taken, but `chessofcards.com` was not. So Lanes is the original term we used to represent the game that we made. I decided to turn our game into a web application; this repository contains its backend server.
 
 ### Why are two different applications hosted here if the project name is 'LanesBackend'?
 
