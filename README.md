@@ -26,26 +26,7 @@ Years ago, I was playing cards with my brother in law and for some reason, we de
 
 ### App Secrets & Environment Variables
 
-To make this repository open source, I had to do a few things:
-
-- Purge my commit history of sensitive data
-- Make sensitive data that I will not purge from commit history "un-sensitive"
-- Use enviornment variable injection to not reveal sensitive data, like connection strings or api keys.
-
-#### What is an 'App Secret' or 'Environment Variable'
-
-As mentioned before, these terms represent sensitive pieces of data, like connection strings or api keys.
-
-#### Adding an App Secret for Local Development
-
-Microsoft provides official documentation on that [here](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-6.0&tabs=windows#set-a-secret).
-
-##### ClassroomGroups App Secret Setup
-
-To prepare yourself for local development, execute the following commands in the root directory of this repository. Note that the ALL_CAPS_SNAKE_CASE strings will need to be replaced with the real values. You can contact James Worden to find these.
-
-- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientId" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_ID" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
-- `dotnet user-secrets set "ClassroomGroups:Authentication:Google:ClientSecret" "CLASSROOM_GROUPS_GOOGLE_DEVELOPMENT_CLIENT_SECRET" --project ./src/LanesBackendLauncher/LanesBackendLauncher.csproj`
+All sensitive data is stored in AWS Systems Manager > Parameter Store. `Amazon.Extensions.Configuration.SystemsManager` is a package is used to inject environment variables from the Parameter Store like so `AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"])`.
 
 ### Deploying to production
 
