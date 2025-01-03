@@ -18,12 +18,6 @@ Years ago, I was playing cards with my brother in law and for some reason, we de
 
 ## Documentation
 
-### Getting Started Developing Locally
-
-1. Authenticate with the AWS CLI Locally
-2. Add the appropriate app secrets locally, addressed below.
-3. Run the database migrations using the `dotnet ef database update` command below to prepare your local database so that the server can read and write to it.
-
 ### App Secrets & Environment Variables
 
 All sensitive data is stored in AWS Systems Manager > Parameter Store. `Amazon.Extensions.Configuration.SystemsManager` is a package is used to inject environment variables from the Parameter Store like so `AddSystemsManager(builder.Configuration["AppSecrets:SystemsManagerPath"])`.
