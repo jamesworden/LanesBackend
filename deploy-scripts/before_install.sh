@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-APPSETTINGS_PATH="/var/www/appsettings.json"
+APPSETTINGS_PATH="/var/www/src/LanesBackendLauncher/appsettings.json"
 
 if [ ! -f "$APPSETTINGS_PATH" ]; then
     echo "[Error] appsettings.json not found! Exiting..."
