@@ -18,3 +18,7 @@ hooks:
     - location: deploy-scripts/start_app.sh
       timeout: 120
       runas: root
+  AfterInstall:
+    - location: deploy-scripts/after_install.sh
+      timeout: 120
+      runas: root
