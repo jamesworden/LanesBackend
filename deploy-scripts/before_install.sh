@@ -1,31 +1,75 @@
 #!/usr/bin/bash
 
-APPSETTINGS_PATH="/var/www/appsettings.json"
+param (
+    [string]$AppSettingsPath = "/var/www/appsettings.json"
+)
 
-if [ ! -f "$APPSETTINGS_PATH" ]; then
-    echo "[Error] appsettings.json not found! Exiting..."
+$LogFile = "/var/log/before_install.log"
+Start-Transcript -Path $LogFile -Append
+
+Write-Host "========== [START] $(Get-Date) =========="
+
+# Validate appsettings.json exists
+if (-Not (Test-Path $AppSettingsPath)) {
+    Write-Host "[Error] appsettings.json not found! Exiting..."
+    Stop-Transcript
     exit 1
-fi
+}
 
-# Extract DatabaseFilePath from appsettings.json
-DATABASE_FILE=$(jq -r '.DatabaseBackup.DatabaseFilePath' "$APPSETTINGS_PATH")
-
-if [ -z "$DATABASE_FILE" ]; then
-    echo "[Error] Failed to read DatabaseFilePath from appsettings.json! Exiting..."
+# Read database paths from appsettings.json
+try {
+    $AppSettings = Get-Content $AppSettingsPath | ConvertFrom-Json
+    $DatabaseFilePath = $AppSettings.DatabaseBackup.DatabaseFilePath
+    $DatabaseBackupFilePath = $AppSettings.DatabaseBackup.DatabaseBackupFilePath
+} catch {
+    Write-Host "[Error] Failed to parse appsettings.json. Exiting..."
+    Stop-Transcript
     exit 1
-fi
+}
 
-echo "[Before Installing App] Removing installed code and the systemd service file..."
-sudo rm -rf /var/www/*
+if (-Not $DatabaseFilePath) {
+    Write-Host "[Error] DatabaseFilePath is empty! Exiting..."
+    Stop-Transcript
+    exit 1
+}
 
-# Restore the database file after removing everything
-echo "[Before Installing App] Preserving database file: $DATABASE_FILE"
-sudo mv "$DATABASE_FILE" /tmp/ 2>/dev/null || echo "[Info] No database file to preserve."
+if (-Not $DatabaseBackupFilePath) {
+    Write-Host "[Error] DatabaseBackupFilePath is empty! Exiting..."
+    Stop-Transcript
+    exit 1
+}
 
-sudo rm -rf /etc/systemd/system/webapi.service
+$TempBackupPath = "/tmp/" + (Split-Path -Leaf $DatabaseBackupFilePath)
 
-# Move the database file back
-if [ -f "/tmp/$(basename "$DATABASE_FILE")" ]; then
-    sudo mv "/tmp/$(basename "$DATABASE_FILE")" "$DATABASE_FILE"
-    echo "[After Install] Restored database file: $DATABASE_FILE"
-fi
+Write-Host "[Before Install] Backing up database file: $DatabaseFilePath"
+
+# Create a SQLite backup
+if (Test-Path $DatabaseFilePath) {
+    try {
+        sqlite3 $DatabaseFilePath "VACUUM INTO '$DatabaseBackupFilePath';"
+        Move-Item -Path $DatabaseBackupFilePath -Destination $TempBackupPath -Force
+        Write-Host "[Info] Database backup created at $TempBackupPath"
+    } catch {
+        Write-Host "[Error] Failed to create database backup. Exiting..."
+        Stop-Transcript
+        exit 1
+    }
+} else {
+    Write-Host "[Info] Database file not found. Proceeding..."
+}
+
+# Remove installed app
+Write-Host "[Before Install] Removing installed code and systemd service..."
+Remove-Item -Path "/var/www/*" -Recurse -Force
+Remove-Item -Path "/etc/systemd/system/webapi.service" -Force
+
+# Restore the database file from backup
+if (Test-Path $TempBackupPath) {
+    Move-Item -Path $TempBackupPath -Destination $DatabaseFilePath -Force
+    Write-Host "[After Install] Restored database file: $DatabaseFilePath"
+} else {
+    Write-Host "[Warning] Database backup file was not found after install!"
+}
+
+Write-Host "========== [END] $(Get-Date) =========="
+Stop-Transcript
