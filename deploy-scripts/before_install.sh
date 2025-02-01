@@ -14,8 +14,8 @@ log_message() {
 log_message "INFO" "[Before Installing App] Starting backup and removal process..."
 
 # Read the database and backup file paths from appsettings.json
-DATABASE_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseFilePath' /path/to/appsettings.json)
-DATABASE_BACKUP_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseBackupFilePath' /path/to/appsettings.json)
+DATABASE_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseFilePath' /var/www/appsettings.json)
+DATABASE_BACKUP_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseBackupFilePath' /var/www/appsettings.json)
 
 # Ensure both variables are non-empty
 if [[ -z "$DATABASE_FILE_PATH" || -z "$DATABASE_BACKUP_FILE_PATH" ]]; then
