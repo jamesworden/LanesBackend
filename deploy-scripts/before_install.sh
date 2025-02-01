@@ -1,75 +1,43 @@
 #!/usr/bin/bash
 
-param (
-    [string]$AppSettingsPath = "/var/www/appsettings.json"
-)
+LOG_FILE="/var/log/before_install.log"
+APP_SETTINGS_PATH="/var/www/appsettings.json"
 
-$LogFile = "/var/log/before_install.log"
-Start-Transcript -Path $LogFile -Append
+echo "========== [START] $(date) ==========" | tee -a $LOG_FILE
 
-Write-Host "========== [START] $(Get-Date) =========="
-
-# Validate appsettings.json exists
-if (-Not (Test-Path $AppSettingsPath)) {
-    Write-Host "[Error] appsettings.json not found! Exiting..."
-    Stop-Transcript
+# Check if appsettings.json exists
+if [ ! -f "$APP_SETTINGS_PATH" ]; then
+    echo "[Error] appsettings.json not found! Exiting..." | tee -a $LOG_FILE
     exit 1
-}
+fi
 
-# Read database paths from appsettings.json
-try {
-    $AppSettings = Get-Content $AppSettingsPath | ConvertFrom-Json
-    $DatabaseFilePath = $AppSettings.DatabaseBackup.DatabaseFilePath
-    $DatabaseBackupFilePath = $AppSettings.DatabaseBackup.DatabaseBackupFilePath
-} catch {
-    Write-Host "[Error] Failed to parse appsettings.json. Exiting..."
-    Stop-Transcript
-    exit 1
-}
+# Extract values from JSON
+DATABASE_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseFilePath' "$APP_SETTINGS_PATH")
+DATABASE_BACKUP_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseBackupFilePath' "$APP_SETTINGS_PATH")
+TEMP_BACKUP_PATH="/tmp/$(basename $DATABASE_BACKUP_FILE_PATH)"
 
-if (-Not $DatabaseFilePath) {
-    Write-Host "[Error] DatabaseFilePath is empty! Exiting..."
-    Stop-Transcript
-    exit 1
-}
+echo "[Before Install] Backing up database file: $DATABASE_FILE_PATH" | tee -a $LOG_FILE
 
-if (-Not $DatabaseBackupFilePath) {
-    Write-Host "[Error] DatabaseBackupFilePath is empty! Exiting..."
-    Stop-Transcript
-    exit 1
-}
-
-$TempBackupPath = "/tmp/" + (Split-Path -Leaf $DatabaseBackupFilePath)
-
-Write-Host "[Before Install] Backing up database file: $DatabaseFilePath"
-
-# Create a SQLite backup
-if (Test-Path $DatabaseFilePath) {
-    try {
-        sqlite3 $DatabaseFilePath "VACUUM INTO '$DatabaseBackupFilePath';"
-        Move-Item -Path $DatabaseBackupFilePath -Destination $TempBackupPath -Force
-        Write-Host "[Info] Database backup created at $TempBackupPath"
-    } catch {
-        Write-Host "[Error] Failed to create database backup. Exiting..."
-        Stop-Transcript
-        exit 1
-    }
-} else {
-    Write-Host "[Info] Database file not found. Proceeding..."
-}
+# Create SQLite backup if the file exists
+if [ -f "$DATABASE_FILE_PATH" ]; then
+    sqlite3 "$DATABASE_FILE_PATH" "VACUUM INTO '$DATABASE_BACKUP_FILE_PATH';"
+    mv "$DATABASE_BACKUP_FILE_PATH" "$TEMP_BACKUP_PATH"
+    echo "[Info] Database backup created at $TEMP_BACKUP_PATH" | tee -a $LOG_FILE
+else
+    echo "[Info] Database file not found. Proceeding..." | tee -a $LOG_FILE
+fi
 
 # Remove installed app
-Write-Host "[Before Install] Removing installed code and systemd service..."
-Remove-Item -Path "/var/www/*" -Recurse -Force
-Remove-Item -Path "/etc/systemd/system/webapi.service" -Force
+echo "[Before Install] Removing installed code and systemd service..." | tee -a $LOG_FILE
+sudo rm -rf /var/www/*
+sudo rm -rf /etc/systemd/system/webapi.service
 
 # Restore the database file from backup
-if (Test-Path $TempBackupPath) {
-    Move-Item -Path $TempBackupPath -Destination $DatabaseFilePath -Force
-    Write-Host "[After Install] Restored database file: $DatabaseFilePath"
-} else {
-    Write-Host "[Warning] Database backup file was not found after install!"
-}
+if [ -f "$TEMP_BACKUP_PATH" ]; then
+    mv "$TEMP_BACKUP_PATH" "$DATABASE_FILE_PATH"
+    echo "[After Install] Restored database file: $DATABASE_FILE_PATH" | tee -a $LOG_FILE
+else
+    echo "[Warning] Database backup file was not found after install!" | tee -a $LOG_FILE
+fi
 
-Write-Host "========== [END] $(Get-Date) =========="
-Stop-Transcript
+echo "========== [END] $(date) ==========" | tee -a $LOG_FILE
