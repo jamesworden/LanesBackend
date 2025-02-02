@@ -24,6 +24,14 @@ mkdir -p $BACKUP_DIR
 # Check if the database file exists
 if [ -f "$DATABASE_FILE_PATH" ]; then
     log_message "INFO" "Backing up database: $DATABASE_FILE_PATH to $DATABASE_BACKUP_FILE_PATH"
+    
+    # Delete the backup file if it exists
+    if [ -f "$DATABASE_BACKUP_FILE_PATH" ]; then
+        log_message "INFO" "Backup file already exists. Deleting the previous backup..."
+        sudo rm -f "$DATABASE_BACKUP_FILE_PATH"
+    fi
+
+    # Run the VACUUM INTO command to backup the database
     sudo sqlite3 "$DATABASE_FILE_PATH" "VACUUM INTO '$DATABASE_BACKUP_FILE_PATH';"
 
     # Check if the sqlite3 command succeeded
