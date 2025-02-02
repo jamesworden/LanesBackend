@@ -8,8 +8,8 @@ namespace LanesBackendLauncher.Util;
 public class DatabaseBackupSettings
 {
   public string BucketName { get; set; } = string.Empty;
-  public string DatabaseFilePath { get; set; } = string.Empty;
-  public string DatabaseBackupFilePath { get; set; } = string.Empty;
+  public string DatabaseFileName { get; set; } = string.Empty;
+  public string DatabaseBackupFileName { get; set; } = string.Empty;
   public string KeyPrefix { get; set; } = string.Empty;
 }
 
@@ -41,15 +41,15 @@ public class DatabaseBackupService(
   private async Task UploadFileToS3Async()
   {
     await CreateDatabaseBackupAsync(
-      _settings.Value.DatabaseFilePath,
-      _settings.Value.DatabaseBackupFilePath
+      "./" + _settings.Value.DatabaseFileName,
+      "./" + _settings.Value.DatabaseBackupFileName
     );
 
     var request = new PutObjectRequest
     {
       BucketName = _settings.Value.BucketName,
       Key = _settings.Value.KeyPrefix + DateTime.UtcNow.ToString("o") + ".db",
-      FilePath = _settings.Value.DatabaseBackupFilePath
+      FilePath = "./" + _settings.Value.DatabaseBackupFileName
     };
 
     request.Metadata.Add("x-amz-meta-expiration", DateTime.UtcNow.AddMonths(1).ToString("o"));
@@ -65,7 +65,7 @@ public class DatabaseBackupService(
     }
     finally
     {
-      File.Delete(_settings.Value.DatabaseBackupFilePath);
+      File.Delete("./" + _settings.Value.DatabaseBackupFileName);
     }
   }
 

@@ -13,10 +13,17 @@ log_message() {
 
 log_message "INFO" "Starting the before-installation process..."
 
+# Define the appsettings.json file path
+APP_SETTINGS_FILE="/var/www/appsettings.json"
+
+# Read DatabaseFileName and DatabaseBackupFileName from appsettings.json
+DATABASE_FILE_NAME=$(jq -r '.DatabaseBackup.DatabaseFileName' $APP_SETTINGS_FILE)
+DATABASE_BACKUP_FILE_NAME=$(jq -r '.DatabaseBackup.DatabaseBackupFileName' $APP_SETTINGS_FILE)
+
 # Define the backup file path in a safe location
 BACKUP_DIR="/var/backups"
-DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/classroom_groups_prod_database_backup.db"
-DATABASE_FILE_PATH="/var/www/classroom_groups_prod_database.db"
+DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/$DATABASE_BACKUP_FILE_NAME"
+DATABASE_FILE_PATH="/var/www/$DATABASE_FILE_NAME"
 
 # Ensure the backup directory exists
 mkdir -p $BACKUP_DIR
