@@ -11,27 +11,19 @@ log_message() {
     echo "[$timestamp] [$log_level] - $message"
 }
 
-log_message "INFO" "[Before Installing App] Starting backup and removal process..."
+log_message "INFO" "Starting the before-installation process..."
 
-# Read the database and backup file paths from appsettings.json
-DATABASE_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseFilePath' /var/www/appsettings.json)
-DATABASE_BACKUP_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseBackupFilePath' /var/www/appsettings.json)
+# Define the backup file path in a safe location
+BACKUP_DIR="/var/backups"
+DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/classroom_groups_prod_database_backup.db"
+DATABASE_FILE_PATH="./classroom_groups_prod_database.db"
 
-# Ensure both variables are non-empty
-if [[ -z "$DATABASE_FILE_PATH" || -z "$DATABASE_BACKUP_FILE_PATH" ]]; then
-    log_message "ERROR" "Failed to read database file paths from appsettings.json"
-    exit 1
-fi
-
-# Check if the backup already exists, and remove it if it does
-if [ -f "$DATABASE_BACKUP_FILE_PATH" ]; then
-    log_message "INFO" "Backup file already exists. Deleting previous backup..."
-    rm -f "$DATABASE_BACKUP_FILE_PATH"
-fi
+# Ensure the backup directory exists
+mkdir -p $BACKUP_DIR
 
 # Check if the database file exists
 if [ -f "$DATABASE_FILE_PATH" ]; then
-    log_message "INFO" "Backing up database: $DATABASE_FILE_PATH"
+    log_message "INFO" "Backing up database: $DATABASE_FILE_PATH to $DATABASE_BACKUP_FILE_PATH"
     sudo sqlite3 "$DATABASE_FILE_PATH" "VACUUM INTO '$DATABASE_BACKUP_FILE_PATH';"
 
     # Check if the sqlite3 command succeeded
@@ -45,9 +37,9 @@ else
     log_message "WARNING" "Database file not found at $DATABASE_FILE_PATH! Skipping backup..."
 fi
 
-# Remove installed app files and systemd service
-log_message "INFO" "Removing installed code from /var/www/ and systemd service file..."
+log_message "INFO" "Removing installed app code and systemd service..."
+# Clean up app files and service file
 sudo rm -rf /var/www/*
-sudo rm -f /etc/systemd/system/webapi.service
+sudo rm -rf /etc/systemd/system/webapi.service
 
-log_message "INFO" "[Before Installing App] Completed backup and removal process."
+log_message "INFO" "Before-installation process completed."

@@ -11,33 +11,28 @@ log_message() {
     echo "[$timestamp] [$log_level] - $message"
 }
 
-log_message "INFO" "[After Installing App] Starting database restoration process..."
+log_message "INFO" "Starting the after-installation process..."
 
-# Read the database and backup file paths from appsettings.json
-DATABASE_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseFilePath' /var/www/appsettings.json)
-DATABASE_BACKUP_FILE_PATH=$(jq -r '.DatabaseBackup.DatabaseBackupFilePath' /var/www/appsettings.json)
-
-# Ensure both variables are non-empty
-if [[ -z "$DATABASE_FILE_PATH" || -z "$DATABASE_BACKUP_FILE_PATH" ]]; then
-    log_message "ERROR" "Failed to read database file paths from appsettings.json"
-    exit 1
-fi
+# Define the backup file path in a safe location
+BACKUP_DIR="/var/backups"
+DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/classroom_groups_prod_database_backup.db"
+DATABASE_FILE_PATH="./classroom_groups_prod_database.db"
 
 # Check if the backup file exists
 if [ -f "$DATABASE_BACKUP_FILE_PATH" ]; then
-    log_message "INFO" "Restoring the database from backup..."
-    sudo sqlite3 "$DATABASE_FILE_PATH" ".restore '$DATABASE_BACKUP_FILE_PATH'"
+    log_message "INFO" "Restoring database from backup: $DATABASE_BACKUP_FILE_PATH to $DATABASE_FILE_PATH"
+    sudo cp "$DATABASE_BACKUP_FILE_PATH" "$DATABASE_FILE_PATH"
 
-    # Check if the sqlite3 restore command succeeded
+    # Check if the copy succeeded
     if [ $? -eq 0 ]; then
-        log_message "INFO" "Database restoration completed successfully from: $DATABASE_BACKUP_FILE_PATH"
+        log_message "INFO" "Database restored successfully from $DATABASE_BACKUP_FILE_PATH"
     else
-        log_message "ERROR" "Failed to restore database from: $DATABASE_BACKUP_FILE_PATH"
+        log_message "ERROR" "Failed to restore database from $DATABASE_BACKUP_FILE_PATH"
         exit 1
     fi
 else
-    log_message "ERROR" "Backup file not found at $DATABASE_BACKUP_FILE_PATH! Skipping restoration..."
+    log_message "ERROR" "Backup file not found at $DATABASE_BACKUP_FILE_PATH! Cannot restore database."
     exit 1
 fi
 
-log_message "INFO" "[After Installing App] Database restoration completed."
+log_message "INFO" "After-installation process completed."
