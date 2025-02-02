@@ -14,7 +14,7 @@ log_message() {
 log_message "INFO" "Starting the after-installation process..."
 
 # Define the appsettings.json file path
-APP_SETTINGS_FILE="appsettings.json"
+APP_SETTINGS_FILE="/var/www/appsettings.json"
 
 # Read DatabaseFileName and DatabaseBackupFileName from appsettings.json
 DATABASE_FILE_NAME=$(jq -r '.DatabaseBackup.DatabaseFileName' $APP_SETTINGS_FILE)
