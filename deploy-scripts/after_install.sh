@@ -16,7 +16,7 @@ log_message "INFO" "Starting the after-installation process..."
 # Define the backup file path in a safe location
 BACKUP_DIR="/var/backups"
 DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/classroom_groups_prod_database_backup.db"
-DATABASE_FILE_PATH="./classroom_groups_prod_database.db"
+DATABASE_FILE_PATH="/var/www/classroom_groups_prod_database.db"
 
 # Check if the backup file exists
 if [ -f "$DATABASE_BACKUP_FILE_PATH" ]; then
