@@ -20,6 +20,16 @@ APP_SETTINGS_FILE="/var/www/appsettings.json"
 DATABASE_FILE_NAME=$(jq -r '.DatabaseBackup.DatabaseFileName' $APP_SETTINGS_FILE)
 DATABASE_BACKUP_FILE_NAME=$(jq -r '.DatabaseBackup.DatabaseBackupFileName' $APP_SETTINGS_FILE)
 
+# Log the extracted values
+log_message "INFO" "Extracted DatabaseFileName: $DATABASE_FILE_NAME"
+log_message "INFO" "Extracted DatabaseBackupFileName: $DATABASE_BACKUP_FILE_NAME"
+
+# Check if the extracted values are valid
+if [ -z "$DATABASE_FILE_NAME" ] || [ -z "$DATABASE_BACKUP_FILE_NAME" ]; then
+    log_message "ERROR" "DatabaseFileName or DatabaseBackupFileName is missing in appsettings.json"
+    exit 1
+fi
+
 # Define the backup file path in a safe location
 BACKUP_DIR="/var/backups"
 DATABASE_BACKUP_FILE_PATH="$BACKUP_DIR/$DATABASE_BACKUP_FILE_NAME"
