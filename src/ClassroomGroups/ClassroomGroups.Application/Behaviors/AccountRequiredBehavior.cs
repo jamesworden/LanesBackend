@@ -11,6 +11,7 @@ public interface IRequiredUserAccount { }
 public class AccountRequiredCache()
 {
   public required Account Account { get; set; }
+
   public required ClaimsPrincipal User { get; set; }
 }
 
