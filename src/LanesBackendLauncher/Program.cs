@@ -8,6 +8,7 @@ using ChessOfCards.DataAccess.Repositories;
 using ClassroomGroups.Api.Features.Authentication;
 using ClassroomGroups.Api.Features.Classrooms;
 using ClassroomGroups.Application.Behaviors;
+using ClassroomGroups.Application.Behaviors.Shared;
 using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
@@ -104,6 +105,7 @@ builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
 // [ClassroomGroups Service Regsitry]
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<AccountRequiredCache>();
 builder.Services.AddScoped<AccountOptionalCache>();
 builder.Services.AddScoped<IDetailService, DetailService>();
