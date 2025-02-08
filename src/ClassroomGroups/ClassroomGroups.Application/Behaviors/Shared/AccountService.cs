@@ -16,12 +16,9 @@ public class AccountService(
   IHttpContextAccessor httpContextAccessor
 ) : IAccountService
 {
-  private readonly ClassroomGroupsContext _dbContext = dbContext;
-  private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-
   public async Task<Account?> GetAssociatedAccountAsync(CancellationToken cancellationToken)
   {
-    var user = _httpContextAccessor.HttpContext?.User;
+    var user = httpContextAccessor.HttpContext?.User;
     if (user is null)
       return null;
 
@@ -32,7 +29,7 @@ public class AccountService(
     if (string.IsNullOrEmpty(googleNameIdentifier))
       return null;
 
-    var accountDTO = await _dbContext.Accounts.FirstOrDefaultAsync(
+    var accountDTO = await dbContext.Accounts.FirstOrDefaultAsync(
       a => a.GoogleNameIdentifier == googleNameIdentifier,
       cancellationToken
     );
@@ -40,7 +37,7 @@ public class AccountService(
     if (accountDTO is null)
       return null;
 
-    var subscription = await _dbContext.Subscriptions.FirstOrDefaultAsync(
+    var subscription = await dbContext.Subscriptions.FirstOrDefaultAsync(
       s => s.Id == accountDTO.SubscriptionId,
       cancellationToken
     );
