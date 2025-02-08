@@ -21,10 +21,6 @@ public class AccountOptionalBehavior<TRequest, TResponse>(
 ) : IPipelineBehavior<TRequest, TResponse>
   where TRequest : IRequest<TResponse>, IOptionalUserAccount
 {
-  private readonly IAccountService _accountService = accountService;
-  private readonly AccountOptionalCache _authBehaviorCache = authBehaviorCache;
-  private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-
   public async Task<TResponse> Handle(
     TRequest request,
     RequestHandlerDelegate<TResponse> next,
@@ -32,11 +28,11 @@ public class AccountOptionalBehavior<TRequest, TResponse>(
   )
   {
     var user =
-      _httpContextAccessor.HttpContext?.User
+      httpContextAccessor.HttpContext?.User
       ?? throw new UnauthorizedAccessException("User must be authenticated.");
 
-    _authBehaviorCache.User = user;
-    _authBehaviorCache.Account = await _accountService.GetAssociatedAccountAsync(cancellationToken);
+    authBehaviorCache.User = user;
+    authBehaviorCache.Account = await accountService.GetAssociatedAccountAsync(cancellationToken);
 
     return await next();
   }
