@@ -20,7 +20,7 @@ public class CreateConfigurationRequestHandler(
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
-  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 
@@ -33,7 +33,7 @@ public class CreateConfigurationRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     var existingConfigurationDTOs = await _dbContext
       .Configurations.Where(c => c.ClassroomId == request.ClassroomId)

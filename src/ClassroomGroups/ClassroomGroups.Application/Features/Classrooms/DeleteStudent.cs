@@ -16,15 +16,12 @@ public record DeleteStudentResponse(Student DeletedStudent, List<GroupDetail> Up
 public class DeleteStudentRequestHandler(
   ClassroomGroupsContext dbContext,
   AccountRequiredCache authBehaviorCache,
-  IDetailService detailService,
   IOrdinalService ordinalService
 ) : IRequestHandler<DeleteStudentRequest, DeleteStudentResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IOrdinalService _ordinalService = ordinalService;
 
@@ -33,7 +30,7 @@ public class DeleteStudentRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken

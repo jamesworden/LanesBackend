@@ -35,7 +35,7 @@ public class CreateClassroomRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     var existingClassroomDTOs = await _dbContext
       .Classrooms.Where(c => c.AccountId == account.Id)

@@ -22,7 +22,7 @@ public class CreateGroupRequestHandler(
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 
@@ -31,7 +31,7 @@ public class CreateGroupRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     var existingGroups = await _dbContext
       .Groups.Where(g => g.ConfigurationId == request.ConfigurationId)

@@ -18,14 +18,14 @@ public class DeleteClassroomRequestHandler(
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   public async Task<DeleteClassroomResponse> Handle(
     DeleteClassroomRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken

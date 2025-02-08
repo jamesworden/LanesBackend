@@ -37,7 +37,7 @@ public class CreateColumnRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     var existingFieldDTOs = await _dbContext
       .Fields.Where(c => c.ClassroomId == request.ClassroomId)

@@ -29,7 +29,7 @@ public class UpsertStudentFieldRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = _authBehaviorCache.Account;
 
     await using var transaction = await _dbContext.Database.BeginTransactionAsync(
       cancellationToken
