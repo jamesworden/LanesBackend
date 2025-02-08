@@ -16,30 +16,24 @@ public class DeleteConfigurationRequestHandler(
   AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<DeleteConfigurationRequest, DeleteConfigurationResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<DeleteConfigurationResponse> Handle(
     DeleteConfigurationRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var configurationDTO =
-        _dbContext.Configurations.SingleOrDefault(c =>
+        dbContext.Configurations.SingleOrDefault(c =>
           c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
         ) ?? throw new Exception();
 
-      _dbContext.Configurations.Remove(configurationDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      dbContext.Configurations.Remove(configurationDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       transaction.Commit();
 

@@ -17,24 +17,19 @@ public class UnlockGroupRequestHandler(
   AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<UnlockGroupRequest, UnlockGroupResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<UnlockGroupResponse> Handle(
     UnlockGroupRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       )
@@ -42,7 +37,7 @@ public class UnlockGroupRequestHandler(
         .ToList();
 
       var groupDTO =
-        await _dbContext.Groups.FirstOrDefaultAsync(
+        await dbContext.Groups.FirstOrDefaultAsync(
           g =>
             g.Id == request.GroupId
             && g.ConfigurationId == request.ConfigurationId
@@ -53,7 +48,7 @@ public class UnlockGroupRequestHandler(
 
       groupDTO.IsLocked = false;
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       transaction.Commit();
 

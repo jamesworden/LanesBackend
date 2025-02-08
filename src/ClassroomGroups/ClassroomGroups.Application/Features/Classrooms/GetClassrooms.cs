@@ -17,20 +17,16 @@ public class GetClassroomsRequestHandler(
   AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetClassroomsRequest, GetClassroomsResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<GetClassroomsResponse> Handle(
     GetClassroomsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
     var classrooms =
       (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountKey == account.Key)
           .ToListAsync(cancellationToken)
       )

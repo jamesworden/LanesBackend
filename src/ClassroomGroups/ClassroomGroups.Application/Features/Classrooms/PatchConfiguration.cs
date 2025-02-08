@@ -19,30 +19,22 @@ public record PatchConfigurationResponse(ConfigurationDetail PatchedConfiguratio
 public class PatchConfigurationRequestHandler(
   AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
-  ClassroomGroupsContext classroomGroupsContext
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<PatchConfigurationRequest, PatchConfigurationResponse>
 {
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
-
   public async Task<PatchConfigurationResponse> Handle(
     PatchConfigurationRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       )
@@ -50,7 +42,7 @@ public class PatchConfigurationRequestHandler(
         .ToList();
 
       var configurationDTO =
-        await _dbContext
+        await dbContext
           .Configurations.Where(c =>
             c.ClassroomId == request.ClassroomId
             && c.Id == request.ConfigurationId
@@ -61,12 +53,12 @@ public class PatchConfigurationRequestHandler(
       configurationDTO.Description = request.Description.Trim();
       configurationDTO.Label = request.Label.Trim();
 
-      var configurationEntity = _dbContext.Configurations.Update(configurationDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      var configurationEntity = dbContext.Configurations.Update(configurationDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
       var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
 
       var configurationDetail =
-        await _detailService.GetConfigurationDetail(
+        await detailService.GetConfigurationDetail(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

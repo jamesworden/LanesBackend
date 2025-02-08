@@ -17,10 +17,6 @@ public interface IOrdinalService
 public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService detailService)
   : IOrdinalService
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly IDetailService _detailService = detailService;
-
   public async Task<List<GroupDetail>> RecalculateStudentOrdinals(
     Guid accountId,
     Guid classroomId,
@@ -29,16 +25,16 @@ public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService det
   )
   {
     var studentGroups =
-      await _dbContext
+      await dbContext
         .StudentGroups.Where(sg => groupIds.Contains(sg.GroupId))
         .ToListAsync(cancellationToken) ?? throw new Exception();
 
     var studentGroupIds = studentGroups.Select(sg => sg.Id);
 
-    var students = _dbContext.Students.Where(s => studentGroupIds.Contains(s.Id));
+    var students = dbContext.Students.Where(s => studentGroupIds.Contains(s.Id));
 
     var groups =
-      await _dbContext.Groups.Where(g => groupIds.Contains(g.Id)).ToListAsync(cancellationToken)
+      await dbContext.Groups.Where(g => groupIds.Contains(g.Id)).ToListAsync(cancellationToken)
       ?? throw new Exception();
 
     foreach (var group in groups)
@@ -54,16 +50,11 @@ public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService det
             return sg;
           }
         );
-      _dbContext.StudentGroups.UpdateRange(releventStudentGroups);
+      dbContext.StudentGroups.UpdateRange(releventStudentGroups);
     }
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
 
-    return await _detailService.GetGroupDetails(
-      accountId,
-      classroomId,
-      groupIds,
-      cancellationToken
-    );
+    return await detailService.GetGroupDetails(accountId, classroomId, groupIds, cancellationToken);
   }
 }

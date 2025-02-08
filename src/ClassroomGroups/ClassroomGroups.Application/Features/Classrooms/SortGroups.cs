@@ -16,25 +16,17 @@ public record SortGroupsResponse(List<GroupDetail> SortedGroupDetails) { }
 public class SortGroupsRequestHandler(
   AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
-  ClassroomGroupsContext classroomGroupsContext
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<SortGroupsRequest, SortGroupsResponse>
 {
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
-
   public async Task<SortGroupsResponse> Handle(
     SortGroupsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
@@ -42,7 +34,7 @@ public class SortGroupsRequestHandler(
         .SortedGroupIds.Select((id, index) => new { id, index })
         .ToDictionary(x => x.id, x => x.index);
 
-      var groups = await _dbContext
+      var groups = await dbContext
         .Groups.Where(g => request.SortedGroupIds.Contains(g.Id))
         .ToListAsync(cancellationToken);
 
@@ -56,10 +48,10 @@ public class SortGroupsRequestHandler(
 
       await transaction.CommitAsync(cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var groupDetails =
-        await _detailService.GetGroupDetails(
+        await detailService.GetGroupDetails(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

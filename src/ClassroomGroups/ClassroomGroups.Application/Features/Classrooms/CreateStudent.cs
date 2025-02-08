@@ -20,20 +20,14 @@ public class CreateStudentRequestHandler(
   IDetailService detailService
 ) : IRequestHandler<CreateStudentRequest, CreateStudentResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
   public async Task<CreateStudentResponse> Handle(
     CreateStudentRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    var existingStudentDTOs = await _dbContext
+    var existingStudentDTOs = await dbContext
       .Students.Where(s => s.ClassroomId == request.ClassroomId)
       .ToListAsync(cancellationToken);
 
@@ -42,19 +36,17 @@ public class CreateStudentRequestHandler(
       throw new Exception();
     }
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomDTO =
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var configurationDTO =
-        await _dbContext
+        await dbContext
           .Configurations.Where(c => c.Id == request.ConfigurationId)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
@@ -66,17 +58,17 @@ public class CreateStudentRequestHandler(
         ClassroomKey = classroomDTO.Key,
         ClassroomId = classroomDTO.Id,
       };
-      var studentEntity = await _dbContext.Students.AddAsync(studentDTO, cancellationToken);
+      var studentEntity = await dbContext.Students.AddAsync(studentDTO, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var groupId = request.GroupId ?? configurationDTO.DefaultGroupId ?? throw new Exception();
 
       var groupDTO =
-        await _dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
+        await dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
         ?? throw new Exception();
 
-      var existingStudentGroups = await _dbContext
+      var existingStudentGroups = await dbContext
         .StudentGroups.Where(sg => sg.GroupId == groupId)
         .ToListAsync(cancellationToken);
 
@@ -90,14 +82,14 @@ public class CreateStudentRequestHandler(
         Ordinal = existingStudentGroups.Count
       };
 
-      var studentGroupEntity = await _dbContext.StudentGroups.AddAsync(
+      var studentGroupEntity = await dbContext.StudentGroups.AddAsync(
         studentGroupDTO,
         cancellationToken
       );
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
-      var otherConfigurationDTOs = await _dbContext
+      var otherConfigurationDTOs = await dbContext
         .Configurations.Where(c =>
           c.ClassroomId == request.ClassroomId && c.Id != request.ConfigurationId
         )
@@ -109,7 +101,7 @@ public class CreateStudentRequestHandler(
           var groupId = c.DefaultGroupId ?? throw new Exception();
           var groupKey = c.DefaultGroupKey ?? throw new Exception();
           var existingStudentGroups =
-            await _dbContext
+            await dbContext
               .StudentGroups.Where(sg => sg.GroupId == c.DefaultGroupId)
               .ToListAsync(cancellationToken) ?? throw new Exception();
 
@@ -125,12 +117,12 @@ public class CreateStudentRequestHandler(
         })
       );
 
-      await _dbContext.AddRangeAsync(studentGroupDTOs, cancellationToken);
+      await dbContext.AddRangeAsync(studentGroupDTOs, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var studentDetails =
-        await _detailService.GetStudentDetails(
+        await detailService.GetStudentDetails(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

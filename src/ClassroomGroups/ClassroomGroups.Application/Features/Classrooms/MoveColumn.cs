@@ -21,27 +21,21 @@ public record MoveColumnResponse(List<ColumnDetail> UpdatedColumnDetails) { }
 public class MoveColumnRequestHandler(
   AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
-  ClassroomGroupsContext classroomGroupsContext
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<MoveColumnRequest, MoveColumnResponse>
 {
-  private readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-  private readonly IDetailService _detailService = detailService;
-  private readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
-
   public async Task<MoveColumnResponse> Handle(
     MoveColumnRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
-      var columns = await _dbContext
+      var columns = await dbContext
         .Columns.Where(c => c.ConfigurationId == request.ConfigurationId)
         .OrderBy(c => c.Ordinal)
         .ToListAsync(cancellationToken);
@@ -58,10 +52,10 @@ public class MoveColumnRequestHandler(
         columns[i].Ordinal = i;
       }
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
       await transaction.CommitAsync(cancellationToken);
 
-      var updatedColumnDetails = await _detailService.GetColumnDetails(
+      var updatedColumnDetails = await detailService.GetColumnDetails(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,

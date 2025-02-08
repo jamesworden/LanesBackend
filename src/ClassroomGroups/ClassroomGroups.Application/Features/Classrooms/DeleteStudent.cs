@@ -19,41 +19,33 @@ public class DeleteStudentRequestHandler(
   IOrdinalService ordinalService
 ) : IRequestHandler<DeleteStudentRequest, DeleteStudentResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IOrdinalService _ordinalService = ordinalService;
-
   public async Task<DeleteStudentResponse> Handle(
     DeleteStudentRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var studentGroups =
-        await _dbContext
+        await dbContext
           .StudentGroups.Where(sg => sg.StudentId == request.StudentId)
           .ToListAsync(cancellationToken) ?? throw new Exception();
 
       var groupIds = studentGroups.Select(sg => sg.GroupId) ?? throw new Exception();
 
       var studentDTO =
-        await _dbContext
+        await dbContext
           .Students.Where(s => s.Id == request.StudentId && s.ClassroomId == request.ClassroomId)
           .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-      _dbContext.Students.Remove(studentDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      dbContext.Students.Remove(studentDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
-      var updatedGroups = await _ordinalService.RecalculateStudentOrdinals(
+      var updatedGroups = await ordinalService.RecalculateStudentOrdinals(
         account.Id,
         studentDTO.ClassroomId,
         groupIds.ToList(),

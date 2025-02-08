@@ -26,29 +26,21 @@ public record MoveStudentResponse(List<GroupDetail> UpdatedGroupDetails) { }
 public class MoveStudentRequestHandler(
   AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
-  ClassroomGroupsContext classroomGroupsContext
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<MoveStudentRequest, MoveStudentResponse>
 {
-  private readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-  private readonly IDetailService _detailService = detailService;
-  private readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
-
   public async Task<MoveStudentResponse> Handle(
     MoveStudentRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
-
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var groupDetails = await MoveStudentBetweenGroups(request, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
       await transaction.CommitAsync(cancellationToken);
 
       return new MoveStudentResponse(groupDetails);
@@ -76,8 +68,8 @@ public class MoveStudentRequestHandler(
       await MoveStudentAcrossGroups(moveDetail, cancellationToken);
     }
 
-    return await _detailService.GetGroupDetails(
-        _authBehaviorCache.Account!.Id,
+    return await detailService.GetGroupDetails(
+        authBehaviorCache.Account!.Id,
         request.ClassroomId,
         request.ConfigurationId,
         cancellationToken
@@ -89,7 +81,7 @@ public class MoveStudentRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var studentGroups = await _dbContext
+    var studentGroups = await dbContext
       .StudentGroups.Where(sg => sg.GroupId == moveDetail.CurrGroupId)
       .OrderBy(sg => sg.Ordinal)
       .ToListAsync(cancellationToken);
@@ -112,12 +104,12 @@ public class MoveStudentRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var prevGroupStudentGroups = await _dbContext
+    var prevGroupStudentGroups = await dbContext
       .StudentGroups.Where(sg => sg.GroupId == moveDetail.PrevGroupId)
       .OrderBy(sg => sg.Ordinal)
       .ToListAsync(cancellationToken);
 
-    var currGroupStudentGroups = await _dbContext
+    var currGroupStudentGroups = await dbContext
       .StudentGroups.Where(sg => sg.GroupId == moveDetail.CurrGroupId)
       .OrderBy(sg => sg.Ordinal)
       .ToListAsync(cancellationToken);

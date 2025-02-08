@@ -18,27 +18,19 @@ public class GetConfigurationDetailRequestHandler(
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
   public async Task<GetConfigurationDetailResponse> Handle(
     GetConfigurationDetailRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var configurationDetail =
-        await _detailService.GetConfigurationDetail(
+        await detailService.GetConfigurationDetail(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

@@ -20,20 +20,14 @@ public class CreateGroupRequestHandler(
   IDetailService detailService
 ) : IRequestHandler<CreateGroupRequest, CreateGroupResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
   public async Task<CreateGroupResponse> Handle(
     CreateGroupRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    var existingGroups = await _dbContext
+    var existingGroups = await dbContext
       .Groups.Where(g => g.ConfigurationId == request.ConfigurationId)
       .Select(g => g.ToGroup())
       .ToListAsync(cancellationToken);
@@ -43,14 +37,12 @@ public class CreateGroupRequestHandler(
       throw new Exception();
     }
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       )
@@ -58,7 +50,7 @@ public class CreateGroupRequestHandler(
         .ToList();
 
       var configurationDTO =
-        await _dbContext
+        await dbContext
           .Configurations.Where(c =>
             c.ClassroomId == request.ClassroomId
             && c.Id == request.ConfigurationId
@@ -80,12 +72,12 @@ public class CreateGroupRequestHandler(
         Ordinal = ordinal,
         ConfigurationKey = configurationDTO.Key
       };
-      var groupEntity = await _dbContext.Groups.AddAsync(groupDTO, cancellationToken);
+      var groupEntity = await dbContext.Groups.AddAsync(groupDTO, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var groupDetails =
-        await _detailService.GetGroupDetails(
+        await detailService.GetGroupDetails(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

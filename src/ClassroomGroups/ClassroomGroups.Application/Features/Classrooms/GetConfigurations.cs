@@ -17,31 +17,25 @@ public class GetConfigurationsRequestHandler(
   AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetConfigurationsRequest, GetConfigurationsResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<GetConfigurationsResponse> Handle(
     GetConfigurationsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       ).Select(c => c.Id);
 
       var configurations = (
-        await _dbContext
+        await dbContext
           .Configurations.Where(c => classroomIds.Contains(c.ClassroomId))
           .ToListAsync(cancellationToken)
       )

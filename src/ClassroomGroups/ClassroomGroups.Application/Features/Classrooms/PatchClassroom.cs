@@ -15,28 +15,22 @@ public record PatchClassroomResponse(ClassroomDetail PatchedClassroomDetail) { }
 
 public class PatchClassroomRequestHandler(
   AccountRequiredCache authBehaviorCache,
-  ClassroomGroupsContext classroomGroupsContext
+  ClassroomGroupsContext dbContext
 ) : IRequestHandler<PatchClassroomRequest, PatchClassroomResponse>
 {
-  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
-
-  readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
-
   public async Task<PatchClassroomResponse> Handle(
     PatchClassroomRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account;
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       )
@@ -44,20 +38,20 @@ public class PatchClassroomRequestHandler(
         .ToList();
 
       var classroomDTO =
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       classroomDTO.Description = request.Description.Trim();
       classroomDTO.Label = request.Label.Trim();
 
-      var configurationEntity = _dbContext.Classrooms.Update(classroomDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      var configurationEntity = dbContext.Classrooms.Update(classroomDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
       var classroom = configurationEntity.Entity?.ToClassroom() ?? throw new Exception();
 
       var fieldDetails =
         (
-          await _dbContext
+          await dbContext
             .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
             .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
             .ToListAsync(cancellationToken)

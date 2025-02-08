@@ -17,8 +17,6 @@ public interface IConfigurationService
 
 public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigurationService
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
   readonly string DEFAULT_GROUP_LABEL = "Default Group";
 
   public async Task<Configuration> CreateConfiguration(
@@ -30,7 +28,7 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
   {
     ClassroomDTO? classroomDTO =
       (
-        await _dbContext.Classrooms.Where(c => c.Id == classroomId).ToListAsync(cancellationToken)
+        await dbContext.Classrooms.Where(c => c.Id == classroomId).ToListAsync(cancellationToken)
         ?? []
       ).FirstOrDefault() ?? throw new Exception();
 
@@ -43,11 +41,11 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       ClassroomId = classroomDTO.Id,
       ClassroomKey = classroomDTO.Key
     };
-    var configurationEntity = await _dbContext.Configurations.AddAsync(
+    var configurationEntity = await dbContext.Configurations.AddAsync(
       configurationDTO,
       cancellationToken
     );
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
     var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
 
     var defaultGroupDTO = new GroupDTO()
@@ -58,19 +56,19 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       Ordinal = 0,
       ConfigurationKey = configurationDTO.Key
     };
-    var defaultGroupEntity = await _dbContext.Groups.AddAsync(defaultGroupDTO, cancellationToken);
+    var defaultGroupEntity = await dbContext.Groups.AddAsync(defaultGroupDTO, cancellationToken);
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
 
     configurationEntity.Entity.DefaultGroupKey = defaultGroupEntity.Entity.Key;
     configurationEntity.Entity.DefaultGroupId = defaultGroupEntity.Entity.Id;
 
-    _dbContext.Configurations.Update(configurationEntity.Entity);
+    dbContext.Configurations.Update(configurationEntity.Entity);
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
 
     List<FieldDTO> fieldDTOs =
-      await _dbContext
+      await dbContext
         .Fields.Where(f => f.ClassroomKey == classroomDTO.Key)
         .ToListAsync(cancellationToken) ?? [];
 
@@ -91,16 +89,16 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       )
       .ToList();
 
-    await _dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
 
     List<ColumnDTO> resultingColumnDTOs =
-      await _dbContext
+      await dbContext
         .Columns.Where(col => columnDTOs.Select(c => c.Id).Contains(col.Id))
         .ToListAsync(cancellationToken) ?? [];
 
     var studentDTOs =
-      await _dbContext.Students.Where(s => s.ClassroomId == classroomId).ToListAsync()
+      await dbContext.Students.Where(s => s.ClassroomId == classroomId).ToListAsync()
       ?? throw new Exception();
 
     var i = 0;
@@ -124,7 +122,7 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
 
     foreach (var studentGroup in studentGroups)
     {
-      var existingEntity = _dbContext.StudentGroups.FirstOrDefault(sg => sg.Id == studentGroup.Id);
+      var existingEntity = dbContext.StudentGroups.FirstOrDefault(sg => sg.Id == studentGroup.Id);
 
       if (existingEntity != null)
       {
@@ -134,15 +132,15 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
         existingEntity.StudentKey = studentGroup.StudentKey;
         existingEntity.Ordinal = studentGroup.Ordinal;
 
-        _dbContext.StudentGroups.Update(existingEntity);
+        dbContext.StudentGroups.Update(existingEntity);
       }
       else
       {
-        _dbContext.StudentGroups.Add(studentGroup);
+        dbContext.StudentGroups.Add(studentGroup);
       }
     }
 
-    _dbContext.SaveChanges();
+    dbContext.SaveChanges();
 
     return configurationDTO.ToConfiguration();
   }
