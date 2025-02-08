@@ -11,14 +11,12 @@ public record GetAccountResponse(AccountView? Account) { }
 public class GetAccountRequestHandler(AccountOptionalCache accountOptionalCache)
   : IRequestHandler<GetAccountRequest, GetAccountResponse>
 {
-  readonly AccountOptionalCache _accountOptionalCache = accountOptionalCache;
-
   public async Task<GetAccountResponse> Handle(
     GetAccountRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _accountOptionalCache.Account;
+    var account = accountOptionalCache.Account;
     await Task.CompletedTask;
     return new GetAccountResponse(account?.ToAccountView());
   }

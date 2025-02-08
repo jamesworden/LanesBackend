@@ -17,21 +17,17 @@ public class UpsertAccountRequestHandler(
   AccountOptionalCache optionalAccountCache
 ) : IRequestHandler<UpsertAccountRequest, UpsertAccountResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AccountOptionalCache _optionalAccountCache = optionalAccountCache;
-
   public async Task<UpsertAccountResponse> Handle(
     UpsertAccountRequest request,
     CancellationToken cancellationToken
   )
   {
-    var existingAccount = _optionalAccountCache.Account;
+    var existingAccount = optionalAccountCache.Account;
     if (existingAccount is not null)
     {
       return new UpsertAccountResponse(existingAccount.ToAccountView());
     }
-    var user = _optionalAccountCache.User;
+    var user = optionalAccountCache.User;
 
     var primaryEmail =
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value)
@@ -42,7 +38,7 @@ public class UpsertAccountRequestHandler(
       ?? throw new Exception();
 
     var freeSubscriptionDTO =
-      await _dbContext.Subscriptions.FirstOrDefaultAsync(
+      await dbContext.Subscriptions.FirstOrDefaultAsync(
         s => s.SubscriptionType == SubscriptionType.FREE,
         cancellationToken
       ) ?? throw new Exception();
@@ -51,7 +47,7 @@ public class UpsertAccountRequestHandler(
 
     var upsertedAccountDTO =
       (
-        await _dbContext.AddAsync(
+        await dbContext.AddAsync(
           new AccountDTO
           {
             Id = accountId,
@@ -66,12 +62,12 @@ public class UpsertAccountRequestHandler(
       )?.Entity ?? throw new Exception();
 
     var subscriptionDTO =
-      await _dbContext.Subscriptions.FirstOrDefaultAsync(
+      await dbContext.Subscriptions.FirstOrDefaultAsync(
         (s) => s.Id == upsertedAccountDTO.SubscriptionId,
         cancellationToken
       ) ?? throw new Exception();
 
-    await _dbContext.SaveChangesAsync(cancellationToken);
+    await dbContext.SaveChangesAsync(cancellationToken);
 
     var account =
       upsertedAccountDTO.ToAccount(subscriptionDTO.ToSubscription()).ToAccountView()
