@@ -6,29 +6,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetClassroomsRequest(Guid ConfigurationId) : IRequest<GetClassroomsResponse> { }
+public record GetClassroomsRequest(Guid ConfigurationId)
+  : IRequest<GetClassroomsResponse>,
+    IRequiredUserAccount { }
 
 public record GetClassroomsResponse(List<Classroom> Classrooms) { }
 
 public class GetClassroomsRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetClassroomsRequest, GetClassroomsResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<GetClassroomsResponse> Handle(
     GetClassroomsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
     var classrooms =
       (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountKey == account.Key)
           .ToListAsync(cancellationToken)
       )

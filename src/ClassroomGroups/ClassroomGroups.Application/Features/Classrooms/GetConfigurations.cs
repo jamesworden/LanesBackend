@@ -6,40 +6,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetConfigurationsRequest(Guid ClassroomId) : IRequest<GetConfigurationsResponse> { }
+public record GetConfigurationsRequest(Guid ClassroomId)
+  : IRequest<GetConfigurationsResponse>,
+    IRequiredUserAccount { }
 
 public record GetConfigurationsResponse(List<Configuration> Configurations) { }
 
 public class GetConfigurationsRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetConfigurationsRequest, GetConfigurationsResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<GetConfigurationsResponse> Handle(
     GetConfigurationsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       ).Select(c => c.Id);
 
       var configurations = (
-        await _dbContext
+        await dbContext
           .Configurations.Where(c => classroomIds.Contains(c.ClassroomId))
           .ToListAsync(cancellationToken)
       )

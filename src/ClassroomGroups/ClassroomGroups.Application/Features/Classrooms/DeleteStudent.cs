@@ -8,54 +8,44 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteStudentRequest(Guid ClassroomId, Guid StudentId)
-  : IRequest<DeleteStudentResponse>;
+  : IRequest<DeleteStudentResponse>,
+    IRequiredUserAccount { };
 
 public record DeleteStudentResponse(Student DeletedStudent, List<GroupDetail> UpdatedGroupDetails);
 
 public class DeleteStudentRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
-  IDetailService detailService,
+  AccountRequiredCache authBehaviorCache,
   IOrdinalService ordinalService
 ) : IRequestHandler<DeleteStudentRequest, DeleteStudentResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly IOrdinalService _ordinalService = ordinalService;
-
   public async Task<DeleteStudentResponse> Handle(
     DeleteStudentRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var studentGroups =
-        await _dbContext
+        await dbContext
           .StudentGroups.Where(sg => sg.StudentId == request.StudentId)
           .ToListAsync(cancellationToken) ?? throw new Exception();
 
       var groupIds = studentGroups.Select(sg => sg.GroupId) ?? throw new Exception();
 
       var studentDTO =
-        await _dbContext
+        await dbContext
           .Students.Where(s => s.Id == request.StudentId && s.ClassroomId == request.ClassroomId)
           .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
-      _dbContext.Students.Remove(studentDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      dbContext.Students.Remove(studentDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
-      var updatedGroups = await _ordinalService.RecalculateStudentOrdinals(
+      var updatedGroups = await ordinalService.RecalculateStudentOrdinals(
         account.Id,
         studentDTO.ClassroomId,
         groupIds.ToList(),

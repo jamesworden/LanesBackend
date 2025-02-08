@@ -7,41 +7,37 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetClassroomDetailsRequest() : IRequest<GetClassroomDetailsResponse> { }
+public record GetClassroomDetailsRequest()
+  : IRequest<GetClassroomDetailsResponse>,
+    IRequiredUserAccount { }
 
 public record GetClassroomDetailsResponse(List<ClassroomDetail> ClassroomDetails) { }
 
 public class GetClassroomDetailsRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetClassroomDetailsRequest, GetClassroomDetailsResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
   public async Task<GetClassroomDetailsResponse> Handle(
     GetClassroomDetailsRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomIds = (
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.AccountId == account.Id)
           .ToListAsync(cancellationToken)
       ).Select(c => c.Id);
 
       var fieldDetails =
         (
-          await _dbContext
+          await dbContext
             .Fields.Where(f => classroomIds.Contains(f.ClassroomId))
             .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
             .ToListAsync(cancellationToken)
@@ -51,7 +47,7 @@ public class GetClassroomDetailsRequestHandler(
 
       var classroomDetails =
         (
-          await _dbContext
+          await dbContext
             .Classrooms.Where(c => c.AccountKey == account.Key)
             .Select(c => new ClassroomDetailDTO(c.Id, c.AccountId, c.Label, c.Description))
             .ToListAsync(cancellationToken)

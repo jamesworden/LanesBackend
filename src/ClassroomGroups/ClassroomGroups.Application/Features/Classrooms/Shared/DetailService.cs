@@ -45,8 +45,6 @@ public interface IDetailService
 
 public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
   public async Task<ConfigurationDetail> GetConfigurationDetail(
     Guid accountId,
     Guid classroomId,
@@ -69,16 +67,14 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     );
 
     var classroomIds = (
-      await _dbContext
-        .Classrooms.Where(c => c.AccountId == accountId)
-        .ToListAsync(cancellationToken)
+      await dbContext.Classrooms.Where(c => c.AccountId == accountId).ToListAsync(cancellationToken)
     )
       .Select(c => c.Id)
       .ToList();
 
     var configurationDetail =
       (
-        await _dbContext
+        await dbContext
           .Configurations.Where(c =>
             c.Id == configurationId
             && c.ClassroomId == classroomId
@@ -118,7 +114,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
 
     var groupDetails =
       (
-        await _dbContext
+        await dbContext
           .Groups.Where(g => g.ConfigurationId == configurationId)
           .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal, g.IsLocked))
           .ToListAsync(cancellationToken)
@@ -140,7 +136,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     var studentDetails = await GetStudentDetails(accountId, classroomId, null, cancellationToken);
 
     return (
-        await _dbContext
+        await dbContext
           .Groups.Where(g => groupIds.Contains(g.Id))
           .Select(g => new GroupDetailDTO(g.Id, g.ConfigurationId, g.Label, g.Ordinal, g.IsLocked))
           .ToListAsync(cancellationToken)
@@ -158,10 +154,10 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
   )
   {
     return (
-      await _dbContext
+      await dbContext
         .Columns.Where(c => c.ConfigurationId == configurationId)
         .Join(
-          _dbContext.Fields,
+          dbContext.Fields,
           column => column.FieldId,
           field => field.Id,
           (column, field) => new { column, field }
@@ -190,12 +186,12 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
     CancellationToken cancellationToken
   )
   {
-    var studentDetails = await _dbContext
+    var studentDetails = await dbContext
       .StudentGroups.Where(sg =>
         configurationId == null || sg.GroupDTO.ConfigurationId == configurationId
       )
       .Join(
-        _dbContext.Students,
+        dbContext.Students,
         sg => sg.StudentId,
         s => s.Id,
         (sg, s) => new { Student = s, StudentGroup = sg }
@@ -208,7 +204,7 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
         x.StudentGroup.GroupId,
         x.StudentGroup.Ordinal,
         x.StudentGroup.Id,
-        _dbContext
+        dbContext
           .StudentFields.Where(sf => sf.StudentId == x.Student.Id)
           .ToDictionary(sf => sf.FieldId, sf => sf.Value)
       ))

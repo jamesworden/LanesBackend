@@ -13,7 +13,7 @@ public record CreateColumnRequest(
   Guid ConfigurationId,
   string Label,
   FieldType Type
-) : IRequest<CreateColumnResponse> { }
+) : IRequest<CreateColumnResponse>, IRequiredUserAccount { }
 
 public record CreateColumnResponse(
   ColumnDetail CreatedColumnDetail,
@@ -22,24 +22,18 @@ public record CreateColumnResponse(
 
 public class CreateColumnRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<CreateColumnRequest, CreateColumnResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
   public async Task<CreateColumnResponse> Handle(
     CreateColumnRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    var existingFieldDTOs = await _dbContext
+    var existingFieldDTOs = await dbContext
       .Fields.Where(c => c.ClassroomId == request.ClassroomId)
       .ToListAsync(cancellationToken);
 
@@ -48,19 +42,17 @@ public class CreateColumnRequestHandler(
       throw new Exception();
     }
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroomDTO =
-        await _dbContext
+        await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var configurationDTOs =
-        await _dbContext.Configurations.ToListAsync(cancellationToken) ?? throw new Exception();
+        await dbContext.Configurations.ToListAsync(cancellationToken) ?? throw new Exception();
 
       var fieldDTO = new FieldDTO()
       {
@@ -71,9 +63,9 @@ public class CreateColumnRequestHandler(
         Type = request.Type
       };
 
-      var fieldEntity = await _dbContext.Fields.AddAsync(fieldDTO, cancellationToken);
+      var fieldEntity = await dbContext.Fields.AddAsync(fieldDTO, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var ordinal = existingFieldDTOs.Count + 1;
 
@@ -91,13 +83,13 @@ public class CreateColumnRequestHandler(
         Enabled = true,
       });
 
-      await _dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
+      await dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var fieldDetail = fieldEntity.Entity.ToField().ToFieldDetail();
 
-      var columnDetails = await _detailService.GetColumnDetails(
+      var columnDetails = await detailService.GetColumnDetails(
         account.Id,
         request.ClassroomId,
         request.ConfigurationId,

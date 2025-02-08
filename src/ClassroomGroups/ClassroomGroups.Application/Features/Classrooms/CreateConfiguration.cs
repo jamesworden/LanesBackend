@@ -8,33 +8,26 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateConfigurationRequest(string Label, Guid ClassroomId)
-  : IRequest<CreateConfigurationResponse> { }
+  : IRequest<CreateConfigurationResponse>,
+    IRequiredUserAccount { }
 
 public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 
 public class CreateConfigurationRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   IConfigurationService configurationService,
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly IConfigurationService _configurationService = configurationService;
-
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
   public async Task<CreateConfigurationResponse> Handle(
     CreateConfigurationRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    var existingConfigurationDTOs = await _dbContext
+    var existingConfigurationDTOs = await dbContext
       .Configurations.Where(c => c.ClassroomId == request.ClassroomId)
       .ToListAsync(cancellationToken);
 
@@ -43,13 +36,11 @@ public class CreateConfigurationRequestHandler(
       throw new Exception();
     }
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
-      var configuration = await _configurationService.CreateConfiguration(
+      var configuration = await configurationService.CreateConfiguration(
         account.Id,
         request.ClassroomId,
         request.Label,
@@ -57,7 +48,7 @@ public class CreateConfigurationRequestHandler(
       );
 
       var configurationDetail =
-        await _detailService.GetConfigurationDetail(
+        await detailService.GetConfigurationDetail(
           account.Id,
           request.ClassroomId,
           configuration.Id,

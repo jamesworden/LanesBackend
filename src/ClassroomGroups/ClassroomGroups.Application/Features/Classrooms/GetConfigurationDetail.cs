@@ -7,37 +7,30 @@ using MediatR;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record GetConfigurationDetailRequest(Guid ClassroomId, Guid ConfigurationId)
-  : IRequest<GetConfigurationDetailResponse> { }
+  : IRequest<GetConfigurationDetailResponse>,
+    IRequiredUserAccount { }
 
 public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDetail) { }
 
 public class GetConfigurationDetailRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IDetailService _detailService = detailService;
-
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
   public async Task<GetConfigurationDetailResponse> Handle(
     GetConfigurationDetailRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var configurationDetail =
-        await _detailService.GetConfigurationDetail(
+        await detailService.GetConfigurationDetail(
           account.Id,
           request.ClassroomId,
           request.ConfigurationId,

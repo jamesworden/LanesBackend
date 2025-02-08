@@ -5,39 +5,35 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse> { }
+public record DeleteClassroomRequest(Guid ClassroomId)
+  : IRequest<DeleteClassroomResponse>,
+    IRequiredUserAccount { }
 
 public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<DeleteClassroomRequest, DeleteClassroomResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
-
   public async Task<DeleteClassroomResponse> Handle(
     DeleteClassroomRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var classroom =
-        _dbContext.Classrooms.SingleOrDefault(c =>
+        dbContext.Classrooms.SingleOrDefault(c =>
           c.Id == request.ClassroomId && c.AccountId == account.Id
         ) ?? throw new Exception();
 
-      _dbContext.Classrooms.Remove(classroom);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      dbContext.Classrooms.Remove(classroom);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       transaction.Commit();
 

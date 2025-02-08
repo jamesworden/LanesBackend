@@ -9,22 +9,17 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateClassroomRequest(string? Label, string? Description)
-  : IRequest<CreateClassroomResponse> { }
+  : IRequest<CreateClassroomResponse>,
+    IRequiredUserAccount { }
 
 public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { }
 
 public class CreateClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IConfigurationService configurationService
 ) : IRequestHandler<CreateClassroomRequest, CreateClassroomResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-
-  readonly IConfigurationService _configurationService = configurationService;
-
   readonly string DEFAULT_CLASSROOM_LABEL = "Untitled";
 
   readonly string DEFAULT_FIRST_CONFIGURATION_LABEL = "Configuration 1";
@@ -34,9 +29,9 @@ public class CreateClassroomRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    var existingClassroomDTOs = await _dbContext
+    var existingClassroomDTOs = await dbContext
       .Classrooms.Where(c => c.AccountId == account.Id)
       .ToListAsync(cancellationToken);
 
@@ -45,9 +40,7 @@ public class CreateClassroomRequestHandler(
       throw new Exception();
     }
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
@@ -59,11 +52,11 @@ public class CreateClassroomRequestHandler(
         AccountKey = account.Key,
         AccountId = account.Id
       };
-      var classroomEntity = await _dbContext.Classrooms.AddAsync(classroomDTO, cancellationToken);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      var classroomEntity = await dbContext.Classrooms.AddAsync(classroomDTO, cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
       var classroom = (classroomEntity.Entity?.ToClassroom()) ?? throw new Exception();
 
-      var configuration = await _configurationService.CreateConfiguration(
+      var configuration = await configurationService.CreateConfiguration(
         account.Id,
         classroom.Id,
         DEFAULT_FIRST_CONFIGURATION_LABEL,
@@ -91,7 +84,7 @@ public class CreateClassroomRequestHandler(
         Id = Guid.NewGuid(),
       };
 
-      await _dbContext.Students.AddRangeAsync(
+      await dbContext.Students.AddRangeAsync(
         [studentDTO1, studentDTO2, studentDTO3],
         cancellationToken
       );
@@ -115,7 +108,7 @@ public class CreateClassroomRequestHandler(
         Id = Guid.NewGuid(),
       };
 
-      await _dbContext.Students.AddRangeAsync(
+      await dbContext.Students.AddRangeAsync(
         [defaultGroupStudentDTO1, defaultGroupStudentDTO2, defaultGroupStudentDTO3],
         cancellationToken
       );
@@ -147,27 +140,27 @@ public class CreateClassroomRequestHandler(
         Type = FieldType.NUMBER
       };
 
-      await _dbContext.Fields.AddRangeAsync([fieldDTO1, fieldDTO2, fieldDTO3], cancellationToken);
+      await dbContext.Fields.AddRangeAsync([fieldDTO1, fieldDTO2, fieldDTO3], cancellationToken);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var configurationDTO =
-        await _dbContext
+        await dbContext
           .Configurations.Where(c => c.Id == configuration.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var fieldDTO1withKey =
-        await _dbContext
+        await dbContext
           .Fields.Where(f => f.Id == fieldDTO1.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var fieldDTO2withKey =
-        await _dbContext
+        await dbContext
           .Fields.Where(f => f.Id == fieldDTO2.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var fieldDTO3withKey =
-        await _dbContext
+        await dbContext
           .Fields.Where(f => f.Id == fieldDTO3.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
@@ -205,14 +198,14 @@ public class CreateClassroomRequestHandler(
         Sort = ColumnSort.NONE
       };
 
-      await _dbContext.Columns.AddRangeAsync(
+      await dbContext.Columns.AddRangeAsync(
         [columnDTO1, columnDTO2, columnDTO3],
         cancellationToken
       );
 
       var groupId = Guid.NewGuid();
 
-      await _dbContext.Groups.AddAsync(
+      await dbContext.Groups.AddAsync(
         new()
         {
           Id = groupId,
@@ -224,46 +217,46 @@ public class CreateClassroomRequestHandler(
         cancellationToken
       );
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var groupDTO =
-        await _dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
+        await dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
         ?? throw new Exception();
 
       var studentDTO1withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => studentDTO1.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var studentDTO2withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => studentDTO2.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var studentDTO3withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => studentDTO3.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var defaultGroupStudentDTO1withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => defaultGroupStudentDTO1.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var defaultGroupStudentDTO2withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => defaultGroupStudentDTO2.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var defaultGroupStudentDTO3withKey =
-        await _dbContext
+        await dbContext
           .Students.Where(s => defaultGroupStudentDTO3.Id == s.Id)
           .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var defaultGroupId = configurationDTO.DefaultGroupId ?? throw new Exception();
       var defaultGroupKey = configurationDTO.DefaultGroupKey ?? throw new Exception();
 
-      await _dbContext.StudentGroups.AddRangeAsync(
+      await dbContext.StudentGroups.AddRangeAsync(
         [
           new()
           {
@@ -323,11 +316,11 @@ public class CreateClassroomRequestHandler(
         cancellationToken
       );
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       var fieldDetails =
         (
-          await _dbContext
+          await dbContext
             .Fields.Where(f => f.ClassroomId == classroom.Id)
             .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
             .ToListAsync(cancellationToken)

@@ -6,39 +6,34 @@ using MediatR;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteConfigurationRequest(Guid ClassroomId, Guid ConfigurationId)
-  : IRequest<DeleteConfigurationResponse> { }
+  : IRequest<DeleteConfigurationResponse>,
+    IRequiredUserAccount { }
 
 public record DeleteConfigurationResponse(Configuration DeletedConfiguration) { }
 
 public class DeleteConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<DeleteConfigurationRequest, DeleteConfigurationResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
-
   public async Task<DeleteConfigurationResponse> Handle(
     DeleteConfigurationRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var configurationDTO =
-        _dbContext.Configurations.SingleOrDefault(c =>
+        dbContext.Configurations.SingleOrDefault(c =>
           c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
         ) ?? throw new Exception();
 
-      _dbContext.Configurations.Remove(configurationDTO);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      dbContext.Configurations.Remove(configurationDTO);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
       transaction.Commit();
 

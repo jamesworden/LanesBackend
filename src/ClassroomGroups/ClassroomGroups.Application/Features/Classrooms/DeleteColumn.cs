@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteColumnRequest(Guid ClassroomId, Guid ConfigurationId, Guid ColumnId)
-  : IRequest<DeleteColumnResponse>;
+  : IRequest<DeleteColumnResponse>,
+    IRequiredUserAccount { };
 
 public record DeleteColumnResponse(
   Column DeletedColumn,
@@ -18,29 +19,23 @@ public record DeleteColumnResponse(
 
 public class DeleteColumnRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<DeleteColumnRequest, DeleteColumnResponse>
 {
-  readonly ClassroomGroupsContext _dbContext = dbContext;
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
-  readonly IDetailService _detailService = detailService;
-
   public async Task<DeleteColumnResponse> Handle(
     DeleteColumnRequest request,
     CancellationToken cancellationToken
   )
   {
-    var account = _authBehaviorCache.Account ?? throw new Exception();
+    var account = authBehaviorCache.Account;
 
-    await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-      cancellationToken
-    );
+    await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
     try
     {
       var columnDTO =
-        await _dbContext
+        await dbContext
           .Columns.Include(c => c.ConfigurationDTO)
           .Where(c =>
             c.Id == request.ColumnId && c.ConfigurationDTO.ClassroomId == request.ClassroomId
@@ -50,18 +45,18 @@ public class DeleteColumnRequestHandler(
       var deletedColumn = columnDTO.ToColumn();
 
       var fieldDTO =
-        await _dbContext
+        await dbContext
           .Fields.Where(f => columnDTO.FieldId == f.Id)
           .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
 
       var deletedField = fieldDTO.ToField();
 
-      _dbContext.Columns.Remove(columnDTO);
-      _dbContext.Fields.Remove(fieldDTO);
+      dbContext.Columns.Remove(columnDTO);
+      dbContext.Fields.Remove(fieldDTO);
 
-      await _dbContext.SaveChangesAsync(cancellationToken);
+      await dbContext.SaveChangesAsync(cancellationToken);
 
-      var configurations = await _dbContext
+      var configurations = await dbContext
         .Configurations.Where(c => c.ClassroomId == request.ClassroomId)
         .ToListAsync();
 
@@ -70,7 +65,7 @@ public class DeleteColumnRequestHandler(
       var tasks = configurations
         .Select(async configuration =>
         {
-          var columnDetails = await _detailService.GetColumnDetails(
+          var columnDetails = await detailService.GetColumnDetails(
             account.Id,
             request.ClassroomId,
             configuration.Id,
