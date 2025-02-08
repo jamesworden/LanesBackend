@@ -104,7 +104,8 @@ builder.Services.AddSingleton<IGameRepository, GameRepository>();
 builder.Services.AddSingleton<IGameTimerService, GameTimerService>();
 
 // [ClassroomGroups Service Regsitry]
-builder.Services.AddScoped<AuthBehaviorCache>();
+builder.Services.AddScoped<AccountRequiredCache>();
+builder.Services.AddScoped<AccountOptionalCache>();
 builder.Services.AddScoped<IDetailService, DetailService>();
 builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 builder.Services.AddScoped<IOrdinalService, OrdinalService>();
@@ -112,57 +113,93 @@ builder.Services.AddScoped<IOrdinalService, OrdinalService>();
 // [ClassroomGroups PipelineBehavior Registry]
 var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
 {
-  (typeof(CreateClassroomRequest), typeof(CreateClassroomResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(GetAccountRequest), typeof(GetAccountResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(UpsertAccountRequest), typeof(UpsertAccountResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(GetClassroomsRequest), typeof(GetClassroomsResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(CreateClassroomRequest),
+    typeof(CreateClassroomResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
+  (typeof(GetAccountRequest), typeof(GetAccountResponse), [typeof(AccountOptionalBehavior<,>)]),
+  (
+    typeof(UpsertAccountRequest),
+    typeof(UpsertAccountResponse),
+    [typeof(AccountOptionalBehavior<,>)]
+  ),
+  (
+    typeof(GetClassroomsRequest),
+    typeof(GetClassroomsResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
   (
     typeof(GetClassroomDetailsRequest),
     typeof(GetClassroomDetailsResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
   (
     typeof(GetConfigurationDetailRequest),
     typeof(GetConfigurationDetailResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
-  (typeof(GetConfigurationsRequest), typeof(GetConfigurationsResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(GetConfigurationsRequest),
+    typeof(GetConfigurationsResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
   (
     typeof(CreateConfigurationRequest),
     typeof(CreateConfigurationResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
-  (typeof(DeleteClassroomRequest), typeof(DeleteClassroomResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(DeleteClassroomRequest),
+    typeof(DeleteClassroomResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
   (
     typeof(PatchConfigurationRequest),
     typeof(PatchConfigurationResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
-  (typeof(PatchClassroomRequest), typeof(PatchClassroomResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(CreateGroupRequest), typeof(CreateGroupResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(DeleteGroupRequest), typeof(DeleteGroupResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(CreateStudentRequest), typeof(CreateStudentResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(PatchGroupRequest), typeof(PatchGroupResponse), [typeof(AuthBehavior<,>)]),
+  (
+    typeof(PatchClassroomRequest),
+    typeof(PatchClassroomResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
+  (typeof(CreateGroupRequest), typeof(CreateGroupResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(DeleteGroupRequest), typeof(DeleteGroupResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (
+    typeof(CreateStudentRequest),
+    typeof(CreateStudentResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
+  (typeof(PatchGroupRequest), typeof(PatchGroupResponse), [typeof(AccountRequiredBehavior<,>)]),
   (
     typeof(DeleteConfigurationRequest),
     typeof(DeleteConfigurationResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
-  (typeof(CreateColumnRequest), typeof(CreateColumnResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(CreateColumnRequest), typeof(CreateColumnResponse), [typeof(AccountRequiredBehavior<,>)]),
   (
     typeof(UpsertStudentFieldRequest),
     typeof(UpsertStudentFieldResponse),
-    [typeof(AuthBehavior<,>)]
+    [typeof(AccountRequiredBehavior<,>)]
   ),
-  (typeof(PatchFieldRequest), typeof(PatchFieldResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(DeleteStudentRequest), typeof(DeleteStudentResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(SortGroupsRequest), typeof(SortGroupsResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(MoveStudentRequest), typeof(MoveStudentResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(MoveColumnRequest), typeof(MoveColumnResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(DeleteColumnRequest), typeof(DeleteColumnResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(LockGroupRequest), typeof(LockGroupResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(UnlockGroupRequest), typeof(UnlockGroupResponse), [typeof(AuthBehavior<,>)]),
-  (typeof(GroupStudentsRequest), typeof(GroupStudentsResponse), [typeof(AuthBehavior<,>)]),
+  (typeof(PatchFieldRequest), typeof(PatchFieldResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (
+    typeof(DeleteStudentRequest),
+    typeof(DeleteStudentResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
+  (typeof(SortGroupsRequest), typeof(SortGroupsResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(MoveStudentRequest), typeof(MoveStudentResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(MoveColumnRequest), typeof(MoveColumnResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(DeleteColumnRequest), typeof(DeleteColumnResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(LockGroupRequest), typeof(LockGroupResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (typeof(UnlockGroupRequest), typeof(UnlockGroupResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (
+    typeof(GroupStudentsRequest),
+    typeof(GroupStudentsResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {

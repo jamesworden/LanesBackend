@@ -7,17 +7,18 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record UnlockGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
-  : IRequest<UnlockGroupResponse> { }
+  : IRequest<UnlockGroupResponse>,
+    IRequiredUserAccount { }
 
 public record UnlockGroupResponse(Group UpdatedGroup) { }
 
 public class UnlockGroupRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<UnlockGroupRequest, UnlockGroupResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   public async Task<UnlockGroupResponse> Handle(
     UnlockGroupRequest request,

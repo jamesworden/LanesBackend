@@ -7,16 +7,17 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record PatchFieldRequest(Guid ClassroomId, Guid FieldId, string Label)
-  : IRequest<PatchFieldResponse> { }
+  : IRequest<PatchFieldResponse>,
+    IRequiredUserAccount { }
 
 public record PatchFieldResponse(FieldDetail UpdatedFieldDetail) { }
 
 public class PatchFieldRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchFieldRequest, PatchFieldResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 
   public async Task<PatchFieldResponse> Handle(

@@ -8,17 +8,18 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, string Label)
-  : IRequest<PatchGroupResponse> { }
+  : IRequest<PatchGroupResponse>,
+    IRequiredUserAccount { }
 
 public record PatchGroupResponse(GroupDetail UpdatedGroupDetail) { }
 
 public class PatchGroupRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchGroupRequest, PatchGroupResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

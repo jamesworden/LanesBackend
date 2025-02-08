@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteColumnRequest(Guid ClassroomId, Guid ConfigurationId, Guid ColumnId)
-  : IRequest<DeleteColumnResponse>;
+  : IRequest<DeleteColumnResponse>,
+    IRequiredUserAccount { };
 
 public record DeleteColumnResponse(
   Column DeletedColumn,
@@ -18,12 +19,12 @@ public record DeleteColumnResponse(
 
 public class DeleteColumnRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<DeleteColumnRequest, DeleteColumnResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
   readonly IDetailService _detailService = detailService;
 
   public async Task<DeleteColumnResponse> Handle(

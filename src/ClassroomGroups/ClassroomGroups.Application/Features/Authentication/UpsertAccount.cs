@@ -8,30 +8,30 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Authentication;
 
-public record UpsertAccountRequest() : IRequest<UpsertAccountResponse> { }
+public record UpsertAccountRequest() : IRequest<UpsertAccountResponse>, IOptionalUserAccount { }
 
 public record UpsertAccountResponse(AccountView Account) { }
 
 public class UpsertAccountRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountOptionalCache optionalAccountCache
 ) : IRequestHandler<UpsertAccountRequest, UpsertAccountResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountOptionalCache _optionalAccountCache = optionalAccountCache;
 
   public async Task<UpsertAccountResponse> Handle(
     UpsertAccountRequest request,
     CancellationToken cancellationToken
   )
   {
-    var existingAccount = _authBehaviorCache.Account;
+    var existingAccount = _optionalAccountCache.Account;
     if (existingAccount is not null)
     {
       return new UpsertAccountResponse(existingAccount.ToAccountView());
     }
-    var user = _authBehaviorCache.User ?? throw new Exception();
+    var user = _optionalAccountCache.User;
 
     var primaryEmail =
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value)

@@ -11,16 +11,16 @@ public record UpsertStudentFieldRequest(
   Guid StudentId,
   Guid FieldId,
   string Value
-) : IRequest<UpsertStudentFieldResponse> { }
+) : IRequest<UpsertStudentFieldResponse>, IRequiredUserAccount { }
 
 public record UpsertStudentFieldResponse(string UpsertedValue) { }
 
 public class UpsertStudentFieldRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<UpsertStudentFieldRequest, UpsertStudentFieldResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 

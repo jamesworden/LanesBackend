@@ -7,17 +7,18 @@ using MediatR;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record GetConfigurationDetailRequest(Guid ClassroomId, Guid ConfigurationId)
-  : IRequest<GetConfigurationDetailResponse> { }
+  : IRequest<GetConfigurationDetailResponse>,
+    IRequiredUserAccount { }
 
 public record GetConfigurationDetailResponse(ConfigurationDetail ConfigurationDetail) { }
 
 public class GetConfigurationDetailRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<GetConfigurationDetailRequest, GetConfigurationDetailResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

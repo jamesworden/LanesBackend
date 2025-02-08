@@ -13,7 +13,7 @@ public record CreateColumnRequest(
   Guid ConfigurationId,
   string Label,
   FieldType Type
-) : IRequest<CreateColumnResponse> { }
+) : IRequest<CreateColumnResponse>, IRequiredUserAccount { }
 
 public record CreateColumnResponse(
   ColumnDetail CreatedColumnDetail,
@@ -22,13 +22,13 @@ public record CreateColumnResponse(
 
 public class CreateColumnRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<CreateColumnRequest, CreateColumnResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

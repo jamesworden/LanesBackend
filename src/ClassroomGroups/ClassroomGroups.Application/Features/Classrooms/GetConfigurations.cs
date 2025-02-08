@@ -6,18 +6,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record GetConfigurationsRequest(Guid ClassroomId) : IRequest<GetConfigurationsResponse> { }
+public record GetConfigurationsRequest(Guid ClassroomId)
+  : IRequest<GetConfigurationsResponse>,
+    IRequiredUserAccount { }
 
 public record GetConfigurationsResponse(List<Configuration> Configurations) { }
 
 public class GetConfigurationsRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<GetConfigurationsRequest, GetConfigurationsResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   public async Task<GetConfigurationsResponse> Handle(
     GetConfigurationsRequest request,

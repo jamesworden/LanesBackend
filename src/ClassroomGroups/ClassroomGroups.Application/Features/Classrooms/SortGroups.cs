@@ -8,17 +8,18 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record SortGroupsRequest(Guid ClassroomId, Guid ConfigurationId, Guid[] SortedGroupIds)
-  : IRequest<SortGroupsResponse> { }
+  : IRequest<SortGroupsResponse>,
+    IRequiredUserAccount { }
 
 public record SortGroupsResponse(List<GroupDetail> SortedGroupDetails) { }
 
 public class SortGroupsRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<SortGroupsRequest, SortGroupsResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

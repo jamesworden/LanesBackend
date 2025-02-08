@@ -14,7 +14,7 @@ public record GroupStudentsRequest(
   StudentGroupingStrategy Strategy,
   int? NumberOfGroups = null,
   int? StudentsPerGroup = null
-) : IRequest<GroupStudentsResponse>;
+) : IRequest<GroupStudentsResponse>, IRequiredUserAccount { };
 
 public record GroupStudentsResponse(
   List<GroupDetail> UpdatedGroupDetails,
@@ -23,12 +23,12 @@ public record GroupStudentsResponse(
 
 public class GroupStudentsRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<GroupStudentsRequest, GroupStudentsResponse>
 {
   private readonly ClassroomGroupsContext _dbContext = dbContext;
-  private readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  private readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
   private readonly IDetailService _detailService = detailService;
 
   public async Task<GroupStudentsResponse> Handle(

@@ -14,17 +14,17 @@ public record MoveColumnRequest(
   Guid ConfigurationId,
   Guid ColumnId,
   MoveColumnDetail MoveColumnDetail
-) : IRequest<MoveColumnResponse> { }
+) : IRequest<MoveColumnResponse>, IRequiredUserAccount { }
 
 public record MoveColumnResponse(List<ColumnDetail> UpdatedColumnDetails) { }
 
 public class MoveColumnRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<MoveColumnRequest, MoveColumnResponse>
 {
-  private readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  private readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
   private readonly IDetailService _detailService = detailService;
   private readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 

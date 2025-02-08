@@ -19,17 +19,17 @@ public record MoveStudentRequest(
   Guid ClassroomId,
   Guid ConfigurationId,
   MoveStudentDetail MoveStudentDetail
-) : IRequest<MoveStudentResponse> { }
+) : IRequest<MoveStudentResponse>, IRequiredUserAccount { }
 
 public record MoveStudentResponse(List<GroupDetail> UpdatedGroupDetails) { }
 
 public class MoveStudentRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<MoveStudentRequest, MoveStudentResponse>
 {
-  private readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  private readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
   private readonly IDetailService _detailService = detailService;
   private readonly ClassroomGroupsContext _dbContext = classroomGroupsContext;
 

@@ -6,18 +6,19 @@ using MediatR;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteConfigurationRequest(Guid ClassroomId, Guid ConfigurationId)
-  : IRequest<DeleteConfigurationResponse> { }
+  : IRequest<DeleteConfigurationResponse>,
+    IRequiredUserAccount { }
 
 public record DeleteConfigurationResponse(Configuration DeletedConfiguration) { }
 
 public class DeleteConfigurationRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<DeleteConfigurationRequest, DeleteConfigurationResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
 
   public async Task<DeleteConfigurationResponse> Handle(
     DeleteConfigurationRequest request,

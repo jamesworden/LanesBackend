@@ -9,19 +9,20 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateStudentRequest(Guid ClassroomId, Guid ConfigurationId, Guid? GroupId)
-  : IRequest<CreateStudentResponse> { }
+  : IRequest<CreateStudentResponse>,
+    IRequiredUserAccount { }
 
 public record CreateStudentResponse(StudentDetail CreatedStudentDetail) { }
 
 public class CreateStudentRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService
 ) : IRequestHandler<CreateStudentRequest, CreateStudentResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

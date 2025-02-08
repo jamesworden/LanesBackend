@@ -12,17 +12,17 @@ public record PatchConfigurationRequest(
   Guid ConfigurationId,
   string Label,
   string Description
-) : IRequest<PatchConfigurationResponse> { }
+) : IRequest<PatchConfigurationResponse>, IRequiredUserAccount { }
 
 public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
 
 public class PatchConfigurationRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   ClassroomGroupsContext classroomGroupsContext
 ) : IRequestHandler<PatchConfigurationRequest, PatchConfigurationResponse>
 {
-  readonly AuthBehaviorCache _authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache _authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

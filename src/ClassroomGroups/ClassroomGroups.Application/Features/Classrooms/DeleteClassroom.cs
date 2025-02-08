@@ -5,18 +5,20 @@ using MediatR;
 
 namespace ClassroomGroups.Application.Features.Classrooms;
 
-public record DeleteClassroomRequest(Guid ClassroomId) : IRequest<DeleteClassroomResponse> { }
+public record DeleteClassroomRequest(Guid ClassroomId)
+  : IRequest<DeleteClassroomResponse>,
+    IRequiredUserAccount { }
 
 public record DeleteClassroomResponse(Classroom DeletedClassroom) { }
 
 public class DeleteClassroomRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache
+  AccountRequiredCache authBehaviorCache
 ) : IRequestHandler<DeleteClassroomRequest, DeleteClassroomResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
 
   public async Task<DeleteClassroomResponse> Handle(
     DeleteClassroomRequest request,

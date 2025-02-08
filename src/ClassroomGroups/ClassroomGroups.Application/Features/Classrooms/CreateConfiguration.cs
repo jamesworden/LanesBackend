@@ -8,18 +8,19 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateConfigurationRequest(string Label, Guid ClassroomId)
-  : IRequest<CreateConfigurationResponse> { }
+  : IRequest<CreateConfigurationResponse>,
+    IRequiredUserAccount { }
 
 public record CreateConfigurationResponse(ConfigurationDetail CreatedConfigurationDetail) { }
 
 public class CreateConfigurationRequestHandler(
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   IConfigurationService configurationService,
   ClassroomGroupsContext dbContext
 ) : IRequestHandler<CreateConfigurationRequest, CreateConfigurationResponse>
 {
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 

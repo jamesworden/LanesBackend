@@ -8,20 +8,21 @@ using Microsoft.EntityFrameworkCore;
 namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteStudentRequest(Guid ClassroomId, Guid StudentId)
-  : IRequest<DeleteStudentResponse>;
+  : IRequest<DeleteStudentResponse>,
+    IRequiredUserAccount { };
 
 public record DeleteStudentResponse(Student DeletedStudent, List<GroupDetail> UpdatedGroupDetails);
 
 public class DeleteStudentRequestHandler(
   ClassroomGroupsContext dbContext,
-  AuthBehaviorCache authBehaviorCache,
+  AccountRequiredCache authBehaviorCache,
   IDetailService detailService,
   IOrdinalService ordinalService
 ) : IRequestHandler<DeleteStudentRequest, DeleteStudentResponse>
 {
   readonly ClassroomGroupsContext _dbContext = dbContext;
 
-  readonly AuthBehaviorCache authBehaviorCache = authBehaviorCache;
+  readonly AccountRequiredCache authBehaviorCache = authBehaviorCache;
 
   readonly IDetailService _detailService = detailService;
 
