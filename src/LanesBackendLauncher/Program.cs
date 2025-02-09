@@ -52,6 +52,9 @@ builder
   {
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = false;
+    options.Cookie.IsEssential = true;
     options.Events.OnRedirectToLogin = context =>
     {
       context.Response.StatusCode = StatusCodes.Status403Forbidden;
