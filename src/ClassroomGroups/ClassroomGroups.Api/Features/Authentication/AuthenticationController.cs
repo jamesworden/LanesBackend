@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using ClassroomGroups.Application.Features.Authentication;
+using Google.Apis.Auth.AspNetCore3;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -14,17 +16,14 @@ namespace ClassroomGroups.Api.Features.Authentication;
 public class AuthenticationController(IMediator mediator, IConfiguration configuration)
   : ControllerBase
 {
-  private readonly IMediator _mediator = mediator;
-
-  private readonly IConfiguration _configuration = configuration;
-
   [AllowAnonymous]
   [HttpPost("login-with-google")]
-  public async Task LoginWithGoogle()
+  public IActionResult LoginWithGoogle()
   {
-    await HttpContext.ChallengeAsync(
-      GoogleDefaults.AuthenticationScheme,
-      new AuthenticationProperties { RedirectUri = Url.Action("LoginWithGoogleResponse") }
+    var redirectUrl = Url.Action("GoogleResponse", "Authentication", null, Request.Scheme);
+    return Challenge(
+      new AuthenticationProperties { RedirectUri = redirectUrl },
+      GoogleOpenIdConnectDefaults.AuthenticationScheme
     );
   }
 
@@ -35,6 +34,10 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
     var result = await HttpContext.AuthenticateAsync(
       CookieAuthenticationDefaults.AuthenticationScheme
     );
+    if (!result.Succeeded)
+    {
+      return Unauthorized();
+    }
     if (result is null || result.Succeeded == false || result.Principal == null)
     {
       return new EmptyResult();
@@ -45,22 +48,22 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
       return new EmptyResult();
     }
     await Request.HttpContext.SignInAsync("Cookies", result.Principal);
-    await _mediator.Send(new UpsertAccountRequest());
-    return Redirect(_configuration["ClassroomGroups:LoggedInRedirectUrl"] ?? "");
+    await mediator.Send(new UpsertAccountRequest());
+    return new EmptyResult();
   }
 
-  [Authorize]
+  [AllowAnonymous]
   [HttpPost("logout")]
   public async Task<IActionResult> Logout()
   {
     await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    return new EmptyResult();
+    return Ok();
   }
 
-  [Authorize]
+  [AllowAnonymous]
   [HttpGet("account")]
   public async Task<GetAccountResponse> GetAccount()
   {
-    return await _mediator.Send(new GetAccountRequest());
+    return await mediator.Send(new GetAccountRequest());
   }
 }

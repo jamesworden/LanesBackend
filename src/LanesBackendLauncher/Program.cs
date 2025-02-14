@@ -13,10 +13,10 @@ using ClassroomGroups.Application.Features.Authentication;
 using ClassroomGroups.Application.Features.Classrooms;
 using ClassroomGroups.Application.Features.Classrooms.Shared;
 using ClassroomGroups.DataAccess.Contexts;
+using Google.Apis.Auth.AspNetCore3;
 using LanesBackendLauncher.Util;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,28 +46,40 @@ builder.Services.AddHostedService<DatabaseBackupService>();
 builder
   .Services.AddAuthentication(options =>
   {
+    options.DefaultChallengeScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
+    options.DefaultForbidScheme = GoogleOpenIdConnectDefaults.AuthenticationScheme;
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
   })
   .AddCookie(options =>
   {
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = false;
+    options.Cookie.IsEssential = true;
     options.Events.OnRedirectToLogin = context =>
     {
       context.Response.StatusCode = StatusCodes.Status403Forbidden;
       return Task.CompletedTask;
     };
   })
-  .AddGoogle(
-    GoogleDefaults.AuthenticationScheme,
-    options =>
+  .AddGoogleOpenIdConnect(options =>
+  {
+    options.ClientId =
+      builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
+    options.ClientSecret =
+      builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
+    options.CallbackPath = "/login-with-google-response";
+
+    options.SignedOutRedirectUri =
+      builder.Configuration["ClassroomGroups:LoggedOutRedirectUrl"] ?? "";
+
+    options.Events.OnTicketReceived = async context =>
     {
-      options.ClientId =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
-      options.ClientSecret =
-        builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
-    }
-  );
+      context.ReturnUri = builder.Configuration["ClassroomGroups:LoggedInRedirectUrl"] ?? "";
+      await Task.CompletedTask;
+    };
+  });
 
 builder.Services.AddAuthorization();
 
@@ -97,7 +109,6 @@ builder
   {
     options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
   });
-builder.Services.AddCors();
 
 // [ChessOfCards Service Registry]
 builder.Services.AddSingleton<IPendingGameRepository, PendingGameRepository>();
