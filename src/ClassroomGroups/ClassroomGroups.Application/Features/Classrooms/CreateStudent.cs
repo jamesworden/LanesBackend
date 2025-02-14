@@ -43,12 +43,12 @@ public class CreateStudentRequestHandler(
       var classroomDTO =
         await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var configurationDTO =
         await dbContext
           .Configurations.Where(c => c.Id == request.ConfigurationId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var studentId = Guid.NewGuid();
 
@@ -62,11 +62,12 @@ public class CreateStudentRequestHandler(
 
       await dbContext.SaveChangesAsync(cancellationToken);
 
-      var groupId = request.GroupId ?? configurationDTO.DefaultGroupId ?? throw new Exception();
+      var groupId =
+        request.GroupId ?? configurationDTO.DefaultGroupId ?? throw new InvalidOperationException();
 
       var groupDTO =
         await dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
-        ?? throw new Exception();
+        ?? throw new InvalidOperationException();
 
       var existingStudentGroups = await dbContext
         .StudentGroups.Where(sg => sg.GroupId == groupId)
@@ -98,17 +99,17 @@ public class CreateStudentRequestHandler(
       var studentGroupDTOs = await Task.WhenAll(
         otherConfigurationDTOs.Select(async c =>
         {
-          var groupId = c.DefaultGroupId ?? throw new Exception();
-          var groupKey = c.DefaultGroupKey ?? throw new Exception();
+          var groupId = c.DefaultGroupId ?? throw new InvalidOperationException();
+          var groupKey = c.DefaultGroupKey ?? throw new InvalidOperationException();
           var existingStudentGroups =
             await dbContext
               .StudentGroups.Where(sg => sg.GroupId == c.DefaultGroupId)
-              .ToListAsync(cancellationToken) ?? throw new Exception();
+              .ToListAsync(cancellationToken) ?? throw new InvalidOperationException();
 
           return new StudentGroupDTO()
           {
-            GroupId = c.DefaultGroupId ?? throw new Exception(),
-            GroupKey = c.DefaultGroupKey ?? throw new Exception(),
+            GroupId = c.DefaultGroupId ?? throw new InvalidOperationException(),
+            GroupKey = c.DefaultGroupKey ?? throw new InvalidOperationException(),
             StudentId = studentDTO.Id,
             StudentKey = studentDTO.Key,
             Ordinal = existingStudentGroups.Count,
@@ -127,9 +128,10 @@ public class CreateStudentRequestHandler(
           request.ClassroomId,
           request.ConfigurationId,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
-      var studentDetail = studentDetails.Find(s => s.Id == studentId) ?? throw new Exception();
+      var studentDetail =
+        studentDetails.Find(s => s.Id == studentId) ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

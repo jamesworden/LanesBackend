@@ -65,7 +65,7 @@ public class GroupStudentsRequestHandler(
       var configurationDTO =
         await dbContext
           .Configurations.Where(c => c.Id == configurationDetail.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var groupDTOsToCreate = result.GroupsToCreate.Select(g => new GroupDTO()
       {

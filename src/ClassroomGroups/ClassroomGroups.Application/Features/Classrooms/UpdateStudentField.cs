@@ -51,12 +51,12 @@ public class UpsertStudentFieldRequestHandler(
         var studentDTO =
           await dbContext
             .Students.Where(s => s.Id == request.StudentId)
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
         var fieldDTO =
           await dbContext
             .Fields.Where(f => f.Id == request.FieldId)
-            .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+            .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
         studentFieldDTO = new StudentFieldDTO
         {

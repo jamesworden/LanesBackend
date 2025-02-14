@@ -43,14 +43,15 @@ public class PatchFieldRequestHandler(
             && f.ClassroomId == request.ClassroomId
             && classroomIds.Contains(f.ClassroomId)
           )
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       fieldDTO.Label = request.Label.Trim();
 
       var fieldEntity = dbContext.Fields.Update(fieldDTO);
       await dbContext.SaveChangesAsync(cancellationToken);
 
-      var fieldDetail = fieldEntity.Entity?.ToField().ToFieldDetail() ?? throw new Exception();
+      var fieldDetail =
+        fieldEntity.Entity?.ToField().ToFieldDetail() ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

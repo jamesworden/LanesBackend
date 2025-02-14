@@ -31,17 +31,17 @@ public class UpsertAccountRequestHandler(
 
     var primaryEmail =
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Email)?.Value)
-      ?? throw new Exception();
+      ?? throw new InvalidOperationException();
 
     var googleNameIdentifier =
       (user.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value)
-      ?? throw new Exception();
+      ?? throw new InvalidOperationException();
 
     var freeSubscriptionDTO =
       await dbContext.Subscriptions.FirstOrDefaultAsync(
         s => s.SubscriptionType == SubscriptionType.FREE,
         cancellationToken
-      ) ?? throw new Exception();
+      ) ?? throw new InvalidOperationException();
 
     var accountId = Guid.NewGuid();
 
@@ -59,19 +59,17 @@ public class UpsertAccountRequestHandler(
           },
           cancellationToken
         )
-      )?.Entity ?? throw new Exception();
+      )?.Entity ?? throw new InvalidOperationException();
 
     var subscriptionDTO =
       await dbContext.Subscriptions.FirstOrDefaultAsync(
         (s) => s.Id == upsertedAccountDTO.SubscriptionId,
         cancellationToken
-      ) ?? throw new Exception();
+      ) ?? throw new InvalidOperationException();
 
     await dbContext.SaveChangesAsync(cancellationToken);
 
-    var account =
-      upsertedAccountDTO.ToAccount(subscriptionDTO.ToSubscription()).ToAccountView()
-      ?? throw new Exception();
+    var account = upsertedAccountDTO.ToAccount(subscriptionDTO.ToSubscription()).ToAccountView();
 
     return new UpsertAccountResponse(account);
   }

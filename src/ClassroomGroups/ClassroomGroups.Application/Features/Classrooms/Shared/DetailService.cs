@@ -88,7 +88,8 @@ public class DetailService(ClassroomGroupsContext dbContext) : IDetailService
             c.Description
           ))
           .FirstOrDefaultAsync(cancellationToken)
-      )?.ToConfigurationDetail(groupDetails, columnDetails) ?? throw new Exception();
+      )?.ToConfigurationDetail(groupDetails, columnDetails)
+      ?? throw new InvalidOperationException();
 
     if (configurationDetail.DefaultGroupId.Equals(Guid.Empty))
     {

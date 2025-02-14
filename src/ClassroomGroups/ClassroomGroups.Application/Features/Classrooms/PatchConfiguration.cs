@@ -48,14 +48,15 @@ public class PatchConfigurationRequestHandler(
             && c.Id == request.ConfigurationId
             && classroomIds.Contains(c.ClassroomId)
           )
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       configurationDTO.Description = request.Description.Trim();
       configurationDTO.Label = request.Label.Trim();
 
       var configurationEntity = dbContext.Configurations.Update(configurationDTO);
       await dbContext.SaveChangesAsync(cancellationToken);
-      var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
+      var configuration =
+        configurationEntity.Entity?.ToConfiguration() ?? throw new InvalidOperationException();
 
       var configurationDetail =
         await detailService.GetConfigurationDetail(
@@ -63,7 +64,7 @@ public class PatchConfigurationRequestHandler(
           request.ClassroomId,
           request.ConfigurationId,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

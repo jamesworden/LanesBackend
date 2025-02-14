@@ -33,7 +33,7 @@ public class PatchGroupRequestHandler(
       var groupDTO =
         await dbContext
           .Groups.Where(g => g.Id == request.GroupId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       groupDTO.Label = request.Label;
 
@@ -48,7 +48,8 @@ public class PatchGroupRequestHandler(
       );
 
       var groupDetail =
-        groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id) ?? throw new Exception();
+        groupDetails.FirstOrDefault(g => g.Id == groupDTO.Id)
+        ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

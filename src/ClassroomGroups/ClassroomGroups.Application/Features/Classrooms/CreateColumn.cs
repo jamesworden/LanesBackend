@@ -49,10 +49,11 @@ public class CreateColumnRequestHandler(
       var classroomDTO =
         await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var configurationDTOs =
-        await dbContext.Configurations.ToListAsync(cancellationToken) ?? throw new Exception();
+        await dbContext.Configurations.ToListAsync(cancellationToken)
+        ?? throw new InvalidOperationException();
 
       var fieldDTO = new FieldDTO()
       {
@@ -97,7 +98,8 @@ public class CreateColumnRequestHandler(
       );
 
       var columnDetail =
-        columnDetails.Where(c => c.Id == columnId).FirstOrDefault() ?? throw new Exception();
+        columnDetails.Where(c => c.Id == columnId).FirstOrDefault()
+        ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

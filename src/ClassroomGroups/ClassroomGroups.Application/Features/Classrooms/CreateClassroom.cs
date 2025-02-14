@@ -54,7 +54,8 @@ public class CreateClassroomRequestHandler(
       };
       var classroomEntity = await dbContext.Classrooms.AddAsync(classroomDTO, cancellationToken);
       await dbContext.SaveChangesAsync(cancellationToken);
-      var classroom = (classroomEntity.Entity?.ToClassroom()) ?? throw new Exception();
+      var classroom =
+        (classroomEntity.Entity?.ToClassroom()) ?? throw new InvalidOperationException();
 
       var configuration = await configurationService.CreateConfiguration(
         account.Id,
@@ -147,22 +148,22 @@ public class CreateClassroomRequestHandler(
       var configurationDTO =
         await dbContext
           .Configurations.Where(c => c.Id == configuration.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var fieldDTO1withKey =
         await dbContext
           .Fields.Where(f => f.Id == fieldDTO1.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var fieldDTO2withKey =
         await dbContext
           .Fields.Where(f => f.Id == fieldDTO2.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var fieldDTO3withKey =
         await dbContext
           .Fields.Where(f => f.Id == fieldDTO3.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var columnDTO1 = new ColumnDTO
       {
@@ -221,40 +222,41 @@ public class CreateClassroomRequestHandler(
 
       var groupDTO =
         await dbContext.Groups.Where(g => g.Id == groupId).FirstOrDefaultAsync(cancellationToken)
-        ?? throw new Exception();
+        ?? throw new InvalidOperationException();
 
       var studentDTO1withKey =
         await dbContext
           .Students.Where(s => studentDTO1.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var studentDTO2withKey =
         await dbContext
           .Students.Where(s => studentDTO2.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var studentDTO3withKey =
         await dbContext
           .Students.Where(s => studentDTO3.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var defaultGroupStudentDTO1withKey =
         await dbContext
           .Students.Where(s => defaultGroupStudentDTO1.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var defaultGroupStudentDTO2withKey =
         await dbContext
           .Students.Where(s => defaultGroupStudentDTO2.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var defaultGroupStudentDTO3withKey =
         await dbContext
           .Students.Where(s => defaultGroupStudentDTO3.Id == s.Id)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
-      var defaultGroupId = configurationDTO.DefaultGroupId ?? throw new Exception();
-      var defaultGroupKey = configurationDTO.DefaultGroupKey ?? throw new Exception();
+      var defaultGroupId = configurationDTO.DefaultGroupId ?? throw new InvalidOperationException();
+      var defaultGroupKey =
+        configurationDTO.DefaultGroupKey ?? throw new InvalidOperationException();
 
       await dbContext.StudentGroups.AddRangeAsync(
         [

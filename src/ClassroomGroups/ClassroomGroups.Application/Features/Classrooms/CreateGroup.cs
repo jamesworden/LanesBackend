@@ -56,7 +56,7 @@ public class CreateGroupRequestHandler(
             && c.Id == request.ConfigurationId
             && classroomIds.Contains(c.ClassroomId)
           )
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var ordinal = existingGroups.Count;
 
@@ -82,9 +82,10 @@ public class CreateGroupRequestHandler(
           request.ClassroomId,
           request.ConfigurationId,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
-      var groupDetail = groupDetails.Find(g => g.Id == groupId) ?? throw new Exception();
+      var groupDetail =
+        groupDetails.Find(g => g.Id == groupId) ?? throw new InvalidOperationException();
 
       transaction.Commit();
 
