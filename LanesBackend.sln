@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.Application
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.DataAccess", "src\ClassroomGroups\ClassroomGroups.DataAccess\ClassroomGroups.DataAccess.csproj", "{53B0B01C-520A-45B7-A7EC-160C6252E046}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassroomGroups.Domain.Tests", "src\ClassroomGroups\ClassroomGroups.Domain.Tests\ClassroomGroups.Domain.Tests.csproj", "{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53B0B01C-520A-45B7-A7EC-160C6252E046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{10DA4408-0A64-41C3-AB38-CEB277F86749} = {2B136715-8EA0-40B0-A3E7-3EA04E36843C}
@@ -85,5 +91,6 @@ Global
 		{64ADBF85-5DDA-4341-9601-302DD073B14B} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
 		{91667DBE-874C-4EE6-B8D6-9101BF680CF6} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
 		{53B0B01C-520A-45B7-A7EC-160C6252E046} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
+		{B75A9B1D-00E2-4A42-90AA-24F5C5C24BC8} = {02CBCCE2-8A89-4979-A36B-E1BF3AC16570}
 	EndGlobalSection
 EndGlobal

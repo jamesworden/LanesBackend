@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ClassroomGroups.Domain.Features.Classrooms.Extensions;
 
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
@@ -48,74 +49,42 @@ public class ConfigurationDetail(
     int? studentsPerGroup = null
   )
   {
-    var allStudents = GroupDetails.SelectMany(g => g.StudentDetails);
-
-    if (numberOfGroups < 0 || studentsPerGroup < 0)
-    {
-      return new GroupStudentsResult(
-        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
-        "Group count must be a positive number"
-      );
-    }
-    if (numberOfGroups >= allStudents.Count() || studentsPerGroup >= allStudents.Count())
-    {
-      return new GroupStudentsResult(
-        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
-        "Group count must be less than the student count"
-      );
-    }
-    if (numberOfGroups is not null && studentsPerGroup is not null)
-    {
-      return new GroupStudentsResult(
-        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
-        "Cannot group by students per group and group count at the same time."
-      );
-    }
-    if (numberOfGroups is null && studentsPerGroup is null)
-    {
-      return new GroupStudentsResult(
-        EMPTY_GROUP_STUDENT_RESULT_DETAILS,
-        "Group by either number of groups or students per group."
-      );
-    }
-
-    var rankedCandidateStudentDetails = GroupDetails
+    var rankedCandidates = GroupDetails
       .Where(g => !g.IsLocked)
       .SelectMany(g => g.StudentDetails)
       .OrderByAverage(fields);
+
+    var (groupCount, errorResult) = CalculateGroupCount(
+      numberOfGroups,
+      studentsPerGroup,
+      rankedCandidates.Count()
+    );
+    if (errorResult is not null)
+    {
+      return errorResult;
+    }
 
     var oldGroups = GroupDetails
       .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
       .Select(g => g.ToGroup())
       .OrderBy(g => g.Ordinal);
 
-    if (numberOfGroups <= 0 || studentsPerGroup <= 0)
+    if (groupCount <= 0)
     {
-      var defaultStudentGroups = rankedCandidateStudentDetails
+      var defaultGroups = rankedCandidates
         .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
         .ToList();
-      var sgIdsToDelete = rankedCandidateStudentDetails.Select(s => s.StudentGroupId).ToList();
+      var sgIdsToDelete = rankedCandidates.Select(s => s.StudentGroupId).ToList();
       var unpopulatedGroupIds = oldGroups.Select(g => g.Id).ToList();
       return new GroupStudentsResult(
-        new GroupStudentsResultDetails(defaultStudentGroups, [], sgIdsToDelete, unpopulatedGroupIds)
+        new GroupStudentsResultDetails(defaultGroups, [], sgIdsToDelete, unpopulatedGroupIds)
       );
     }
 
-    var numGroupsToUse = 0;
-
-    if (numberOfGroups is not null)
-    {
-      numGroupsToUse = (int)numberOfGroups;
-    }
-    else if (studentsPerGroup is not null)
-    {
-      var exactStudentsPerGroup = (decimal)rankedCandidateStudentDetails.Count() / studentsPerGroup;
-      numGroupsToUse = (int)Math.Ceiling((decimal)exactStudentsPerGroup);
-    }
     var newGroups = new List<Group>(oldGroups);
     var createdGroups = new List<Group>();
 
-    var numGroupsToCreate = Math.Max(numGroupsToUse - newGroups.Count, 0);
+    var numGroupsToCreate = Math.Max(groupCount - newGroups.Count, 0);
     for (var i = 0; i < numGroupsToCreate; i++)
     {
       var ordinal = GroupDetails.Count - 1 + i;
@@ -123,18 +92,18 @@ public class ConfigurationDetail(
       newGroups.Add(newGroup);
       createdGroups.Add(newGroup);
     }
-    var numNewGroupsToDisregard = newGroups.Count - numGroupsToUse;
+    var numNewGroupsToDisregard = newGroups.Count - groupCount;
     if (numNewGroupsToDisregard > 0)
     {
-      newGroups = newGroups.Take(numGroupsToUse).ToList();
+      newGroups = newGroups.Take(groupCount).ToList();
     }
     var usedGroupIds = newGroups.Select(g => g.Id);
     var unusedGroupIds = oldGroups.Select(g => g.Id).Except(usedGroupIds).ToList();
 
     var (studentGroupsToCreate, studentGroupIdsToDelete) =
       strategy == StudentGroupingStrategy.MixedAbilities
-        ? GenerateMixedAbilityStudentGroups(newGroups, rankedCandidateStudentDetails)
-        : GenerateSimilarAbilityStudentGroups(newGroups, rankedCandidateStudentDetails);
+        ? GenerateMixedAbilityStudentGroups(newGroups, rankedCandidates)
+        : GenerateSimilarAbilityStudentGroups(newGroups, rankedCandidates);
 
     return new GroupStudentsResult(
       new GroupStudentsResultDetails(
@@ -144,6 +113,42 @@ public class ConfigurationDetail(
         unusedGroupIds
       )
     );
+  }
+
+  public (int groupCount, GroupStudentsResult? errorResult) CalculateGroupCount(
+    int? numberOfGroups,
+    int? studentsPerGroup,
+    int numCandidateStudents
+  )
+  {
+    static GroupStudentsResult? CreateErrorResult(string message) =>
+      new(EMPTY_GROUP_STUDENT_RESULT_DETAILS, message);
+
+    if (numberOfGroups is not null && studentsPerGroup is not null)
+      return (-1, CreateErrorResult("Cannot specify multiple group counts"));
+
+    if (numberOfGroups is null && studentsPerGroup is null)
+      return (-1, CreateErrorResult("Group by either number of groups or students per group"));
+
+    if (numberOfGroups < 0 || studentsPerGroup < 0)
+      return (-1, CreateErrorResult("Group count must be a positive number"));
+
+    if (numberOfGroups >= numCandidateStudents || studentsPerGroup >= numCandidateStudents)
+      return (-1, CreateErrorResult("Group count must be less than the available student count"));
+
+    if (numberOfGroups == 0 || studentsPerGroup == 0)
+      return (0, null);
+
+    if (numberOfGroups is not null)
+      return ((int)numberOfGroups, null);
+
+    if (studentsPerGroup is not null)
+    {
+      var exactStudentsPerGroup = (decimal)numCandidateStudents / studentsPerGroup;
+      var groupCount = (int)Math.Ceiling((decimal)exactStudentsPerGroup);
+      return (groupCount, null);
+    }
+    throw new UnreachableException();
   }
 
   private static (List<StudentGroup>, List<Guid>) GenerateMixedAbilityStudentGroups(
