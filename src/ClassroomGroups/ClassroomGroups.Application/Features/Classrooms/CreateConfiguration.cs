@@ -53,7 +53,7 @@ public class CreateConfigurationRequestHandler(
           request.ClassroomId,
           configuration.Id,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

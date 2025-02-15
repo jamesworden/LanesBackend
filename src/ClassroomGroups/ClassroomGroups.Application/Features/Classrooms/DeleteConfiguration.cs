@@ -30,7 +30,7 @@ public class DeleteConfigurationRequestHandler(
       var configurationDTO =
         dbContext.Configurations.SingleOrDefault(c =>
           c.Id == request.ConfigurationId && c.ClassroomId == request.ClassroomId
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       dbContext.Configurations.Remove(configurationDTO);
       await dbContext.SaveChangesAsync(cancellationToken);

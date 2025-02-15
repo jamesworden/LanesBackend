@@ -56,7 +56,7 @@ public class SortGroupsRequestHandler(
           request.ClassroomId,
           request.ConfigurationId,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       return new SortGroupsResponse(groupDetails);
     }

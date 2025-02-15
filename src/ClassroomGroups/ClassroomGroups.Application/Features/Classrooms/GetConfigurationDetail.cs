@@ -35,7 +35,7 @@ public class GetConfigurationDetailRequestHandler(
           request.ClassroomId,
           request.ConfigurationId,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       transaction.Commit();
 

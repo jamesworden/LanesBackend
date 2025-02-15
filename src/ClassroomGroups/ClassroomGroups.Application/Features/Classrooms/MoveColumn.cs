@@ -42,7 +42,7 @@ public class MoveColumnRequestHandler(
 
       var column =
         columns.FirstOrDefault(c => c.Id == request.ColumnId)
-        ?? throw new Exception("Column not found in the group");
+        ?? throw new InvalidOperationException("Column not found in the group");
 
       columns.Remove(column);
       columns.Insert(request.MoveColumnDetail.CurrIndex, column);

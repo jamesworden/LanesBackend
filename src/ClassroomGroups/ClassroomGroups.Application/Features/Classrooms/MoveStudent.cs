@@ -73,7 +73,7 @@ public class MoveStudentRequestHandler(
         request.ClassroomId,
         request.ConfigurationId,
         cancellationToken
-      ) ?? throw new Exception();
+      ) ?? throw new InvalidOperationException();
   }
 
   private async Task ReorderStudentsInSameGroup(
@@ -116,7 +116,7 @@ public class MoveStudentRequestHandler(
 
     var studentGroup =
       prevGroupStudentGroups.FirstOrDefault(sg => sg.StudentId == moveDetail.StudentId)
-      ?? throw new Exception("Student not found in the previous group");
+      ?? throw new InvalidOperationException("Student not found in the previous group");
 
     studentGroup.GroupId = moveDetail.CurrGroupId;
 

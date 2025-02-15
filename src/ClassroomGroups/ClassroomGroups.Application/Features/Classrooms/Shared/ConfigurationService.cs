@@ -30,7 +30,7 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       (
         await dbContext.Classrooms.Where(c => c.Id == classroomId).ToListAsync(cancellationToken)
         ?? []
-      ).FirstOrDefault() ?? throw new Exception();
+      ).FirstOrDefault() ?? throw new InvalidOperationException();
 
     var configurationId = Guid.NewGuid();
 
@@ -46,7 +46,8 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
       cancellationToken
     );
     await dbContext.SaveChangesAsync(cancellationToken);
-    var configuration = configurationEntity.Entity?.ToConfiguration() ?? throw new Exception();
+    var configuration =
+      configurationEntity.Entity?.ToConfiguration() ?? throw new InvalidOperationException();
 
     var defaultGroupDTO = new GroupDTO()
     {
@@ -99,7 +100,7 @@ public class ConfigurationService(ClassroomGroupsContext dbContext) : IConfigura
 
     var studentDTOs =
       await dbContext.Students.Where(s => s.ClassroomId == classroomId).ToListAsync()
-      ?? throw new Exception();
+      ?? throw new InvalidOperationException();
 
     var i = 0;
 

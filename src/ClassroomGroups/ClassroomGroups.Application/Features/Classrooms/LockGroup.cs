@@ -44,7 +44,7 @@ public class LockGroupRequestHandler(
             && classroomIds.Contains(g.ConfigurationDTO.ClassroomId)
             && !g.IsLocked,
           cancellationToken
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       groupDTO.IsLocked = true;
 

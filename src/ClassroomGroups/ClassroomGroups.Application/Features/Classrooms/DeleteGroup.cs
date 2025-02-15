@@ -34,7 +34,7 @@ public class DeleteGroupRequestHandler(
       var groupDTO =
         await dbContext
           .Groups.Where(g => g.Id == request.GroupId)
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var displacedStudentGroups = await dbContext
         .StudentGroups.Where(sg => sg.GroupId == groupDTO.Id)
@@ -44,7 +44,7 @@ public class DeleteGroupRequestHandler(
       var configurationDTO =
         await dbContext
           .Configurations.Where(c => c.Id == groupDTO.ConfigurationId)
-          .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var defaultGroupId = groupDTO.ConfigurationDTO.DefaultGroupId ?? Guid.Empty;
       var defaultGroupKey = groupDTO.ConfigurationDTO.DefaultGroupKey ?? -1;
@@ -84,7 +84,7 @@ public class DeleteGroupRequestHandler(
             [defaultGroupId],
             cancellationToken
           )
-        ).FirstOrDefault() ?? throw new Exception();
+        ).FirstOrDefault() ?? throw new InvalidOperationException();
 
       return new DeleteGroupResponse(groupEntity.Entity.ToGroup(), defaultGroup);
     }

@@ -27,7 +27,7 @@ public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService det
     var studentGroups =
       await dbContext
         .StudentGroups.Where(sg => groupIds.Contains(sg.GroupId))
-        .ToListAsync(cancellationToken) ?? throw new Exception();
+        .ToListAsync(cancellationToken) ?? throw new InvalidOperationException();
 
     var studentGroupIds = studentGroups.Select(sg => sg.Id);
 
@@ -35,7 +35,7 @@ public class OrdinalService(ClassroomGroupsContext dbContext, IDetailService det
 
     var groups =
       await dbContext.Groups.Where(g => groupIds.Contains(g.Id)).ToListAsync(cancellationToken)
-      ?? throw new Exception();
+      ?? throw new InvalidOperationException();
 
     foreach (var group in groups)
     {

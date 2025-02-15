@@ -40,14 +40,14 @@ public class DeleteColumnRequestHandler(
           .Where(c =>
             c.Id == request.ColumnId && c.ConfigurationDTO.ClassroomId == request.ClassroomId
           )
-          .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var deletedColumn = columnDTO.ToColumn();
 
       var fieldDTO =
         await dbContext
           .Fields.Where(f => columnDTO.FieldId == f.Id)
-          .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var deletedField = fieldDTO.ToField();
 

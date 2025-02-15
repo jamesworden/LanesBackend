@@ -40,14 +40,15 @@ public class PatchClassroomRequestHandler(
       var classroomDTO =
         await dbContext
           .Classrooms.Where(c => c.Id == request.ClassroomId && classroomIds.Contains(c.Id))
-          .FirstOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       classroomDTO.Description = request.Description.Trim();
       classroomDTO.Label = request.Label.Trim();
 
       var configurationEntity = dbContext.Classrooms.Update(classroomDTO);
       await dbContext.SaveChangesAsync(cancellationToken);
-      var classroom = configurationEntity.Entity?.ToClassroom() ?? throw new Exception();
+      var classroom =
+        configurationEntity.Entity?.ToClassroom() ?? throw new InvalidOperationException();
 
       var fieldDetails =
         (

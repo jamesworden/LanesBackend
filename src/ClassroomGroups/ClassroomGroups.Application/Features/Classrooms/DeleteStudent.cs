@@ -33,14 +33,15 @@ public class DeleteStudentRequestHandler(
       var studentGroups =
         await dbContext
           .StudentGroups.Where(sg => sg.StudentId == request.StudentId)
-          .ToListAsync(cancellationToken) ?? throw new Exception();
+          .ToListAsync(cancellationToken) ?? throw new InvalidOperationException();
 
-      var groupIds = studentGroups.Select(sg => sg.GroupId) ?? throw new Exception();
+      var groupIds =
+        studentGroups.Select(sg => sg.GroupId) ?? throw new InvalidOperationException();
 
       var studentDTO =
         await dbContext
           .Students.Where(s => s.Id == request.StudentId && s.ClassroomId == request.ClassroomId)
-          .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception();
+          .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       dbContext.Students.Remove(studentDTO);
       await dbContext.SaveChangesAsync(cancellationToken);

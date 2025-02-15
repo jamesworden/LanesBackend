@@ -30,7 +30,7 @@ public class DeleteClassroomRequestHandler(
       var classroom =
         dbContext.Classrooms.SingleOrDefault(c =>
           c.Id == request.ClassroomId && c.AccountId == account.Id
-        ) ?? throw new Exception();
+        ) ?? throw new InvalidOperationException();
 
       dbContext.Classrooms.Remove(classroom);
       await dbContext.SaveChangesAsync(cancellationToken);
