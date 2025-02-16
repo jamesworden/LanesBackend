@@ -22,6 +22,11 @@ public static class BalancedGroupingExtensions
     var itemsList = items.ToList();
     int numItems = itemsList.Count;
 
+    if (numGroups <= 0)
+    {
+      throw new ArgumentException("The desired number of groups must be a positive integer.");
+    }
+
     var solver =
       Solver.CreateSolver("SCIP")
       ?? throw new UnreachableException("Solver initialization failed.");
