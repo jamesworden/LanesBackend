@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ClassroomGroups.Domain.Features.Classrooms.Extensions;
+using ClassroomGroups.Algorithms;
 
 namespace ClassroomGroups.Domain.Features.Classrooms.Entities;
 
@@ -7,7 +7,7 @@ public record GroupStudentsResultDetails(
   List<StudentGroup> StudentGroupsToCreate,
   List<Group> GroupsToCreate,
   List<Guid> StudentGroupIdsToDelete,
-  List<Guid> UnpopulatedGroupIds
+  List<Guid> GroupIdsToDelete
 );
 
 public record GroupStudentsResult(
@@ -49,70 +49,93 @@ public class ConfigurationDetail(
     int? studentsPerGroup = null
   )
   {
-    var rankedCandidates = GroupDetails
-      .Where(g => !g.IsLocked)
-      .SelectMany(g => g.StudentDetails)
-      .OrderByAverage(fields);
+    var students = GroupDetails.Where(g => !g.IsLocked).SelectMany(g => g.StudentDetails).ToList();
 
     var (groupCount, errorResult) = CalculateGroupCount(
       numberOfGroups,
       studentsPerGroup,
-      rankedCandidates.Count()
+      students.Count
     );
+
     if (errorResult is not null)
     {
       return errorResult;
     }
 
-    var oldGroups = GroupDetails
+    var gIdsToDelete = GroupDetails
       .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
-      .Select(g => g.ToGroup())
-      .OrderBy(g => g.Ordinal);
+      .Select(g => g.Id)
+      .ToList();
 
-    if (groupCount <= 0)
+    var sgIdsToDelete = students.Select(s => s.StudentGroupId).ToList();
+
+    if (groupCount > 0)
     {
-      var defaultGroups = rankedCandidates
-        .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
-        .ToList();
-      var sgIdsToDelete = rankedCandidates.Select(s => s.StudentGroupId).ToList();
-      var unpopulatedGroupIds = oldGroups.Select(g => g.Id).ToList();
+      var result = AssignStudentsToNewGroups(students, groupCount, strategy, fields);
+
       return new GroupStudentsResult(
-        new GroupStudentsResultDetails(defaultGroups, [], sgIdsToDelete, unpopulatedGroupIds)
+        new GroupStudentsResultDetails(
+          result.sgsToCreate,
+          result.gsToCreate,
+          sgIdsToDelete,
+          gIdsToDelete
+        ),
+        null
       );
     }
 
-    var newGroups = new List<Group>(oldGroups);
-    var createdGroups = new List<Group>();
-
-    var numGroupsToCreate = Math.Max(groupCount - newGroups.Count, 0);
-    for (var i = 0; i < numGroupsToCreate; i++)
-    {
-      var ordinal = GroupDetails.Count - 1 + i;
-      var newGroup = new Group(Guid.NewGuid(), Id, $"Group {ordinal + 1}", ordinal, false);
-      newGroups.Add(newGroup);
-      createdGroups.Add(newGroup);
-    }
-    var numNewGroupsToDisregard = newGroups.Count - groupCount;
-    if (numNewGroupsToDisregard > 0)
-    {
-      newGroups = newGroups.Take(groupCount).ToList();
-    }
-    var usedGroupIds = newGroups.Select(g => g.Id);
-    var unusedGroupIds = oldGroups.Select(g => g.Id).Except(usedGroupIds).ToList();
-
-    var (studentGroupsToCreate, studentGroupIdsToDelete) =
-      strategy == StudentGroupingStrategy.MixedAbilities
-        ? GenerateMixedAbilityStudentGroups(newGroups, rankedCandidates)
-        : GenerateSimilarAbilityStudentGroups(newGroups, rankedCandidates);
-
+    var sgsToCreate = AssignStudentsToDefaultGroup(students);
     return new GroupStudentsResult(
-      new GroupStudentsResultDetails(
-        studentGroupsToCreate,
-        createdGroups,
-        studentGroupIdsToDelete,
-        unusedGroupIds
-      )
+      new GroupStudentsResultDetails(sgsToCreate, [], sgIdsToDelete, gIdsToDelete),
+      null
     );
+  }
+
+  public (List<StudentGroup> sgsToCreate, List<Group> gsToCreate) AssignStudentsToNewGroups(
+    List<StudentDetail> students,
+    int groupCount,
+    StudentGroupingStrategy strategy,
+    IEnumerable<Field> fields
+  )
+  {
+    List<Group> gsToCreate = GetNewGroups(groupCount);
+
+    var studentsWithScores = students.Select(s => (s, s.CalculateAverage(fields))).ToList();
+
+    var groupsOfStudents =
+      strategy == StudentGroupingStrategy.MixedAbilities
+        ? studentsWithScores.PartitionIntoBalancedGroups(gsToCreate.Count)
+        : studentsWithScores.PartitionIntoSimilarGroups(gsToCreate.Count);
+
+    var sgsToCreate = gsToCreate
+      .SelectMany(
+        (group, i) =>
+          groupsOfStudents[i]
+            .OrderByDescending(s => s.CalculateAverage(fields))
+            .Select((student, i) => new StudentGroup(Guid.NewGuid(), student.Id, group.Id, i + 1))
+      )
+      .ToList();
+
+    return (sgsToCreate, gsToCreate);
+  }
+
+  private List<Group> GetNewGroups(int groupCount)
+  {
+    List<Group> groups = [];
+    for (var i = 0; i < groupCount; i++)
+    {
+      var ordinal = i + 1;
+      groups.Add(new Group(Guid.NewGuid(), Id, $"Group {ordinal}", ordinal, false));
+    }
+    return groups;
+  }
+
+  public List<StudentGroup> AssignStudentsToDefaultGroup(List<StudentDetail> students)
+  {
+    var sgsToCreate = students
+      .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
+      .ToList();
+    return sgsToCreate;
   }
 
   public (int groupCount, GroupStudentsResult? errorResult) CalculateGroupCount(
@@ -149,85 +172,5 @@ public class ConfigurationDetail(
       return (groupCount, null);
     }
     throw new UnreachableException();
-  }
-
-  private static (List<StudentGroup>, List<Guid>) GenerateMixedAbilityStudentGroups(
-    IEnumerable<Group> groups,
-    IEnumerable<StudentDetail> rankedStudentDetails
-  )
-  {
-    List<StudentGroup> studentGroupsToCreate = [];
-    List<Guid> studentGroupIdsToDelete = [];
-
-    if (!groups.Any())
-    {
-      return (studentGroupsToCreate, studentGroupIdsToDelete);
-    }
-
-    var ordinal = 0;
-
-    for (var studentIndex = 0; studentIndex < rankedStudentDetails.Count(); studentIndex++)
-    {
-      var groupIndex = studentIndex % groups.Count();
-      if (studentIndex != 0 && groupIndex == 0)
-      {
-        ordinal++;
-      }
-      var studentDetail = rankedStudentDetails.ElementAt(studentIndex);
-
-      var studentGroup = new StudentGroup(
-        Guid.NewGuid(),
-        studentDetail.Id,
-        groups.ElementAt(groupIndex).Id,
-        ordinal
-      );
-
-      studentGroupsToCreate.Add(studentGroup);
-      studentGroupIdsToDelete.Add(studentDetail.StudentGroupId);
-    }
-
-    return (studentGroupsToCreate, studentGroupIdsToDelete);
-  }
-
-  private static (List<StudentGroup>, List<Guid>) GenerateSimilarAbilityStudentGroups(
-    IEnumerable<Group> groups,
-    IEnumerable<StudentDetail> rankedStudentDetails
-  )
-  {
-    List<StudentGroup> studentGroupsToCreate = [];
-    List<Guid> studentGroupIdsToDelete = [];
-
-    if (!groups.Any())
-    {
-      return (studentGroupsToCreate, studentGroupIdsToDelete);
-    }
-
-    var maxNumberStudentsPerGroup = (int)
-      Math.Ceiling((decimal)rankedStudentDetails.Count() / groups.Count());
-
-    var groupIndex = 0;
-
-    for (var studentIndex = 0; studentIndex < rankedStudentDetails.Count(); studentIndex++)
-    {
-      var ordinal = studentIndex % maxNumberStudentsPerGroup;
-
-      if (studentIndex != 0 && ordinal == 0)
-      {
-        groupIndex++;
-      }
-      var studentDetail = rankedStudentDetails.ElementAt(studentIndex);
-
-      var studentGroup = new StudentGroup(
-        Guid.NewGuid(),
-        studentDetail.Id,
-        groups.ElementAt(groupIndex).Id,
-        ordinal
-      );
-
-      studentGroupsToCreate.Add(studentGroup);
-      studentGroupIdsToDelete.Add(studentDetail.StudentGroupId);
-    }
-
-    return (studentGroupsToCreate, studentGroupIdsToDelete);
   }
 }

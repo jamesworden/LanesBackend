@@ -108,7 +108,7 @@ public class GroupStudentsRequestHandler(
       await dbContext.SaveChangesAsync(cancellationToken);
 
       var unusedGroupDTOs = await dbContext
-        .Groups.Where(g => result.UnpopulatedGroupIds.Contains(g.Id))
+        .Groups.Where(g => result.GroupIdsToDelete.Contains(g.Id))
         .ToListAsync(cancellationToken);
 
       dbContext.Groups.RemoveRange(unusedGroupDTOs);
