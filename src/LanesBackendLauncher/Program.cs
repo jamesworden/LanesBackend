@@ -71,19 +71,10 @@ builder
       builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
 
     options.CallbackPath = "/api/v1/authentication/login-with-google-response";
-
     options.Events.OnRedirectToIdentityProvider = context =>
     {
-      var redirectUri = builder.Configuration["ClassroomGroups:LoginRedirectUrl"] ?? "";
-
-      // Ensure HTTPS is enforced
-      var uriBuilder = new UriBuilder(redirectUri)
-      {
-        Scheme = Uri.UriSchemeHttps,
-        Port = -1 // Removes explicit port numbers if they exist
-      };
-
-      context.ProtocolMessage.RedirectUri = uriBuilder.ToString();
+      context.ProtocolMessage.RedirectUri =
+        builder.Configuration["ClassroomGroups:LoginRedirectUrl"] ?? "";
       return Task.CompletedTask;
     };
 
