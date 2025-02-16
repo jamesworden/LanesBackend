@@ -38,7 +38,7 @@ public static class SimilarityGroupingExtensions
     // Add empty groups if we have fewer groups than requested
     while (initialGroups.Count < numGroups)
     {
-      initialGroups.Add(new List<(T item, double score)>());
+      initialGroups.Add([]);
     }
 
     return initialGroups;
