@@ -740,6 +740,44 @@
           }
         }
       },
+      "Google.OrTools/8.2.8710": {
+        "dependencies": {
+          "Google.OrTools.runtime.linux-x64": "8.2.8710",
+          "Google.OrTools.runtime.osx-x64": "8.2.8710",
+          "Google.OrTools.runtime.win-x64": "8.2.8710",
+          "Google.Protobuf": "3.15.3"
+        },
+        "runtime": {
+          "lib/netstandard2.1/Google.OrTools.dll": {
+            "assemblyVersion": "8.2.8710.0",
+            "fileVersion": "8.2.8710.0"
+          }
+        }
+      },
+      "Google.OrTools.runtime.linux-x64/8.2.8710": {
+        "native": {
+          "runtimes/linux-x64/native/google-ortools-native.so": {
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libortools.so": {
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Google.OrTools.runtime.osx-x64/8.2.8710": {},
+      "Google.OrTools.runtime.win-x64/8.2.8710": {},
+      "Google.Protobuf/3.15.3": {
+        "dependencies": {
+          "System.Memory": "4.5.3",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Protobuf.dll": {
+            "assemblyVersion": "3.15.3.0",
+            "fileVersion": "3.15.3.0"
+          }
+        }
+      },
       "MediatR/12.3.0": {
         "dependencies": {
           "MediatR.Contracts": "2.0.1",
@@ -1050,6 +1088,14 @@
       },
       "System.Buffers/4.5.0": {},
       "System.Memory/4.5.3": {},
+      "System.Runtime.CompilerServices.Unsafe/4.5.2": {
+        "runtime": {
+          "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "assemblyVersion": "4.0.4.1",
+            "fileVersion": "4.6.26919.2"
+          }
+        }
+      },
       "System.Text.Encodings.Web/8.0.0": {
         "runtime": {
           "lib/net8.0/System.Text.Encodings.Web.dll": {
@@ -1069,6 +1115,17 @@
           }
         }
       },
+      "ClassroomGroups.Algorithms/1.0.0": {
+        "dependencies": {
+          "Google.OrTools": "8.2.8710"
+        },
+        "runtime": {
+          "ClassroomGroups.Algorithms.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "ClassroomGroups.DataAccess/1.0.0": {
         "dependencies": {
           "ClassroomGroups.Domain": "1.0.0",
@@ -1082,6 +1139,9 @@
         }
       },
       "ClassroomGroups.Domain/1.0.0": {
+        "dependencies": {
+          "ClassroomGroups.Algorithms": "1.0.0"
+        },
         "runtime": {
           "ClassroomGroups.Domain.dll": {
             "assemblyVersion": "1.0.0",
@@ -1101,6 +1161,41 @@
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
+    },
+    "Google.OrTools/8.2.8710": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Dvan4ub0Kk/Pi5VGcZ/R4GXY2rd07ifj0ABwUz7kWd8qVfSGHsGqX5h5kDmcT0e79DUQ7gWJldV/LcNLBvtzoA==",
+      "path": "google.ortools/8.2.8710",
+      "hashPath": "google.ortools.8.2.8710.nupkg.sha512"
+    },
+    "Google.OrTools.runtime.linux-x64/8.2.8710": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KjRMf++wpD1nid4304ErtQDKuGOz0W2yxPT94kNhf+opzVd7r5GonM8wrq6pn6RZ7KM38kWL6SrU6m1nbw3iNg==",
+      "path": "google.ortools.runtime.linux-x64/8.2.8710",
+      "hashPath": "google.ortools.runtime.linux-x64.8.2.8710.nupkg.sha512"
+    },
+    "Google.OrTools.runtime.osx-x64/8.2.8710": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fbEPD3JjTwolaEEzfBgb9G+cfs69IIeaLtVsH3SXzUkkVvGdHdOc1yATAuzUj2SqNVq1fH3o5iP9Z0yn4jp/1A==",
+      "path": "google.ortools.runtime.osx-x64/8.2.8710",
+      "hashPath": "google.ortools.runtime.osx-x64.8.2.8710.nupkg.sha512"
+    },
+    "Google.OrTools.runtime.win-x64/8.2.8710": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-4Wklt4OgCbXajAwBKPWotBuuqp1lLZx311vxdvG2Rc7KWXI8TYRsUefUlxzlKQUi1kYCiVbsU2SG0dvQDDB8tg==",
+      "path": "google.ortools.runtime.win-x64/8.2.8710",
+      "hashPath": "google.ortools.runtime.win-x64.8.2.8710.nupkg.sha512"
+    },
+    "Google.Protobuf/3.15.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Go4XA9C/qpVLzT5NF9xKtZ9JrVS1SqR0wRN6du8GNkRfGYKOFDdjyF8PFZicmfFgebdtc3tvDQW80p/kzY1Ipg==",
+      "path": "google.protobuf/3.15.3",
+      "hashPath": "google.protobuf.3.15.3.nupkg.sha512"
     },
     "MediatR/12.3.0": {
       "type": "package",
@@ -1319,6 +1414,13 @@
       "path": "system.memory/4.5.3",
       "hashPath": "system.memory.4.5.3.nupkg.sha512"
     },
+    "System.Runtime.CompilerServices.Unsafe/4.5.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wprSFgext8cwqymChhrBLu62LMg/1u92bU+VOwyfBimSPVFXtsNqEWC92Pf9ofzJFlk4IHmJA75EDJn1b2goAQ==",
+      "path": "system.runtime.compilerservices.unsafe/4.5.2",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
+    },
     "System.Text.Encodings.Web/8.0.0": {
       "type": "package",
       "serviceable": true,
@@ -1332,6 +1434,11 @@
       "sha512": "sha512-bAkhgDJ88XTsqczoxEMliSrpijKZHhbJQldhAmObj/RbrN3sU5dcokuXmWJWsdQAhiMJ9bTayWsL1C9fbbCRhw==",
       "path": "system.text.json/8.0.4",
       "hashPath": "system.text.json.8.0.4.nupkg.sha512"
+    },
+    "ClassroomGroups.Algorithms/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "ClassroomGroups.DataAccess/1.0.0": {
       "type": "project",
