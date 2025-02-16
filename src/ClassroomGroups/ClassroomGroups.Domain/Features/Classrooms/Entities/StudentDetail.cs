@@ -12,7 +12,7 @@ public class StudentDetail(
 
   public Guid GroupId { get; private set; } = GroupId;
 
-  public int Ordinal { get; set; } = Ordinal;
+  public int Ordinal { get; private set; } = Ordinal;
 
   public Guid StudentGroupId { get; private set; } = StudentGroupId;
 
