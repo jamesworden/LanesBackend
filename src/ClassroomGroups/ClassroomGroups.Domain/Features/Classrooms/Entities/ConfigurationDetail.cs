@@ -62,52 +62,64 @@ public class ConfigurationDetail(
       return errorResult;
     }
 
-    var gIdsToDelete = GroupDetails
+    var groupIdsToDelete = GroupDetails
       .Where(g => !g.IsLocked && g.Id != DefaultGroupId)
       .Select(g => g.Id)
       .ToList();
 
-    var sgIdsToDelete = students.Select(s => s.StudentGroupId).ToList();
+    var studentGroupIdsToDelete = students.Select(s => s.StudentGroupId).ToList();
 
     if (groupCount > 0)
     {
-      var result = AssignStudentsToNewGroups(students, groupCount, strategy, fields);
+      var (newStudentGroups, newGroups) = AssignStudentsToNewGroups(
+        students,
+        groupCount,
+        strategy,
+        fields
+      );
 
       return new GroupStudentsResult(
         new GroupStudentsResultDetails(
-          result.sgsToCreate,
-          result.gsToCreate,
-          sgIdsToDelete,
-          gIdsToDelete
+          newStudentGroups,
+          newGroups,
+          studentGroupIdsToDelete,
+          groupIdsToDelete
         ),
         null
       );
     }
 
-    var sgsToCreate = AssignStudentsToDefaultGroup(students);
-    return new GroupStudentsResult(
-      new GroupStudentsResultDetails(sgsToCreate, [], sgIdsToDelete, gIdsToDelete),
-      null
-    );
+    {
+      var newStudentGroups = AssignStudentsToDefaultGroup(students);
+      return new GroupStudentsResult(
+        new GroupStudentsResultDetails(
+          newStudentGroups,
+          [],
+          studentGroupIdsToDelete,
+          groupIdsToDelete
+        ),
+        null
+      );
+    }
   }
 
-  public (List<StudentGroup> sgsToCreate, List<Group> gsToCreate) AssignStudentsToNewGroups(
+  public (List<StudentGroup> newStudentGroups, List<Group> newGroups) AssignStudentsToNewGroups(
     List<StudentDetail> students,
     int groupCount,
     StudentGroupingStrategy strategy,
     IEnumerable<Field> fields
   )
   {
-    List<Group> gsToCreate = GetNewGroups(groupCount);
+    List<Group> newGroups = GetNewGroups(groupCount);
 
     var studentsWithScores = students.Select(s => (s, s.CalculateAverage(fields))).ToList();
 
     var groupsOfStudents =
       strategy == StudentGroupingStrategy.MixedAbilities
-        ? studentsWithScores.PartitionIntoBalancedGroups(gsToCreate.Count)
-        : studentsWithScores.PartitionIntoSimilarGroups(gsToCreate.Count);
+        ? studentsWithScores.PartitionIntoBalancedGroups(newGroups.Count)
+        : studentsWithScores.PartitionIntoSimilarGroups(newGroups.Count);
 
-    var sgsToCreate = gsToCreate
+    var newStudentGroups = newGroups
       .SelectMany(
         (group, i) =>
           groupsOfStudents[i]
@@ -116,7 +128,7 @@ public class ConfigurationDetail(
       )
       .ToList();
 
-    return (sgsToCreate, gsToCreate);
+    return (newStudentGroups, newGroups);
   }
 
   private List<Group> GetNewGroups(int groupCount)
@@ -132,10 +144,10 @@ public class ConfigurationDetail(
 
   public List<StudentGroup> AssignStudentsToDefaultGroup(List<StudentDetail> students)
   {
-    var sgsToCreate = students
+    var newStudentGroups = students
       .Select(s => new StudentGroup(Guid.NewGuid(), s.Id, DefaultGroupId, s.Ordinal))
       .ToList();
-    return sgsToCreate;
+    return newStudentGroups;
   }
 
   public (int groupCount, GroupStudentsResult? errorResult) CalculateGroupCount(
