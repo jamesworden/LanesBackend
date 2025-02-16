@@ -69,7 +69,7 @@ builder
       builder.Configuration["ClassroomGroups:Authentication:Google:ClientId"] ?? "";
     options.ClientSecret =
       builder.Configuration["ClassroomGroups:Authentication:Google:ClientSecret"] ?? "";
-    options.CallbackPath = "/login-with-google-response";
+    options.CallbackPath = "/api/v1/authentication/login-with-google-response";
 
     options.SignedOutRedirectUri =
       builder.Configuration["ClassroomGroups:LoggedOutRedirectUrl"] ?? "";
