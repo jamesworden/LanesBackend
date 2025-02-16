@@ -9,13 +9,13 @@ public static class SimilarityGroupingExtensions
   /// <typeparam name="T">The type of items being grouped.</typeparam>
   /// <param name="items">The collection of item-score tuples to partition.</param>
   /// <param name="numGroups">The number of groups to partition the items into.</param>
-  /// <returns>A list of lists, where each inner list represents a group of similar-scoring items.</returns>
-  public static List<List<T>> PartitionIntoSimilarGroups<T>(
+  /// <returns>A list of lists, where each inner list represents a group of item-score tuples with similar scores.</returns>
+  public static List<List<(T item, double score)>> PartitionIntoSimilarGroups<T>(
     this IEnumerable<(T item, double score)> items,
     int numGroups
   )
   {
-    var sortedItems = items.OrderByDescending(x => x.score).Select(x => x.item).ToList();
+    var sortedItems = items.OrderByDescending(x => x.score).ToList();
 
     int itemsPerGroup = (int)Math.Ceiling(sortedItems.Count / (double)numGroups);
 

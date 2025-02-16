@@ -114,7 +114,7 @@ public class ConfigurationDetail(
 
     var studentsWithScores = students.Select(s => (s, s.CalculateAverage(fields))).ToList();
 
-    var groupsOfStudents =
+    var groupsOfStudentsWithScores =
       strategy == StudentGroupingStrategy.MixedAbilities
         ? studentsWithScores.PartitionIntoBalancedGroups(newGroups.Count)
         : studentsWithScores.PartitionIntoSimilarGroups(newGroups.Count);
@@ -122,9 +122,9 @@ public class ConfigurationDetail(
     var newStudentGroups = newGroups
       .SelectMany(
         (group, i) =>
-          groupsOfStudents[i]
-            .OrderByDescending(s => s.CalculateAverage(fields))
-            .Select((student, i) => new StudentGroup(Guid.NewGuid(), student.Id, group.Id, i + 1))
+          groupsOfStudentsWithScores[i]
+            .OrderByDescending(x => x.score)
+            .Select((x, i) => new StudentGroup(Guid.NewGuid(), x.item.Id, group.Id, i + 1))
       )
       .ToList();
 

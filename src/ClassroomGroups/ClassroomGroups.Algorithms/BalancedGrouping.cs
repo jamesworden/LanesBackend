@@ -12,9 +12,9 @@ public static class BalancedGroupingExtensions
   /// <typeparam name="T">The type of items being grouped.</typeparam>
   /// <param name="items">The collection of item-score tuples to partition.</param>
   /// <param name="numGroups">The number of groups to partition the items into.</param>
-  /// <returns>A list of lists, where each inner list represents a group of items.</returns>
+  /// <returns>A list of lists, where each inner list represents a group of item-score tuples.</returns>
   /// <exception cref="InvalidOperationException">Thrown when an optimal solution cannot be found.</exception>
-  public static List<List<T>> PartitionIntoBalancedGroups<T>(
+  public static List<List<(T item, double score)>> PartitionIntoBalancedGroups<T>(
     this IEnumerable<(T item, double score)> items,
     int numGroups
   )
@@ -97,15 +97,15 @@ public static class BalancedGroupingExtensions
     if (resultStatus != Solver.ResultStatus.OPTIMAL)
       throw new InvalidOperationException("No optimal solution found.");
 
-    // Extract groups
-    var groups = new List<List<T>>(numGroups);
+    // Extract groups with scores
+    var groups = new List<List<(T item, double score)>>(numGroups);
     for (int j = 0; j < numGroups; j++)
       groups.Add([]);
 
     for (int i = 0; i < numItems; i++)
     for (int j = 0; j < numGroups; j++)
       if (x[i, j].SolutionValue() == 1)
-        groups[j].Add(itemsList[i].item);
+        groups[j].Add(itemsList[i]);
 
     return groups;
   }
