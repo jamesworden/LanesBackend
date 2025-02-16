@@ -14,7 +14,16 @@ public record MoveColumnRequest(
   Guid ConfigurationId,
   Guid ColumnId,
   MoveColumnDetail MoveColumnDetail
-) : IRequest<MoveColumnResponse>, IRequiredUserAccount { }
+) : IRequest<MoveColumnResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      ConfigurationIds = [ConfigurationId],
+      ColumnIds = [ColumnId]
+    };
+}
 
 public record MoveColumnResponse(List<ColumnDetail> UpdatedColumnDetails) { }
 

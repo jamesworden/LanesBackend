@@ -13,7 +13,11 @@ public record CreateColumnRequest(
   Guid ConfigurationId,
   string Label,
   FieldType Type
-) : IRequest<CreateColumnResponse>, IRequiredUserAccount { }
+) : IRequest<CreateColumnResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+}
 
 public record CreateColumnResponse(
   ColumnDetail CreatedColumnDetail,

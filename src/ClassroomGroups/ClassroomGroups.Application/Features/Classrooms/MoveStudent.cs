@@ -19,7 +19,11 @@ public record MoveStudentRequest(
   Guid ClassroomId,
   Guid ConfigurationId,
   MoveStudentDetail MoveStudentDetail
-) : IRequest<MoveStudentResponse>, IRequiredUserAccount { }
+) : IRequest<MoveStudentResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+}
 
 public record MoveStudentResponse(List<GroupDetail> UpdatedGroupDetails) { }
 

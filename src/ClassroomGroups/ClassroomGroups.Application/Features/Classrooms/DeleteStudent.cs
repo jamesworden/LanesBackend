@@ -9,7 +9,11 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteStudentRequest(Guid ClassroomId, Guid StudentId)
   : IRequest<DeleteStudentResponse>,
-    IRequiredUserAccount { };
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], StudentIds = [StudentId] };
+};
 
 public record DeleteStudentResponse(Student DeletedStudent, List<GroupDetail> UpdatedGroupDetails);
 

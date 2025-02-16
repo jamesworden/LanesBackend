@@ -10,7 +10,11 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
   : IRequest<DeleteGroupResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+}
 
 public record DeleteGroupResponse(Group DeletedGroup, GroupDetail UpdatedDefaultGroup) { }
 

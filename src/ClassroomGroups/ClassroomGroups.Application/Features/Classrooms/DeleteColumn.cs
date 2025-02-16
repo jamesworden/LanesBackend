@@ -9,7 +9,16 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record DeleteColumnRequest(Guid ClassroomId, Guid ConfigurationId, Guid ColumnId)
   : IRequest<DeleteColumnResponse>,
-    IRequiredUserAccount { };
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      ConfigurationIds = [ConfigurationId],
+      ColumnIds = [ColumnId]
+    };
+}
 
 public record DeleteColumnResponse(
   Column DeletedColumn,

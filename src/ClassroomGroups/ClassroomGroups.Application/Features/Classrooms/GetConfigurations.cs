@@ -8,7 +8,10 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record GetConfigurationsRequest(Guid ClassroomId)
   : IRequest<GetConfigurationsResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() => new() { ClassroomIds = [ClassroomId] };
+}
 
 public record GetConfigurationsResponse(List<Configuration> Configurations) { }
 

@@ -9,7 +9,16 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record SortGroupsRequest(Guid ClassroomId, Guid ConfigurationId, Guid[] SortedGroupIds)
   : IRequest<SortGroupsResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      ConfigurationIds = [ConfigurationId],
+      GroupIds = SortedGroupIds
+    };
+}
 
 public record SortGroupsResponse(List<GroupDetail> SortedGroupDetails) { }
 

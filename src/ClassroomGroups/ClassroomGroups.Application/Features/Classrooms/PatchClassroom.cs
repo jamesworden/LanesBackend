@@ -9,7 +9,10 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record PatchClassroomRequest(Guid ClassroomId, string Label, string Description)
   : IRequest<PatchClassroomResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() => new() { ClassroomIds = [ClassroomId] };
+}
 
 public record PatchClassroomResponse(ClassroomDetail PatchedClassroomDetail) { }
 

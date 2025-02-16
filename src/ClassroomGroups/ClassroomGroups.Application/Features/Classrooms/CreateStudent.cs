@@ -10,7 +10,11 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateStudentRequest(Guid ClassroomId, Guid ConfigurationId, Guid? GroupId)
   : IRequest<CreateStudentResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+}
 
 public record CreateStudentResponse(StudentDetail CreatedStudentDetail) { }
 

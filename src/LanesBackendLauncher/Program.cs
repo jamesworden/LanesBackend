@@ -138,11 +138,6 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     [typeof(AccountOptionalBehavior<,>)]
   ),
   (
-    typeof(GetClassroomsRequest),
-    typeof(GetClassroomsResponse),
-    [typeof(AccountRequiredBehavior<,>)]
-  ),
-  (
     typeof(GetClassroomDetailsRequest),
     typeof(GetClassroomDetailsResponse),
     [typeof(AccountRequiredBehavior<,>)]

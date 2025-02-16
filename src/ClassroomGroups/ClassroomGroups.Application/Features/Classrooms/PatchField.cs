@@ -8,7 +8,10 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record PatchFieldRequest(Guid ClassroomId, Guid FieldId, string Label)
   : IRequest<PatchFieldResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() => new() { ClassroomIds = [ClassroomId], FieldIds = [FieldId] };
+}
 
 public record PatchFieldResponse(FieldDetail UpdatedFieldDetail) { }
 

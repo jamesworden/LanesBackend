@@ -12,7 +12,11 @@ public record PatchConfigurationRequest(
   Guid ConfigurationId,
   string Label,
   string Description
-) : IRequest<PatchConfigurationResponse>, IRequiredUserAccount { }
+) : IRequest<PatchConfigurationResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+}
 
 public record PatchConfigurationResponse(ConfigurationDetail PatchedConfigurationDetail) { }
 
