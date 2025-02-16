@@ -10,7 +10,10 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record CreateClassroomRequest(string? Label, string? Description)
   : IRequest<CreateClassroomResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() => new();
+}
 
 public record CreateClassroomResponse(ClassroomDetail CreatedClassroomDetail) { }
 

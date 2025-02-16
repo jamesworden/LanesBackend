@@ -14,7 +14,11 @@ public record GroupStudentsRequest(
   StudentGroupingStrategy Strategy,
   int? NumberOfGroups = null,
   int? StudentsPerGroup = null
-) : IRequest<GroupStudentsResponse>, IRequiredUserAccount;
+) : IRequest<GroupStudentsResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new() { ClassroomIds = [ClassroomId], ConfigurationIds = [ConfigurationId] };
+};
 
 public record GroupStudentsResponse(
   List<GroupDetail> UpdatedGroupDetails,

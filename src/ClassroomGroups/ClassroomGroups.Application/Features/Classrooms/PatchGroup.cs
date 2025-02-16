@@ -9,7 +9,16 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record PatchGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId, string Label)
   : IRequest<PatchGroupResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      ConfigurationIds = [ConfigurationId],
+      GroupIds = [GroupId]
+    };
+}
 
 public record PatchGroupResponse(GroupDetail UpdatedGroupDetail) { }
 

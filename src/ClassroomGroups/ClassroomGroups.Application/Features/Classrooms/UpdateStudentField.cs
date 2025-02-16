@@ -11,7 +11,16 @@ public record UpsertStudentFieldRequest(
   Guid StudentId,
   Guid FieldId,
   string Value
-) : IRequest<UpsertStudentFieldResponse>, IRequiredUserAccount { }
+) : IRequest<UpsertStudentFieldResponse>, IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      StudentIds = [StudentId],
+      FieldIds = [FieldId]
+    };
+}
 
 public record UpsertStudentFieldResponse(string UpsertedValue) { }
 

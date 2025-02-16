@@ -8,7 +8,16 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record LockGroupRequest(Guid ClassroomId, Guid ConfigurationId, Guid GroupId)
   : IRequest<LockGroupResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() =>
+    new()
+    {
+      ClassroomIds = [ClassroomId],
+      ConfigurationIds = [ConfigurationId],
+      GroupIds = [GroupId]
+    };
+}
 
 public record LockGroupResponse(Group UpdatedGroup) { }
 

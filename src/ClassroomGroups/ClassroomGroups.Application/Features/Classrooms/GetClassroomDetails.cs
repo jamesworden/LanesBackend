@@ -9,7 +9,10 @@ namespace ClassroomGroups.Application.Features.Classrooms;
 
 public record GetClassroomDetailsRequest()
   : IRequest<GetClassroomDetailsResponse>,
-    IRequiredUserAccount { }
+    IRequiredUserAccount
+{
+  public EntityIds GetEntityIds() => new();
+}
 
 public record GetClassroomDetailsResponse(List<ClassroomDetail> ClassroomDetails) { }
 
