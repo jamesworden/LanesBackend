@@ -26,7 +26,7 @@ All sensitive data is stored in AWS Systems Manager > Parameter Store. `Amazon.E
 
 - First we must build an artifact to deploy. Start by opening the terminal and going to the root directory of this repository.
 - Here, execute this command: `dotnet publish -o app -r linux-x64 --self-contained`. This assumes you have the dotnet CLI tool installed. The artifact should now be built.
-- You can test that this artifact works locally with `dotnet run ./app/LanesBackend.dll`. If there's any strange behavior or errors, cleaning the contents of that `app` folder before rebuilding an artifact may help.
+- If there's any strange behavior or errors with the DLL, cleaning the contents of that `app` folder before rebuilding an artifact may help.
 - Now we must deploy this artifact; commit the changes and push the commit to Github.
 - Open a new browser tab to login to the AWS Console. Go to the Code Deploy service.
 - Select `Applications`, `lanesbackend`, `lanesbackend-dg` (Deployment Group), and then click the `Create Deployment` button
