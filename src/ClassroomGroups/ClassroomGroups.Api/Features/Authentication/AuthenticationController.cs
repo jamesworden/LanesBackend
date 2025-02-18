@@ -1,9 +1,8 @@
-using System.Security.Claims;
 using ClassroomGroups.Application.Features.Authentication;
-using Google.Apis.Auth.AspNetCore3;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +17,11 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
 {
   [AllowAnonymous]
   [HttpPost("login-with-google")]
-  public IActionResult LoginWithGoogle()
+  public async Task LoginWithGoogle()
   {
-    var redirectUrl = Url.Action("GoogleResponse", "Authentication", null, Request.Scheme);
-    return Challenge(
-      new AuthenticationProperties { RedirectUri = redirectUrl },
-      GoogleOpenIdConnectDefaults.AuthenticationScheme
+    await HttpContext.ChallengeAsync(
+      GoogleDefaults.AuthenticationScheme,
+      new AuthenticationProperties { RedirectUri = Url.Action("LoginWithGoogleResponse") }
     );
   }
 
@@ -49,7 +47,7 @@ public class AuthenticationController(IMediator mediator, IConfiguration configu
     }
     await Request.HttpContext.SignInAsync("Cookies", result.Principal);
     await mediator.Send(new UpsertAccountRequest());
-    return new EmptyResult();
+    return Redirect(configuration["ClassroomGroups:LoggedInRedirectUrl"] ?? "");
   }
 
   [AllowAnonymous]
