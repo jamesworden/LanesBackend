@@ -116,7 +116,7 @@ public class ConfigurationDetail(
 
     var groupsOfStudentsWithScores =
       strategy == StudentGroupingStrategy.MixedAbilities
-        ? studentsWithScores.PartitionIntoBalancedGroups(newGroups.Count)
+        ? studentsWithScores.GreedilyPartitionIntoBalancedGroups(newGroups.Count)
         : studentsWithScores.PartitionIntoSimilarGroups(newGroups.Count);
 
     var newStudentGroups = newGroups
