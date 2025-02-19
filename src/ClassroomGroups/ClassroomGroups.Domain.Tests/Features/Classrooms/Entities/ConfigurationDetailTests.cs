@@ -118,7 +118,7 @@ public class ConfigurationDetailTests
     // Assert
     Assert.Equal(-1, groupCount);
     Assert.Equal(
-      "Group count must be less than the available student count",
+      "Group count must be less than or equal to the available student count",
       errorResult?.ErrorMessage
     );
   }
@@ -150,7 +150,7 @@ public class ConfigurationDetailTests
     // Assert
     Assert.Equal(-1, groupCount);
     Assert.Equal(
-      "Group count must be less than the available student count",
+      "Group count must be less than or equal to the available student count",
       errorResult?.ErrorMessage
     );
   }

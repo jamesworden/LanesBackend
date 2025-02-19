@@ -36,9 +36,10 @@ public class CreateGroupRequestHandler(
       .Select(g => g.ToGroup())
       .ToListAsync(cancellationToken);
 
-    if (existingGroups.Count >= account.Subscription.MaxStudentsPerClassroom)
+    // Allow for existing groups to equal max students to account for extra 1 default group.
+    if (existingGroups.Count > account.Subscription.MaxStudentsPerClassroom)
     {
-      throw new Exception();
+      throw new InvalidOperationException("You cannot create more groups than students!");
     }
 
     await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);

@@ -168,8 +168,11 @@ public class ConfigurationDetail(
     if (numberOfGroups < 0 || studentsPerGroup < 0)
       return (-1, CreateErrorResult("Group count must be a positive number"));
 
-    if (numberOfGroups >= numCandidateStudents || studentsPerGroup >= numCandidateStudents)
-      return (-1, CreateErrorResult("Group count must be less than the available student count"));
+    if (numberOfGroups > numCandidateStudents || studentsPerGroup > numCandidateStudents)
+      return (
+        -1,
+        CreateErrorResult("Group count must be less than or equal to the available student count")
+      );
 
     if (numberOfGroups == 0 || studentsPerGroup == 0)
       return (0, null);

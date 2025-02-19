@@ -49,7 +49,7 @@ public class DeleteColumnRequestHandler(
           .Where(c =>
             c.Id == request.ColumnId && c.ConfigurationDTO.ClassroomId == request.ClassroomId
           )
-          .SingleOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
+          .FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException();
 
       var deletedColumn = columnDTO.ToColumn();
 
