@@ -199,6 +199,12 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(GroupStudentsResponse),
     [typeof(AccountRequiredBehavior<,>)]
   ),
+  (typeof(EnableColumnRequest), typeof(EnableColumnResponse), [typeof(AccountRequiredBehavior<,>)]),
+  (
+    typeof(DisableColumnRequest),
+    typeof(DisableColumnResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
