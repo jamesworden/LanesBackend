@@ -43,7 +43,7 @@ public class ConfigurationDetail(
   public List<ColumnDetail> ColumnDetails { get; private set; } = ColumnDetails;
 
   public GroupStudentsResult GroupStudents(
-    IEnumerable<Field> fields,
+    IEnumerable<ColumnDetail> columnDetails,
     StudentGroupingStrategy strategy,
     int? numberOfGroups = null,
     int? studentsPerGroup = null
@@ -75,7 +75,7 @@ public class ConfigurationDetail(
         students,
         groupCount,
         strategy,
-        fields
+        columnDetails
       );
 
       return new GroupStudentsResult(
@@ -107,12 +107,12 @@ public class ConfigurationDetail(
     List<StudentDetail> students,
     int groupCount,
     StudentGroupingStrategy strategy,
-    IEnumerable<Field> fields
+    IEnumerable<ColumnDetail> columnDetails
   )
   {
     List<Group> newGroups = GetNewGroups(groupCount);
 
-    var studentsWithScores = students.Select(s => (s, s.CalculateAverage(fields))).ToList();
+    var studentsWithScores = students.Select(s => (s, s.CalculateAverage(columnDetails))).ToList();
 
     var groupsOfStudentsWithScores =
       strategy == StudentGroupingStrategy.MixedAbilities

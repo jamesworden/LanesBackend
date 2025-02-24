@@ -316,4 +316,26 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
       )
     );
   }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/columns/{columnId}/enable")]
+  public async Task<EnableColumnResponse> EnableColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid columnId
+  )
+  {
+    return await _mediator.Send(new EnableColumnRequest(classroomId, configurationId, columnId));
+  }
+
+  [Authorize]
+  [HttpPost("{classroomId}/configurations/{configurationId}/columns/{columnId}/disable")]
+  public async Task<DisableColumnResponse> DisableColumn(
+    [FromRoute] Guid classroomId,
+    [FromRoute] Guid configurationId,
+    [FromRoute] Guid columnId
+  )
+  {
+    return await _mediator.Send(new DisableColumnRequest(classroomId, configurationId, columnId));
+  }
 }

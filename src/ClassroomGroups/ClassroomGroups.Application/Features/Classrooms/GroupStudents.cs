@@ -64,10 +64,14 @@ public class GroupStudentsRequestHandler(
     CancellationToken cancellationToken
   )
   {
-    var (configurationDetail, fields) = await GetInitialData(request, accountId, cancellationToken);
+    var (configurationDetail, columnDetails) = await GetInitialData(
+      request,
+      accountId,
+      cancellationToken
+    );
 
     var (groupingResult, errorMessage) = configurationDetail.GroupStudents(
-      fields,
+      columnDetails,
       request.Strategy,
       request.NumberOfGroups,
       request.StudentsPerGroup
@@ -90,7 +94,7 @@ public class GroupStudentsRequestHandler(
     return new GroupStudentsResponse(updatedGroupDetails);
   }
 
-  private async Task<(ConfigurationDetail, List<Field>)> GetInitialData(
+  private async Task<(ConfigurationDetail, List<ColumnDetail>)> GetInitialData(
     GroupStudentsRequest request,
     Guid accountId,
     CancellationToken cancellationToken
@@ -103,12 +107,14 @@ public class GroupStudentsRequestHandler(
       cancellationToken
     );
 
-    var fields = await dbContext
-      .Fields.Where(f => f.ClassroomId == request.ClassroomId)
-      .Select(f => f.ToField())
-      .ToListAsync(cancellationToken);
+    var columns = await detailService.GetColumnDetails(
+      accountId,
+      request.ClassroomId,
+      request.ConfigurationId,
+      cancellationToken
+    );
 
-    return (configurationDetail, fields);
+    return (configurationDetail, columns);
   }
 
   private async Task UpdateDatabase(

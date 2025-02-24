@@ -23,15 +23,15 @@ public class StudentDetail(
   /// as parameters in this function to calculate a weighted average.
   /// Until then, everything is equally weighted.
   /// </summary>
-  public double CalculateAverage(IEnumerable<Field> fields)
+  public double CalculateAverage(IEnumerable<ColumnDetail> columnDetails)
   {
     var numericValues = new List<double>();
 
     foreach (var fieldPair in FieldIdsToValues)
     {
-      var field = fields.FirstOrDefault(f => f.Id == fieldPair.Key);
+      var columnDetail = columnDetails.FirstOrDefault(c => c.FieldId == fieldPair.Key);
 
-      if (field == null || field.Type != FieldType.NUMBER)
+      if (columnDetail == null || columnDetail.Type != FieldType.NUMBER || !columnDetail.Enabled)
         continue;
 
       if (double.TryParse(fieldPair.Value, out double numericValue))
