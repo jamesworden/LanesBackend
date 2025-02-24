@@ -159,7 +159,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
     return await _mediator.Send(new DeleteConfigurationRequest(classroomId, configurationId));
   }
 
-  public record CreateColumnRequestBody(string Label, FieldType Type) { }
+  public record CreateColumnRequestBody(string Label, FieldType Type, int? Ordinal) { }
 
   [Authorize]
   [HttpPost("{classroomId}/configurations/{configurationId}/columns")]
@@ -170,7 +170,7 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   )
   {
     return await _mediator.Send(
-      new CreateColumnRequest(classroomId, configurationId, body.Label, body.Type)
+      new CreateColumnRequest(classroomId, configurationId, body.Label, body.Type, body.Ordinal)
     );
   }
 
