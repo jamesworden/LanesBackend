@@ -12,7 +12,8 @@ public record CreateColumnRequest(
   Guid ClassroomId,
   Guid ConfigurationId,
   string Label,
-  FieldType Type
+  FieldType Type,
+  int? Ordinal
 ) : IRequest<CreateColumnResponse>, IRequiredUserAccount
 {
   public EntityIds GetEntityIds() =>
@@ -20,8 +21,8 @@ public record CreateColumnRequest(
 }
 
 public record CreateColumnResponse(
-  ColumnDetail CreatedColumnDetail,
-  FieldDetail CreatedFieldDetail
+  List<ColumnDetail> UpdatedColumnDetails,
+  List<FieldDetail> UpdatedFieldDetails
 ) { }
 
 public class CreateColumnRequestHandler(
@@ -43,7 +44,7 @@ public class CreateColumnRequestHandler(
 
     if (existingFieldDTOs.Count >= account.Subscription.MaxFieldsPerClassroom)
     {
-      throw new Exception();
+      throw new InvalidOperationException("Maximum fields per classroom exceeded.");
     }
 
     await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
@@ -68,31 +69,81 @@ public class CreateColumnRequestHandler(
         Type = request.Type
       };
 
-      var fieldEntity = await dbContext.Fields.AddAsync(fieldDTO, cancellationToken);
+      dbContext.Fields.Add(fieldDTO);
 
       await dbContext.SaveChangesAsync(cancellationToken);
 
-      var ordinal = existingFieldDTOs.Count + 1;
-
-      var columnId = Guid.NewGuid();
-
-      var columnDTOs = configurationDTOs.Select(c => new ColumnDTO()
+      foreach (var config in configurationDTOs)
       {
-        Id = columnId,
-        ConfigurationId = c.Id,
-        ConfigurationKey = c.Key,
-        FieldId = fieldDTO.Id,
-        FieldKey = fieldDTO.Key,
-        Ordinal = ordinal,
-        Sort = ColumnSort.NONE,
-        Enabled = true,
-      });
+        if (config.Id == request.ConfigurationId)
+        {
+          var highestOrdinal =
+            await dbContext
+              .Columns.Where(c => c.ConfigurationId == config.Id)
+              .MaxAsync(c => (int?)c.Ordinal, cancellationToken) ?? 0;
 
-      await dbContext.Columns.AddRangeAsync(columnDTOs, cancellationToken);
+          var newColumn = new ColumnDTO()
+          {
+            Id = Guid.NewGuid(),
+            ConfigurationId = config.Id,
+            ConfigurationKey = config.Key,
+            FieldId = fieldDTO.Id,
+            FieldKey = fieldDTO.Key,
+            Ordinal = request.Ordinal ?? highestOrdinal + 1,
+            Sort = ColumnSort.NONE,
+            Enabled = true
+          };
+
+          dbContext.Columns.Add(newColumn);
+
+          if (request.Ordinal.HasValue)
+          {
+            var columnsToReorder = await dbContext
+              .Columns.Where(c =>
+                c.ConfigurationId == request.ConfigurationId && c.Ordinal >= request.Ordinal.Value
+              )
+              .ToListAsync(cancellationToken);
+
+            foreach (var column in columnsToReorder)
+            {
+              column.Ordinal++;
+            }
+          }
+        }
+        else
+        {
+          var highestOrdinal =
+            await dbContext
+              .Columns.Where(c => c.ConfigurationId == config.Id)
+              .MaxAsync(c => (int?)c.Ordinal, cancellationToken) ?? 0;
+
+          var newColumn = new ColumnDTO()
+          {
+            Id = Guid.NewGuid(),
+            ConfigurationId = config.Id,
+            ConfigurationKey = config.Key,
+            FieldId = fieldDTO.Id,
+            FieldKey = fieldDTO.Key,
+            Ordinal = highestOrdinal + 1,
+            Sort = ColumnSort.NONE,
+            Enabled = true
+          };
+
+          dbContext.Columns.Add(newColumn);
+        }
+      }
 
       await dbContext.SaveChangesAsync(cancellationToken);
 
-      var fieldDetail = fieldEntity.Entity.ToField().ToFieldDetail();
+      var columns = await dbContext
+        .Columns.Where(c => c.ConfigurationId == request.ConfigurationId)
+        .ToListAsync(cancellationToken);
+
+      var fields = await dbContext
+        .Fields.Where(f => f.ClassroomId == request.ClassroomId)
+        .ToListAsync(cancellationToken);
+
+      await transaction.CommitAsync(cancellationToken);
 
       var columnDetails = await detailService.GetColumnDetails(
         account.Id,
@@ -101,13 +152,17 @@ public class CreateColumnRequestHandler(
         cancellationToken
       );
 
-      var columnDetail =
-        columnDetails.Where(c => c.Id == columnId).FirstOrDefault()
-        ?? throw new InvalidOperationException();
+      var fieldDetails =
+        (
+          await dbContext
+            .Fields.Where(f => f.ClassroomId == request.ClassroomId)
+            .Select(f => new FieldDetailDTO(f.Id, f.ClassroomId, f.Label, f.Type))
+            .ToListAsync(cancellationToken)
+        )
+          .Select(f => f.ToFieldDetail())
+          .ToList() ?? [];
 
-      transaction.Commit();
-
-      return new CreateColumnResponse(columnDetail, fieldDetail);
+      return new CreateColumnResponse(columnDetails, fieldDetails);
     }
     catch (Exception)
     {

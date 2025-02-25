@@ -124,7 +124,7 @@ public class CreateClassroomRequestHandler(
         ClassroomId = classroomDTO.Id,
         ClassroomKey = classroomDTO.Key,
         Id = Guid.NewGuid(),
-        Label = "First Name",
+        Label = "Full Name",
         Type = FieldType.TEXT
       };
       var fieldDTO2 = new FieldDTO
@@ -132,15 +132,15 @@ public class CreateClassroomRequestHandler(
         ClassroomId = classroomDTO.Id,
         ClassroomKey = classroomDTO.Key,
         Id = Guid.NewGuid(),
-        Label = "Last Name",
-        Type = FieldType.TEXT
+        Label = "Homework #1",
+        Type = FieldType.NUMBER
       };
       var fieldDTO3 = new FieldDTO
       {
         ClassroomId = classroomDTO.Id,
         ClassroomKey = classroomDTO.Key,
         Id = Guid.NewGuid(),
-        Label = "Homework #1",
+        Label = "Project #1",
         Type = FieldType.NUMBER
       };
 
