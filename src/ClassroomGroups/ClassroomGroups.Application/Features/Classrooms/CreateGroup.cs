@@ -65,7 +65,7 @@ public class CreateGroupRequestHandler(
 
       var ordinal = existingGroups.Count;
 
-      var label = request.Label ?? $"Group {ordinal + 1}";
+      var label = request.Label.Length > 0 ? request.Label : $"Group {ordinal}";
 
       var groupId = Guid.NewGuid();
 
