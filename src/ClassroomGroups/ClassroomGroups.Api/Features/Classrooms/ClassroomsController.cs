@@ -338,4 +338,27 @@ public class ClassroomsController(IMediator mediator) : ControllerBase
   {
     return await _mediator.Send(new DisableColumnRequest(classroomId, configurationId, columnId));
   }
+
+  public record ImportClassroomRequestBody(
+    string Label,
+    List<ImportFieldRequestBody> Fields,
+    List<Dictionary<string, string>> Students
+  ) { }
+
+  public record ImportFieldRequestBody(string Label, FieldType Type);
+
+  [Authorize]
+  [HttpPost("import")]
+  public async Task<ImportClassroomResponse> ImportClassroom(
+    [FromBody] ImportClassroomRequestBody body
+  )
+  {
+    return await _mediator.Send(
+      new ImportClassroomRequest(
+        body.Label,
+        body.Fields.Select(f => new ImportFieldRequest(f.Label, f.Type)).ToList(),
+        body.Students
+      )
+    );
+  }
 }

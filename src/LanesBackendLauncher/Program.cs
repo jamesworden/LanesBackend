@@ -205,6 +205,11 @@ var pipelineBehaviors = new (Type request, Type response, Type[] behaviors)[]
     typeof(DisableColumnResponse),
     [typeof(AccountRequiredBehavior<,>)]
   ),
+  (
+    typeof(ImportClassroomRequest),
+    typeof(ImportClassroomResponse),
+    [typeof(AccountRequiredBehavior<,>)]
+  ),
 };
 foreach (var (request, response, behaviors) in pipelineBehaviors)
 {
